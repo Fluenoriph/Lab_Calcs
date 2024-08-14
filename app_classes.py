@@ -1,5 +1,6 @@
 from PyQt6 import QtWidgets, QtCore, QtGui
 import locale
+from functools import partial
 
 
 class StyledFrame(QtWidgets.QFrame):
@@ -37,9 +38,12 @@ class ErrorMessage(QtWidgets.QMessageBox):
 
 
 class EntryDB(StyledFrame):
-    def __init__(self, parent):
+    ALL_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,]+"))
+    TEMP_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,-]+"))
+
+    def __init__(self, parent, value=None):
         super().__init__(parent)
-        self.value = None
+        self.value = value
 
         self.enter = QtWidgets.QLineEdit(self)
         self.enter.setEchoMode(QtWidgets.QLineEdit.EchoMode.Normal)
@@ -53,12 +57,15 @@ class EntryDB(StyledFrame):
         self.box.addWidget(self.enter, QtCore.Qt.AlignmentFlag.AlignCenter)
         self.box.setContentsMargins(0, 0, 0, 0)
 
-    def check_value(self):
-        return self.enter.editingFinished.connect(self.check_text)
+    def check_all_value(self):
+        return self.enter.textEdited.connect(partial(self.check_text, EntryDB.ALL_RE_STRING))
+
+    def check_temp_value(self):
+        return self.enter.editingFinished.connect(partial(self.check_text, EntryDB.TEMP_RE_STRING))
 
     @QtCore.pyqtSlot()
-    def check_text(self):
-        validator = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,-]+"))
+    def check_text(self, re_string):
+        validator = re_string
         self.enter.setValidator(validator)
 
         if self.enter.hasAcceptableInput():
@@ -143,41 +150,36 @@ class ResultFrame(StyledFrame):
 
 
 class BandLineLevels(QtWidgets.QWidget):
-    def __init__(self, parent, header):
+    def __init__(self, parent, header, result_label=None, main_result_frame=None, delta_result_frame=None,
+                 phone_level_frame=None, other_level_frame=None, herz_frame=None):
         super().__init__(parent)
         self.header = header
-        self.result_label = None
+        self.bandline_items = [herz_frame, other_level_frame, phone_level_frame, delta_result_frame, main_result_frame]
+        self.result_label = result_label
 
-        self.herz_frame = FrameWithName(self, self.header)
-        self.herz_frame.setFixedSize(55, 40)
+        self.bandline_items[0] = FrameWithName(self, self.header)
+        self.bandline_items[1] = EntryDB(self)
+        self.bandline_items[2] = EntryDB(self)
+        self.bandline_items[3] = ResultFrame(self)
+        self.bandline_items[4] = ResultFrame(self)
 
-        self.other_level_frame = EntryDB(self)
-        self.other_level_frame.setFixedSize(55, 40)
-        self.other_level_frame.check_value()
+        for size in self.bandline_items:
+            size.setFixedSize(55, 40)
 
-        self.phone_level_frame = EntryDB(self)
-        self.phone_level_frame.setFixedSize(55, 40)
-        self.phone_level_frame.check_value()
-
-        self.delta_result_frame = ResultFrame(self)
-        self.delta_result_frame.setFixedSize(55, 40)
-
-        self.main_result_frame = ResultFrame(self)
-        self.main_result_frame.setFixedSize(55, 40)
+        for check in self.bandline_items[1:3]:
+            check.check_all_value()
 
         box = QtWidgets.QVBoxLayout(self)
-        box.addWidget(self.herz_frame, QtCore.Qt.AlignmentFlag.AlignCenter)
-        box.addWidget(self.other_level_frame, QtCore.Qt.AlignmentFlag.AlignCenter)
-        box.addWidget(self.phone_level_frame, QtCore.Qt.AlignmentFlag.AlignCenter)
-        box.addWidget(self.delta_result_frame, QtCore.Qt.AlignmentFlag.AlignCenter)
-        box.addWidget(self.main_result_frame, QtCore.Qt.AlignmentFlag.AlignCenter)
         box.setSpacing(5)
         box.setContentsMargins(0, 0, 0, 0)
+        for add in self.bandline_items:
+            box.addWidget(add, QtCore.Qt.AlignmentFlag.AlignCenter)
+
         self.show()
 
     def correcting_with_phone(self, correct):
         locale.setlocale(locale.LC_ALL, "ru")
-        value = self.other_level_frame.get_enter_value() - correct
+        value = self.bandline_items[1].get_enter_value() - correct
         value = round(value, 1)
         rus_value = locale.format_string("%.1f", value)
         return rus_value
@@ -186,10 +188,10 @@ class BandLineLevels(QtWidgets.QWidget):
     def calculate_result(self):
         locale.setlocale(locale.LC_ALL, "ru")
 
-        delta = self.other_level_frame.get_enter_value() - self.phone_level_frame.get_enter_value()
+        delta = self.bandline_items[1].get_enter_value() - self.bandline_items[2].get_enter_value()
 
         if delta < 3:
-            self.result_label = self.other_level_frame.get_enter_value()
+            self.result_label = self.bandline_items[1].get_enter_value()
         elif 3.0 <= delta <= 3.4:
             self.result_label = self.correcting_with_phone(2.8)
         elif 3.5 <= delta <= 3.9:
@@ -213,15 +215,15 @@ class BandLineLevels(QtWidgets.QWidget):
 
         rus_delta = locale.format_string("%.1f", delta)
 
-        self.delta_result_frame.result_label.setText(rus_delta)
-        self.delta_result_frame.result_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.bandline_items[3].result_label.setText(rus_delta)
+        self.bandline_items[3].result_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 
-        self.main_result_frame.result_label.setText(self.result_label)
-        self.main_result_frame.result_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.bandline_items[4].result_label.setText(self.result_label)
+        self.bandline_items[4].result_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 
     @QtCore.pyqtSlot()
     def clear_values(self):
-        self.other_level_frame.enter.clear()
-        self.phone_level_frame.enter.clear()
-        self.delta_result_frame.result_label.clear()
-        self.main_result_frame.result_label.clear()
+        self.bandline_items[1].enter.clear()
+        self.bandline_items[2].enter.clear()
+        self.bandline_items[3].result_label.clear()
+        self.bandline_items[4].result_label.clear()

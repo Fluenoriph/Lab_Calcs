@@ -16,7 +16,7 @@ class ApplicationWindow(QtWidgets.QWidget):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Калькулятор")
+        self.setWindowTitle("Калькуляторы")
         self.resize(1285, 700)
         self.move(self.width() * -2, 0)
         self.setWindowOpacity(0.98)

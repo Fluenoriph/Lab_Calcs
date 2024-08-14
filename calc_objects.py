@@ -5,36 +5,28 @@ import locale
 
 
 class CalcAir(QtWidgets.QWidget):
-    def __init__(self, parent, volume_frame=None, mass_after_frame=None, mass_before_frame=None, press_frame=None,
-                 temp_frame=None, result_label=None):
+    def __init__(self, parent, temp_frame=None, volume_frame=None, mass_after_frame=None, mass_before_frame=None,
+                 press_frame=None, result_label=None):
         super().__init__(parent)
         self.result_label = result_label
 
-        self.parameter_list = [volume_frame, temp_frame, press_frame, mass_before_frame, mass_after_frame]
+        self.parameter_list = [temp_frame, volume_frame, press_frame, mass_before_frame, mass_after_frame]
 
         headers_list = self.setup_header_names()
 
         self.doc_frame = app_classes.FrameWithName(self, headers_list[0])
-
-        self.parameter_list[0] = app_classes.EntryValue(self, headers_list[1])
-        self.parameter_list[0].setFixedSize(230, 90)
-        self.parameter_list[0].check_value()
-
-        self.parameter_list[1] = app_classes.EntryValue(self, headers_list[2])
-        self.parameter_list[1].setFixedSize(230, 90)
-        self.parameter_list[1].check_value()
-
+        self.parameter_list[1] = app_classes.EntryValue(self, headers_list[1])
+        self.parameter_list[0] = app_classes.EntryValue(self, headers_list[2])
+        self.parameter_list[0].check_temp_value()
         self.parameter_list[2] = app_classes.EntryValue(self, headers_list[3])
-        self.parameter_list[2].setFixedSize(230, 90)
-        self.parameter_list[2].check_value()
-
         self.parameter_list[3] = app_classes.EntryValue(self, headers_list[4])
-        self.parameter_list[3].setFixedSize(230, 90)
-        self.parameter_list[3].check_value()
-
         self.parameter_list[4] = app_classes.EntryValue(self, headers_list[5])
-        self.parameter_list[4].setFixedSize(230, 90)
-        self.parameter_list[4].check_value()
+
+        for size in self.parameter_list:
+            size.setFixedSize(230, 90)
+
+        for check in self.parameter_list[1:]:
+            check.check_all_value()
 
         self.result_frame = app_classes.ResultFrame(self)
         self.result_frame.result_label.setText("Концентрация взвешенных веществ (пыли):")
@@ -45,8 +37,6 @@ class CalcAir(QtWidgets.QWidget):
         self.calc_control.button_clear.clicked.connect(self.clear_frames)
 
         self.setup_frames_position()
-
-        self.show()
 
     def setup_header_names(self):
         names_list = ("РД 52.04.893-2020", "Объем взятого на анализ\nатмосферного воздуха, л",
@@ -64,13 +54,11 @@ class CalcAir(QtWidgets.QWidget):
         calc_box.setRowMinimumHeight(4, 40)
 
         calc_box.addWidget(self.doc_frame, 0, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignVCenter)
-
-        calc_box.addWidget(self.parameter_list[0], 1, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.parameter_list[1], 2, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
+        calc_box.addWidget(self.parameter_list[1], 1, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignCenter)
+        calc_box.addWidget(self.parameter_list[0], 2, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
         calc_box.addWidget(self.parameter_list[2], 2, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
         calc_box.addWidget(self.parameter_list[3], 3, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
         calc_box.addWidget(self.parameter_list[4], 3, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
-
         calc_box.addWidget(self.calc_control, 1, 2, 3, 1)
         calc_box.addWidget(self.result_frame, 5, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignVCenter)
 
@@ -86,8 +74,8 @@ class CalcAir(QtWidgets.QWidget):
         locale.setlocale(locale.LC_ALL, "ru")
 
         try:
-            volume = self.parameter_list[0].get_enter_value() / 1000
-            temp = self.parameter_list[1].get_enter_value()
+            volume = self.parameter_list[1].get_enter_value() / 1000
+            temp = self.parameter_list[0].get_enter_value()
             pressure = self.parameter_list[2].get_enter_value()
             mass_before = self.parameter_list[3].get_enter_value() * 1000
             mass_after = self.parameter_list[4].get_enter_value() * 1000
@@ -147,8 +135,8 @@ class CalcZone(CalcAir):
         locale.setlocale(locale.LC_ALL, "ru")
 
         try:
-            volume = self.parameter_list[0].get_enter_value()
-            temp = self.parameter_list[1].get_enter_value()
+            volume = self.parameter_list[1].get_enter_value()
+            temp = self.parameter_list[0].get_enter_value()
             pressure = self.parameter_list[2].get_enter_value()
             mass_before = self.parameter_list[3].get_enter_value() * 1000
             mass_after = self.parameter_list[4].get_enter_value() * 1000
@@ -183,7 +171,6 @@ class CalcFlow(QtWidgets.QWidget):
                  perfomance_label=None):
         super().__init__(parent)
         self.parameter_list = [s_frame, h_frame, speed_frame, diameter_frame, width_frame, height_frame]
-
         self.type_hole = type_hole
         self.type_quad = type_quad
         self.s_hole = s_hole
@@ -193,32 +180,24 @@ class CalcFlow(QtWidgets.QWidget):
         self.doc_frame = app_classes.FrameWithName(self, "МР 4.3.0212-20")
 
         self.parameter_list[0] = app_classes.EntryValue(self, "Площадь помещения, м²")
-        self.parameter_list[0].setFixedSize(240, 90)
-        self.parameter_list[0].check_value()
-
         self.parameter_list[1] = app_classes.EntryValue(self, "Высота помещения, м")
-        self.parameter_list[1].setFixedSize(240, 90)
-        self.parameter_list[1].check_value()
-
         self.parameter_list[2] = app_classes.EntryValue(self, "Скорость движения воздуха\nв вентиляционном "
                                                               "отверстии, м/с")
-        self.parameter_list[2].setFixedSize(240, 90)
-        self.parameter_list[2].check_value()
 
-        self.parameter_list[3] = app_classes.EntryValue(self, "Диаметр, см")
-        self.parameter_list[3].setFixedSize(150, 70)
-        self.parameter_list[3].check_value()
-
-        self.parameter_list[4] = app_classes.EntryValue(self, "Ширина, см")
-        self.parameter_list[4].setFixedSize(150, 70)
-        self.parameter_list[4].check_value()
-
-        self.parameter_list[5] = app_classes.EntryValue(self, "Высота, см")
-        self.parameter_list[5].setFixedSize(150, 70)
-        self.parameter_list[5].check_value()
+        for size_i in self.parameter_list[0:3]:
+            size_i.setFixedSize(240, 90)
 
         self.hole_type_frame = self.create_frame_radio(self)
         self.hole_type_frame.setFixedSize(250, 90)
+        self.parameter_list[3] = app_classes.EntryValue(self, "Диаметр, см")
+        self.parameter_list[4] = app_classes.EntryValue(self, "Ширина, см")
+        self.parameter_list[5] = app_classes.EntryValue(self, "Высота, см")
+
+        for size_j in self.parameter_list[3:6]:
+            size_j.setFixedSize(150, 70)
+
+        for check in self.parameter_list:
+            check.check_all_value()
 
         self.perfomance_frame = app_classes.ResultFrame(self)
         self.perfomance_frame.result_label.setText("Производительность вентиляции:")
@@ -230,12 +209,9 @@ class CalcFlow(QtWidgets.QWidget):
 
         self.calc_control = app_classes.ControlFrame(self)
         self.calc_control.button_ok.clicked.connect(self.calculate_result)
-
         self.calc_control.button_clear.clicked.connect(self.clear_frames)
 
         self.setup_frame_position()
-
-        self.show()
 
     def lock_quad_frames(self):
         self.type_hole.toggle()
@@ -360,33 +336,28 @@ class CalcFlow(QtWidgets.QWidget):
 
 class CalcNoise(QtWidgets.QWidget):
     def __init__(self, parent, band_31=None, band_63=None, band_125=None, band_250=None, band_500=None, band_1k=None,
-                 band_2k=None, band_4k=None, band_8k=None, band_l_as=None):
+                 band_2k=None, band_4k=None, band_8k=None, band_l_as=None, main_result_name_frame=None,
+                 delta_name_frame=None, phone_name_frame=None, other_name_frame=None, unit_name_frame=None):
         super().__init__(parent)
+        self.side_frame_list = [unit_name_frame, other_name_frame, phone_name_frame, delta_name_frame,
+                                main_result_name_frame]
+
         self.band_list = [band_31, band_63, band_125, band_250, band_500, band_1k, band_2k, band_4k, band_8k, band_l_as]
 
         self.doc_name = app_classes.FrameWithName(self, "МУК 4.3.3722-21")
-        self.unit_name_frame = app_classes.FrameWithName(self, "дБ    \\    Гц")
-        self.unit_name_frame.setFixedHeight(40)
 
-        self.other_name_frame = app_classes.FrameWithName(self, "Общий уровень")
-        self.other_name_frame.setFixedHeight(40)
-        self.other_name_frame.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft |
-                                                 QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.side_frame_list[0] = app_classes.FrameWithName(self, "дБ    \\    Гц")
+        self.side_frame_list[1] = app_classes.FrameWithName(self, "Общий уровень")
+        self.side_frame_list[2] = app_classes.FrameWithName(self, "Фоновый уровень")
+        self.side_frame_list[3] = app_classes.FrameWithName(self, "Разность с фоном")
+        self.side_frame_list[4] = app_classes.FrameWithName(self, "С поправкой на фон")
 
-        self.phone_name_frame = app_classes.FrameWithName(self, "Фоновый уровень")
-        self.phone_name_frame.setFixedHeight(40)
-        self.phone_name_frame.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft |
-                                                 QtCore.Qt.AlignmentFlag.AlignVCenter)
+        for size in self.side_frame_list:
+            size.setFixedHeight(40)
 
-        self.delta_name_frame = app_classes.FrameWithName(self, "Разность с фоном")
-        self.delta_name_frame.setFixedHeight(40)
-        self.delta_name_frame.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft |
-                                                 QtCore.Qt.AlignmentFlag.AlignVCenter)
-
-        self.main_result_name_frame = app_classes.FrameWithName(self, "С поправкой на фон")
-        self.main_result_name_frame.setFixedHeight(40)
-        self.main_result_name_frame.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft |
-                                                       QtCore.Qt.AlignmentFlag.AlignVCenter)
+        for align in self.side_frame_list[1:]:
+            align.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft |
+                                     QtCore.Qt.AlignmentFlag.AlignVCenter)
 
         self.band_list[0] = app_classes.BandLineLevels(self, "31,5")
         self.band_list[1] = app_classes.BandLineLevels(self, "63")
@@ -404,18 +375,15 @@ class CalcNoise(QtWidgets.QWidget):
         self.control_frame.button_clear.clicked.connect(self.clear_frames)
 
         self.setup_frame_position()
-        self.show()
 
     def setup_frame_position(self):
         title_side = QtWidgets.QFrame(self)
         title_box = QtWidgets.QVBoxLayout(title_side)
         title_box.setSpacing(5)
         title_box.setContentsMargins(0, 0, 0, 0)
-        title_box.addWidget(self.unit_name_frame, QtCore.Qt.AlignmentFlag.AlignCenter)
-        title_box.addWidget(self.other_name_frame, QtCore.Qt.AlignmentFlag.AlignCenter)
-        title_box.addWidget(self.phone_name_frame, QtCore.Qt.AlignmentFlag.AlignCenter)
-        title_box.addWidget(self.delta_name_frame, QtCore.Qt.AlignmentFlag.AlignCenter)
-        title_box.addWidget(self.main_result_name_frame, QtCore.Qt.AlignmentFlag.AlignCenter)
+
+        for add in self.side_frame_list:
+            title_box.addWidget(add, QtCore.Qt.AlignmentFlag.AlignCenter)
 
         calc_box = QtWidgets.QGridLayout(self)
         calc_box.setContentsMargins(20, 20, 20, 20)
@@ -454,8 +422,8 @@ class CalcNoise(QtWidgets.QWidget):
     def clear_frames(self):
         for frame in self.band_list:
             frame.clear_values()
-            frame.other_level_frame.get_enter_value = None
-            frame.phone_level_frame.get_enter_value = None
+            frame.bandline_items[1].get_enter_value = None
+            frame.bandline_items[2].get_enter_value = None
 
         for band in self.band_list:
             band.setEnabled(True)
@@ -467,15 +435,11 @@ class CalcNoise(QtWidgets.QWidget):
 class CalcSelector(QtWidgets.QWidget):
     def __init__(self, parent, calc_parent):
         super().__init__(parent)
-        self.zone = None
-        self.air = None
         self.calc_parent = calc_parent
-
-        self.calcs_list = [CalcAir(self.calc_parent), CalcZone(self.calc_parent), CalcFlow(self.calc_parent),
-                           CalcNoise(self.calc_parent)]
-
-        for close in self.calcs_list:
-            close.close()
+        self.air_calc = CalcAir(self.calc_parent)
+        self.zone_calc = CalcZone(self.calc_parent)
+        self.flow_calc = CalcFlow(self.calc_parent)
+        self.noise_calc = CalcNoise(self.calc_parent)
 
         self.list_names = ['Пыль в атмосферном воздухе', 'Пыль в воздухе рабочей зоны',
                            'Эффективность вентиляции', 'Учет влияния фонового шума']
@@ -498,40 +462,36 @@ class CalcSelector(QtWidgets.QWidget):
         self.select_zone = self.model.index(1, 0)
         self.select_flow = self.model.index(2, 0)
         self.select_noise = self.model.index(3, 0)
-        self.select_list.clicked.connect(self.select_on_click)
 
-    def activate_one_calc_object(self):
-        if self.calcs_list[0]:
-            self.calcs_list[0].close()
-        elif self.calcs_list[1]:
-            self.calcs_list[1].close()
-        elif self.calcs_list[2]:
-            self.calcs_list[2].close()
-        elif self.calcs_list[3]:
-            self.calcs_list[3].close()
+        self.select_list.clicked.connect(self.click_air_calc)
+        self.select_list.clicked.connect(self.click_zone_calc)
+        self.select_list.clicked.connect(self.click_flow_calc)
+        self.select_list.clicked.connect(self.click_noise_calc)
 
     @QtCore.pyqtSlot()
-    def select_on_click(self):
-        match self.select_list.currentIndex():
-            case self.select_air:
-                if self.calcs_list[0]:
-                    self.calcs_list[0].close()
-                elif self.calcs_list[1]:
-                    self.calcs_list[1].close()
-                elif self.calcs_list[2]:
-                    self.calcs_list[2].close()
-                elif self.calcs_list[3]:
-                    self.calcs_list[3].close()
+    def click_air_calc(self):
+        if self.select_list.currentIndex() == self.select_air:
+            for calc in (self.zone_calc, self.flow_calc, self.noise_calc):
+                calc.close()
+            self.air_calc.show()
 
-                self.calcs_list[0].show()
-            case self.select_zone:
-                #self.activate_one_calc_object()
-                self.calcs_list[1].show()
-            case self.select_flow:
-                #self.activate_one_calc_object()
-                self.calcs_list[2].show()
-            case self.select_noise:
-                #self.activate_one_calc_object()
-                self.calcs_list[3].show()
+    @QtCore.pyqtSlot()
+    def click_zone_calc(self):
+        if self.select_list.currentIndex() == self.select_zone:
+            for calc in (self.air_calc, self.flow_calc, self.noise_calc):
+                calc.close()
+            self.zone_calc.show()
 
+    @QtCore.pyqtSlot()
+    def click_flow_calc(self):
+        if self.select_list.currentIndex() == self.select_flow:
+            for calc in (self.zone_calc, self.air_calc, self.noise_calc):
+                calc.close()
+            self.flow_calc.show()
 
+    @QtCore.pyqtSlot()
+    def click_noise_calc(self):
+        if self.select_list.currentIndex() == self.select_noise:
+            for calc in (self.zone_calc, self.flow_calc, self.air_calc):
+                calc.close()
+            self.noise_calc.show()
