@@ -85,6 +85,10 @@ class ApplicationWindow(QtWidgets.QWidget):
         submenu_view = QtWidgets.QMenu("Вид", main_menu)
         submenu_help = QtWidgets.QMenu("Справка", main_menu)
 
+        calc_air = QtGui.QAction("Калькулятор пыль", submenu_file)
+        calc_air.triggered.connect(CalcSelector.select_air_calc)
+        submenu_file.addAction(calc_air)
+
         themes = submenu_view.addMenu("Тема")
         dark_style = QtGui.QAction("Темная", themes)
         dark_style.triggered.connect(self.set_dark_style)

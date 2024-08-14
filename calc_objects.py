@@ -381,7 +381,6 @@ class CalcNoise(QtWidgets.QWidget):
         title_box = QtWidgets.QVBoxLayout(title_side)
         title_box.setSpacing(5)
         title_box.setContentsMargins(0, 0, 0, 0)
-
         for add in self.side_frame_list:
             title_box.addWidget(add, QtCore.Qt.AlignmentFlag.AlignCenter)
 
@@ -458,40 +457,44 @@ class CalcSelector(QtWidgets.QWidget):
         box.setContentsMargins(3, 5, 3, 3)
         self.show()
 
-        self.select_air = self.model.index(0, 0)
-        self.select_zone = self.model.index(1, 0)
-        self.select_flow = self.model.index(2, 0)
-        self.select_noise = self.model.index(3, 0)
+        self.index_air = self.model.index(0, 0)
+        self.index_zone = self.model.index(1, 0)
+        self.index_flow = self.model.index(2, 0)
+        self.index_noise = self.model.index(3, 0)
 
+
+        self.select_air_calc()
+        self.select_zone_calc = self.select_list.clicked.connect(self.click_zone_calc)
+        self.select_flow_calc = self.select_list.clicked.connect(self.click_flow_calc)
+        self.select_noise_calc = self.select_list.clicked.connect(self.click_noise_calc)
+
+    def select_air_calc(self):
         self.select_list.clicked.connect(self.click_air_calc)
-        self.select_list.clicked.connect(self.click_zone_calc)
-        self.select_list.clicked.connect(self.click_flow_calc)
-        self.select_list.clicked.connect(self.click_noise_calc)
 
     @QtCore.pyqtSlot()
     def click_air_calc(self):
-        if self.select_list.currentIndex() == self.select_air:
+        if self.select_list.currentIndex() == self.index_air:
             for calc in (self.zone_calc, self.flow_calc, self.noise_calc):
                 calc.close()
             self.air_calc.show()
 
     @QtCore.pyqtSlot()
     def click_zone_calc(self):
-        if self.select_list.currentIndex() == self.select_zone:
+        if self.select_list.currentIndex() == self.index_zone:
             for calc in (self.air_calc, self.flow_calc, self.noise_calc):
                 calc.close()
             self.zone_calc.show()
 
     @QtCore.pyqtSlot()
     def click_flow_calc(self):
-        if self.select_list.currentIndex() == self.select_flow:
+        if self.select_list.currentIndex() == self.index_flow:
             for calc in (self.zone_calc, self.air_calc, self.noise_calc):
                 calc.close()
             self.flow_calc.show()
 
     @QtCore.pyqtSlot()
     def click_noise_calc(self):
-        if self.select_list.currentIndex() == self.select_noise:
+        if self.select_list.currentIndex() == self.index_noise:
             for calc in (self.zone_calc, self.flow_calc, self.air_calc):
                 calc.close()
             self.noise_calc.show()
