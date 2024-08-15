@@ -191,7 +191,7 @@ class BandLineLevels(QtWidgets.QWidget):
         delta = self.bandline_items[1].get_enter_value() - self.bandline_items[2].get_enter_value()
 
         if delta < 3:
-            self.result_label = self.bandline_items[1].get_enter_value()
+            self.result_label = str(self.bandline_items[1].get_enter_value())
         elif 3.0 <= delta <= 3.4:
             self.result_label = self.correcting_with_phone(2.8)
         elif 3.5 <= delta <= 3.9:

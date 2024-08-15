@@ -65,7 +65,6 @@ class CalcAir(QtWidgets.QWidget):
     def lock_frames(self):
         for lock in self.parameter_list:
             lock.setEnabled(False)
-
         self.calc_control.button_ok.setEnabled(False)
         self.calc_control.button_clear.setEnabled(True)
 
@@ -107,8 +106,7 @@ class CalcAir(QtWidgets.QWidget):
     def clear_frames(self):
         for clear in self.parameter_list:
             clear.enter.clear()
-            clear.get_enter_value = None
-
+            #clear.get_enter_value = 0
         self.result_label.clear()
         self.result_frame.label_box.removeWidget(self.result_label)
 
@@ -319,7 +317,7 @@ class CalcFlow(QtWidgets.QWidget):
     def clear_frames(self):
         for clear in self.parameter_list:
             clear.enter.clear()
-            clear.get_enter_value = None
+            #clear.get_enter_value = None
 
         self.perfomance_label.clear()
         self.per_in_hour_label.clear()
@@ -359,7 +357,7 @@ class CalcNoise(QtWidgets.QWidget):
             align.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft |
                                      QtCore.Qt.AlignmentFlag.AlignVCenter)
 
-        self.band_list[0] = app_classes.BandLineLevels(self, "31,5")
+        self.band_list[0] = app_classes.BandLineLevels(self, "31.5")
         self.band_list[1] = app_classes.BandLineLevels(self, "63")
         self.band_list[2] = app_classes.BandLineLevels(self, "125")
         self.band_list[3] = app_classes.BandLineLevels(self, "250")
@@ -413,6 +411,9 @@ class CalcNoise(QtWidgets.QWidget):
                 band.setEnabled(False)
         except TypeError:
             app_classes.ErrorMessage(self)
+
+            for frame in self.band_list:
+                frame.clear_values()
         else:
             self.control_frame.button_ok.setEnabled(False)
             self.control_frame.button_clear.setEnabled(True)
@@ -421,80 +422,11 @@ class CalcNoise(QtWidgets.QWidget):
     def clear_frames(self):
         for frame in self.band_list:
             frame.clear_values()
-            frame.bandline_items[1].get_enter_value = None
-            frame.bandline_items[2].get_enter_value = None
+            #frame.bandline_items[1].get_enter_value = None
+            #frame.bandline_items[2].get_enter_value = None
 
         for band in self.band_list:
             band.setEnabled(True)
 
         self.control_frame.button_ok.setEnabled(True)
         self.control_frame.button_clear.setEnabled(False)
-
-
-class CalcSelector(QtWidgets.QWidget):
-    def __init__(self, parent, calc_parent):
-        super().__init__(parent)
-        self.calc_parent = calc_parent
-        self.air_calc = CalcAir(self.calc_parent)
-        self.zone_calc = CalcZone(self.calc_parent)
-        self.flow_calc = CalcFlow(self.calc_parent)
-        self.noise_calc = CalcNoise(self.calc_parent)
-
-        self.list_names = ['Пыль в атмосферном воздухе', 'Пыль в воздухе рабочей зоны',
-                           'Эффективность вентиляции', 'Учет влияния фонового шума']
-
-        self.select_list = QtWidgets.QListView(self)
-        self.model = QtCore.QStringListModel(self.list_names)
-        self.select_list.setModel(self.model)
-        self.select_list.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
-        self.select_list.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.select_list.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
-        self.select_list.setSpacing(10)
-        self.select_list.setFrameStyle(QtWidgets.QFrame.Shape.NoFrame)
-        self.resize(220, 160)
-        box = QtWidgets.QVBoxLayout(self)
-        box.addWidget(self.select_list, QtCore.Qt.AlignmentFlag.AlignTop)
-        box.setContentsMargins(3, 5, 3, 3)
-        self.show()
-
-        self.index_air = self.model.index(0, 0)
-        self.index_zone = self.model.index(1, 0)
-        self.index_flow = self.model.index(2, 0)
-        self.index_noise = self.model.index(3, 0)
-
-
-        self.select_air_calc()
-        self.select_zone_calc = self.select_list.clicked.connect(self.click_zone_calc)
-        self.select_flow_calc = self.select_list.clicked.connect(self.click_flow_calc)
-        self.select_noise_calc = self.select_list.clicked.connect(self.click_noise_calc)
-
-    def select_air_calc(self):
-        self.select_list.clicked.connect(self.click_air_calc)
-
-    @QtCore.pyqtSlot()
-    def click_air_calc(self):
-        if self.select_list.currentIndex() == self.index_air:
-            for calc in (self.zone_calc, self.flow_calc, self.noise_calc):
-                calc.close()
-            self.air_calc.show()
-
-    @QtCore.pyqtSlot()
-    def click_zone_calc(self):
-        if self.select_list.currentIndex() == self.index_zone:
-            for calc in (self.air_calc, self.flow_calc, self.noise_calc):
-                calc.close()
-            self.zone_calc.show()
-
-    @QtCore.pyqtSlot()
-    def click_flow_calc(self):
-        if self.select_list.currentIndex() == self.index_flow:
-            for calc in (self.zone_calc, self.air_calc, self.noise_calc):
-                calc.close()
-            self.flow_calc.show()
-
-    @QtCore.pyqtSlot()
-    def click_noise_calc(self):
-        if self.select_list.currentIndex() == self.index_noise:
-            for calc in (self.zone_calc, self.flow_calc, self.air_calc):
-                calc.close()
-            self.noise_calc.show()
