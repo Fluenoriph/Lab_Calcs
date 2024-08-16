@@ -19,8 +19,8 @@ class FrameWithName(StyledFrame):
         self.label = QtWidgets.QLabel(name, self)
         self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 
-        box = QtWidgets.QHBoxLayout(self)
-        box.addWidget(self.label, QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.box = QtWidgets.QHBoxLayout(self)
+        self.box.addWidget(self.label, QtCore.Qt.AlignmentFlag.AlignCenter)
 
 
 class ErrorMessage(QtWidgets.QMessageBox):
@@ -91,62 +91,63 @@ class EntryValue(EntryDB):
         super().__init__(parent)
         self.header = header
 
-        label = QtWidgets.QLabel(self.header, self)
-        label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.label = QtWidgets.QLabel(self.header, self)
+        self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 
         self.enter.setMaxLength(10)
         self.enter.setTextMargins(5, 5, 5, 5)
 
-        self.box.insertWidget(0, label, QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.box.insertWidget(0, self.label, QtCore.Qt.AlignmentFlag.AlignCenter)
         self.box.setSpacing(12)
         self.box.setContentsMargins(5, 10, 5, 5)
 
 
 class ControlFrame(StyledFrame):
+    SIZE = QtCore.QSize(35, 35)
+
     def __init__(self, parent):
         super().__init__(parent)
         self.icon_ok = QtGui.QIcon("check.ico")
         self.icon_exit = QtGui.QIcon("close.ico")
         self.icon_clear = QtGui.QIcon("basket.ico")
-        self.size = QtCore.QSize(35, 35)
 
         self.button_ok = QtWidgets.QPushButton(self)
         self.button_ok.setIcon(self.icon_ok)
-        self.button_ok.setIconSize(self.size)
+        self.button_ok.setIconSize(ControlFrame.SIZE)
         self.button_ok.setAutoDefault(True)
 
         self.button_clear = QtWidgets.QPushButton(self)
         self.button_clear.setIcon(self.icon_clear)
-        self.button_clear.setIconSize(self.size)
+        self.button_clear.setIconSize(ControlFrame.SIZE)
         self.button_clear.setEnabled(False)
         self.button_clear.setAutoDefault(True)
 
         self.button_exit = QtWidgets.QPushButton(self)
         self.button_exit.setIcon(self.icon_exit)
-        self.button_exit.setIconSize(self.size)
+        self.button_exit.setIconSize(ControlFrame.SIZE)
         self.button_exit.clicked.connect(quit)
 
-        box = QtWidgets.QVBoxLayout(self)
-        box.addWidget(self.button_ok, alignment=QtCore.Qt.AlignmentFlag.AlignTop)
-        box.addWidget(self.button_clear, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
-        box.addWidget(self.button_exit, alignment=QtCore.Qt.AlignmentFlag.AlignBottom)
+        self.box = QtWidgets.QVBoxLayout(self)
+        self.box.addWidget(self.button_ok, alignment=QtCore.Qt.AlignmentFlag.AlignTop)
+        self.box.addWidget(self.button_clear, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.box.addWidget(self.button_exit, alignment=QtCore.Qt.AlignmentFlag.AlignBottom)
 
 
 class ResultFrame(StyledFrame):
     def __init__(self, parent):
         super().__init__(parent)
-        result_line = QtWidgets.QWidget(self)
+        self.result_line = QtWidgets.QWidget(self)
 
-        self.result_label = QtWidgets.QLabel(result_line)
+        self.result_label = QtWidgets.QLabel(self.result_line)
         self.result_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignLeft)
 
-        self.label_box = QtWidgets.QHBoxLayout(result_line)
+        self.label_box = QtWidgets.QHBoxLayout(self.result_line)
         self.label_box.addWidget(self.result_label, QtCore.Qt.AlignmentFlag.AlignCenter)
 
-        line_box = QtWidgets.QHBoxLayout(self)
-        line_box.addWidget(result_line, QtCore.Qt.AlignmentFlag.AlignCenter)
-        line_box.setContentsMargins(0, 0, 0, 0)
-        result_line.show()
+        self.line_box = QtWidgets.QHBoxLayout(self)
+        self.line_box.addWidget(self.result_line, QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.line_box.setContentsMargins(0, 0, 0, 0)
+        self.result_line.show()
 
 
 class BandLineLevels(QtWidgets.QWidget):
@@ -169,20 +170,13 @@ class BandLineLevels(QtWidgets.QWidget):
         for check in self.bandline_items[1:3]:
             check.check_all_value()
 
-        box = QtWidgets.QVBoxLayout(self)
-        box.setSpacing(5)
-        box.setContentsMargins(0, 0, 0, 0)
+        self.box = QtWidgets.QVBoxLayout(self)
+        self.box.setSpacing(5)
+        self.box.setContentsMargins(0, 0, 0, 0)
         for add in self.bandline_items:
-            box.addWidget(add, QtCore.Qt.AlignmentFlag.AlignCenter)
+            self.box.addWidget(add, QtCore.Qt.AlignmentFlag.AlignCenter)
 
         self.show()
-
-    def correcting_with_phone(self, correct):
-        locale.setlocale(locale.LC_ALL, "ru")
-        value = self.bandline_items[1].get_enter_value() - correct
-        value = round(value, 1)
-        rus_value = locale.format_string("%.1f", value)
-        return rus_value
 
     @QtCore.pyqtSlot()
     def calculate_result(self):
@@ -214,12 +208,17 @@ class BandLineLevels(QtWidgets.QWidget):
             self.result_label = "—"
 
         rus_delta = locale.format_string("%.1f", delta)
-
         self.bandline_items[3].result_label.setText(rus_delta)
         self.bandline_items[3].result_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-
         self.bandline_items[4].result_label.setText(self.result_label)
         self.bandline_items[4].result_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+
+    def correcting_with_phone(self, correct):
+        locale.setlocale(locale.LC_ALL, "ru")
+        value = self.bandline_items[1].get_enter_value() - correct
+        value = round(value, 1)
+        rus_value = locale.format_string("%.1f", value)
+        return rus_value
 
     @QtCore.pyqtSlot()
     def clear_values(self):
