@@ -174,7 +174,7 @@ class BandLineLevels(QtWidgets.QWidget):
         self.box.setSpacing(5)
         self.box.setContentsMargins(0, 0, 0, 0)
         for add in self.bandline_items:
-            self.box.addWidget(add, QtCore.Qt.AlignmentFlag.AlignCenter)
+            self.box.addWidget(add) #QtCore.Qt.AlignmentFlag.AlignCenter)
 
         self.show()
 
@@ -226,3 +226,15 @@ class BandLineLevels(QtWidgets.QWidget):
         self.bandline_items[2].enter.clear()
         self.bandline_items[3].result_label.clear()
         self.bandline_items[4].result_label.clear()
+
+
+class ClearCalc:
+
+    def lock_frames(self, frames_list, control_frame):      # Static ?
+        for lock in frames_list:
+            lock.setEnabled(False)
+
+        control_frame.button_ok.setEnabled(False)
+        control_frame.button_clear.setEnabled(True)
+
+
