@@ -59,7 +59,7 @@ class ApplicationWindow(QtWidgets.QWidget):
                                       "} .QLineEdit {background-color: " + colors_list[8] + " color: " +
                                       colors_list[9] + "} .QWidget>QLabel, .QWidget {background-color: " +
                                       colors_list[10] + " color: " + colors_list[11] +
-                                      "} .QPushButton {background-color: " + colors_list[2] + "} QFrame {border: 2px green; border-radius: 4px; padding: 2px;}")
+                                      "} .QPushButton {background-color: " + colors_list[2] + "}")
 
     @QtCore.pyqtSlot()
     def set_dark_style(self):

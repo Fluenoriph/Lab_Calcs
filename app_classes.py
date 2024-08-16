@@ -230,11 +230,26 @@ class BandLineLevels(QtWidgets.QWidget):
 
 class ClearCalc:
 
-    def lock_frames(self, frames_list, control_frame):      # Static ?
+    @staticmethod
+    def lock(frames_list, control_frame):
         for lock in frames_list:
             lock.setEnabled(False)
-
         control_frame.button_ok.setEnabled(False)
         control_frame.button_clear.setEnabled(True)
 
+    @staticmethod
+    def clear(frames_list):
+        for clear in frames_list:
+            clear.enter.clear()
 
+    @staticmethod
+    def activate(frames_list, control_frame):
+        for activate in frames_list:
+            activate.setEnabled(True)
+        control_frame.button_ok.setEnabled(True)
+        control_frame.button_clear.setEnabled(False)
+
+    @staticmethod
+    def clear_bandline(band_list):
+        for frame in band_list:
+            frame.clear_values()

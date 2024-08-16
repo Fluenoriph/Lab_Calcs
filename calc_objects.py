@@ -92,26 +92,14 @@ class CalcAir(QtWidgets.QWidget):
                 self.result_label = QtWidgets.QLabel(result)
                 self.result_frame.label_box.addWidget(self.result_label, QtCore.Qt.AlignmentFlag.AlignCenter)
 
-            self.lock_frames()
-
-    def lock_frames(self):
-        for lock in self.parameter_list:
-            lock.setEnabled(False)
-        self.calc_control.button_ok.setEnabled(False)
-        self.calc_control.button_clear.setEnabled(True)
+            app_classes.ClearCalc.lock(self.parameter_list, self.calc_control)
 
     @QtCore.pyqtSlot()
     def clear_frames(self):
-        for clear in self.parameter_list:
-            clear.enter.clear()
-            #clear.get_enter_value = 0
+        app_classes.ClearCalc.clear(self.parameter_list)
         self.result_label.clear()
         self.result_frame.label_box.removeWidget(self.result_label)
-
-        for ok in self.parameter_list:
-            ok.setEnabled(True)
-        self.calc_control.button_ok.setEnabled(True)
-        self.calc_control.button_clear.setEnabled(False)
+        app_classes.ClearCalc.activate(self.parameter_list, self.calc_control)
 
 
 class CalcZone(CalcAir):
@@ -158,7 +146,7 @@ class CalcZone(CalcAir):
                 self.result_label = QtWidgets.QLabel(result)
                 self.result_frame.label_box.addWidget(self.result_label, QtCore.Qt.AlignmentFlag.AlignCenter)
 
-            self.lock_frames()
+            app_classes.ClearCalc.lock(self.parameter_list, self.calc_control)
 
 
 class CalcFlow(QtWidgets.QWidget):
@@ -297,32 +285,17 @@ class CalcFlow(QtWidgets.QWidget):
             self.perfomance_frame.label_box.addWidget(self.perfomance_label, QtCore.Qt.AlignmentFlag.AlignCenter)
             self.per_in_hour_frame.label_box.addWidget(self.per_in_hour_label, QtCore.Qt.AlignmentFlag.AlignCenter)
 
-            self.lock_frames()
-
-    def lock_frames(self):
-        for lock in self.parameter_list:
-            lock.setEnabled(False)
-
-        self.calc_control.button_ok.setEnabled(False)
-        self.calc_control.button_clear.setEnabled(True)
+            app_classes.ClearCalc.lock(self.parameter_list, self.calc_control)
 
     @QtCore.pyqtSlot()
     def clear_frames(self):
-        for clear in self.parameter_list:
-            clear.enter.clear()
-            #clear.get_enter_value = None
-
+        app_classes.ClearCalc.clear(self.parameter_list)
         self.perfomance_label.clear()
         self.per_in_hour_label.clear()
         self.perfomance_frame.label_box.removeWidget(self.perfomance_label)
         self.per_in_hour_frame.label_box.removeWidget(self.per_in_hour_label)
-
-        for ok in self.parameter_list:
-            ok.setEnabled(True)
-
         self.lock_quad_frames()
-        self.calc_control.button_ok.setEnabled(True)
-        self.calc_control.button_clear.setEnabled(False)
+        app_classes.ClearCalc.activate(self.parameter_list, self.calc_control)
 
 
 class CalcNoise(QtWidgets.QWidget):
@@ -398,25 +371,13 @@ class CalcNoise(QtWidgets.QWidget):
         try:
             for band in self.band_list:
                 band.calculate_result()
-                band.setEnabled(False)
         except TypeError:
             app_classes.ErrorMessage(self)
-
-            for frame in self.band_list:
-                frame.clear_values()
+            app_classes.ClearCalc.clear_bandline(self.band_list)
         else:
-            self.control_frame.button_ok.setEnabled(False)
-            self.control_frame.button_clear.setEnabled(True)
+            app_classes.ClearCalc.lock(self.band_list, self.control_frame)
 
     @QtCore.pyqtSlot()
     def clear_frames(self):
-        for frame in self.band_list:
-            frame.clear_values()
-            #frame.bandline_items[1].get_enter_value = None
-            #frame.bandline_items[2].get_enter_value = None
-
-        for band in self.band_list:
-            band.setEnabled(True)
-
-        self.control_frame.button_ok.setEnabled(True)
-        self.control_frame.button_clear.setEnabled(False)
+        app_classes.ClearCalc.clear_bandline(self.band_list)
+        app_classes.ClearCalc.activate(self.band_list, self.control_frame)
