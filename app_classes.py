@@ -174,7 +174,7 @@ class BandLineLevels(QtWidgets.QWidget):
         self.box.setSpacing(5)
         self.box.setContentsMargins(0, 0, 0, 0)
         for add in self.bandline_items:
-            self.box.addWidget(add) #QtCore.Qt.AlignmentFlag.AlignCenter)
+            self.box.addWidget(add, QtCore.Qt.AlignmentFlag.AlignCenter)
 
         self.show()
 
