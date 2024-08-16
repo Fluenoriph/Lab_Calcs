@@ -8,6 +8,7 @@ class StyledFrame(QtWidgets.QFrame):
         super().__init__(parent)
         self.setFrameStyle(QtWidgets.QFrame.Shape.Box | QtWidgets.QFrame.Shadow.Plain)
         self.setLineWidth(1)
+        self.setMidLineWidth(1)
         self.show()
 
 
@@ -166,6 +167,9 @@ class BandLineLevels(QtWidgets.QWidget):
 
         for size in self.bandline_items:
             size.setFixedSize(55, 40)
+
+        for style in self.bandline_items[1:]:
+            style.setFrameStyle(QtWidgets.QFrame.Shape.NoFrame)
 
         for check in self.bandline_items[1:3]:
             check.check_all_value()

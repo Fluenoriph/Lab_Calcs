@@ -10,8 +10,8 @@ class ApplicationWindow(QtWidgets.QWidget):
     LIGHT_COLORS = ("#f8f8ff;", "#131313;", "#badbad;", "#464544;", "#f5f5f5;", "#121111;", "#f8f4ff;",
                     "#1e1e1e;", "#bde0ff;", "#26231c;", "#fdeaa8;", "#302112;")
 
-    COLOR_COLORS = ("#013a33;", "#ffa343;", "#9f2b68;", "#1974d2;", "#ffa420;", "#93aa00;", "#1e90ff;",
-                    "#ccff00;", "#7fffd4;", "#6a5acd;", "#dda0dd;", "#9400d3;")
+    COLOR_COLORS = ("#013a33;", "#ffa343;", "#465945;", "#efcdb8;", "#c04000;", "#93aa00;", "#1e90ff;",
+                    "#ccff00;", "#7fffd4;", "#231a24;", "#dda0dd;", "#00008b;")
 
     def __init__(self):
         super().__init__()
@@ -28,20 +28,21 @@ class ApplicationWindow(QtWidgets.QWidget):
 
         self.main_menu = self.create_main_menu()
         self.main_menu.setFixedHeight(23)
-        box = QtWidgets.QHBoxLayout(self)
-        box.setContentsMargins(0, 0, 0, 0)
-        box.addWidget(self.main_menu)
-        box.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
+        self.box = QtWidgets.QHBoxLayout(self)
+        self.box.setContentsMargins(0, 0, 0, 0)
+        self.box.addWidget(self.main_menu)
+        self.box.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
 
         self.selector_frame = StyledFrame(self)
         self.selector_frame.setGeometry(5, 35, 225, 600)
 
         self.calc_frame = StyledFrame(self)
         self.calc_frame.setGeometry(245, 35, 1035, 600)
-
+       # Шрифты !
         self.set_light_style()
+        #self.setStyleSheet("* {border-style: solid; border-width: 1px;}")
 
-        CalcSelector(self.selector_frame, self.calc_frame)  # Управление с клавиатуры
+        CalcSelector(self.selector_frame, self.calc_frame)
 
     def set_app_style(self, colors_list):
         self.setStyleSheet("background-color: " + colors_list[0])
@@ -81,7 +82,6 @@ class ApplicationWindow(QtWidgets.QWidget):
         main_menu.move(1, 1)
 
         submenu_file = QtWidgets.QMenu("Файл", main_menu)
-        submenu_edit = QtWidgets.QMenu("Правка", main_menu)
         submenu_view = QtWidgets.QMenu("Вид", main_menu)
         submenu_help = QtWidgets.QMenu("Справка", main_menu)
 
@@ -104,7 +104,6 @@ class ApplicationWindow(QtWidgets.QWidget):
         themes.addAction(color_style)
 
         main_menu.addMenu(submenu_file)
-        main_menu.addMenu(submenu_edit)
         main_menu.addMenu(submenu_view)
         main_menu.addMenu(submenu_help)
         main_menu.show()
@@ -122,33 +121,31 @@ class CalcSelector(QtWidgets.QWidget):
 
         self.list_names = ['Пыль в атмосферном воздухе', 'Пыль в воздухе рабочей зоны',
                            'Эффективность вентиляции', 'Учет влияния фонового шума']
-
         self.select_list = QtWidgets.QListView(self)
-        self.model = QtCore.QStringListModel(self.list_names)
-        self.select_list.setModel(self.model)
+        self.model_type = QtCore.QStringListModel(self.list_names)
+        self.select_list.setModel(self.model_type)
         self.select_list.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
         self.select_list.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         self.select_list.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
         self.select_list.setSpacing(10)
         self.select_list.setFrameStyle(QtWidgets.QFrame.Shape.NoFrame)
+        self.select_list.setTabKeyNavigation(True)
+
+        self.box = QtWidgets.QVBoxLayout(self)
+        self.box.addWidget(self.select_list, QtCore.Qt.AlignmentFlag.AlignTop)
+        self.box.setContentsMargins(3, 5, 3, 3)
         self.resize(220, 160)
-        box = QtWidgets.QVBoxLayout(self)
-        box.addWidget(self.select_list, QtCore.Qt.AlignmentFlag.AlignTop)
-        box.setContentsMargins(3, 5, 3, 3)
         self.show()
 
-        self.index_air = self.model.index(0, 0)
-        self.index_zone = self.model.index(1, 0)
-        self.index_flow = self.model.index(2, 0)
-        self.index_noise = self.model.index(3, 0)
+        self.index_air = self.model_type.index(0, 0)
+        self.index_zone = self.model_type.index(1, 0)
+        self.index_flow = self.model_type.index(2, 0)
+        self.index_noise = self.model_type.index(3, 0)
 
-        self.select_air_calc()
-        self.select_zone_calc = self.select_list.clicked.connect(self.click_zone_calc)
-        self.select_flow_calc = self.select_list.clicked.connect(self.click_flow_calc)
-        self.select_noise_calc = self.select_list.clicked.connect(self.click_noise_calc)
-
-    def select_air_calc(self):
-        self.select_list.clicked.connect(self.click_air_calc)
+        self.select_list.activated.connect(self.click_air_calc)
+        self.select_list.activated.connect(self.click_zone_calc)
+        self.select_list.activated.connect(self.click_flow_calc)
+        self.select_list.activated.connect(self.click_noise_calc)
 
     @QtCore.pyqtSlot()
     def click_air_calc(self):
