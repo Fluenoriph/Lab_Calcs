@@ -3,16 +3,7 @@ import locale
 from functools import partial
 
 
-class StyledFrame(QtWidgets.QFrame):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.setFrameStyle(QtWidgets.QFrame.Shape.Box | QtWidgets.QFrame.Shadow.Plain)
-        self.setLineWidth(1)
-        self.setMidLineWidth(1)
-        self.show()
-
-
-class FrameWithName(StyledFrame):
+class FrameWithName(QtWidgets.QFrame):
     def __init__(self, parent, name):
         super().__init__(parent)
         self.name = name
@@ -38,7 +29,7 @@ class ErrorMessage(QtWidgets.QMessageBox):
         self.exec()
 
 
-class EntryDB(StyledFrame):
+class EntryDB(QtWidgets.QWidget):
     ALL_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,]+"))
     TEMP_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,-]+"))
 
@@ -103,7 +94,7 @@ class EntryValue(EntryDB):
         self.box.setContentsMargins(5, 10, 5, 5)
 
 
-class ControlFrame(StyledFrame):
+class ControlFrame(QtWidgets.QWidget):
     SIZE = QtCore.QSize(35, 35)
 
     def __init__(self, parent):
@@ -134,7 +125,7 @@ class ControlFrame(StyledFrame):
         self.box.addWidget(self.button_exit, alignment=QtCore.Qt.AlignmentFlag.AlignBottom)
 
 
-class ResultFrame(StyledFrame):
+class ResultFrame(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.result_line = QtWidgets.QWidget(self)
@@ -168,8 +159,8 @@ class BandLineLevels(QtWidgets.QWidget):
         for size in self.bandline_items:
             size.setFixedSize(55, 40)
 
-        for style in self.bandline_items[1:]:
-            style.setFrameStyle(QtWidgets.QFrame.Shape.NoFrame)
+        '''for style in self.bandline_items[1:]:
+            style.setFrameStyle(QtWidgets.QFrame.Shape.NoFrame)'''
 
         for check in self.bandline_items[1:3]:
             check.check_all_value()

@@ -5,12 +5,12 @@ import locale
 
 
 class CalcAir(QtWidgets.QWidget):
-    def __init__(self, parent, temp_frame=None, volume_frame=None, mass_after_frame=None, mass_before_frame=None,
-                 press_frame=None, result_label=None):
+    def __init__(self, parent, temp_frame=None, volume_frame=None, press_frame=None, mass_before_frame=None,
+                 mass_after_frame=None, result_label=None):
         super().__init__(parent)
-        self.result_label = result_label
         self.parameter_list = [temp_frame, volume_frame, press_frame, mass_before_frame, mass_after_frame]
         self.headers_list = self.setup_header_names()
+        self.result_label = result_label
 
         self.doc_frame = app_classes.FrameWithName(self, self.headers_list[0])
         self.parameter_list[1] = app_classes.EntryValue(self, self.headers_list[1])
@@ -49,7 +49,7 @@ class CalcAir(QtWidgets.QWidget):
         calc_box.setVerticalSpacing(30)
         calc_box.setHorizontalSpacing(45)
         calc_box.setContentsMargins(40, 30, 20, 20)
-        calc_box.setRowMinimumHeight(4, 40)
+        calc_box.setRowMinimumHeight(4, 30)
 
         calc_box.addWidget(self.doc_frame, 0, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignVCenter)
         calc_box.addWidget(self.parameter_list[1], 1, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignCenter)
@@ -57,7 +57,7 @@ class CalcAir(QtWidgets.QWidget):
         calc_box.addWidget(self.parameter_list[2], 2, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
         calc_box.addWidget(self.parameter_list[3], 3, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
         calc_box.addWidget(self.parameter_list[4], 3, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.calc_control, 1, 2, 3, 1)
+        calc_box.addWidget(self.calc_control, 2, 2, 2, 1)
         calc_box.addWidget(self.result_frame, 5, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignVCenter)
 
     @QtCore.pyqtSlot()
@@ -150,16 +150,17 @@ class CalcZone(CalcAir):
 
 
 class CalcFlow(QtWidgets.QWidget):
-    def __init__(self, parent, height_frame=None, width_frame=None, diameter_frame=None, speed_frame=None, h_frame=None,
-                 s_frame=None, s_hole=None, type_quad=None, type_hole=None, per_in_hour_label=None,
-                 perfomance_label=None):
+    def __init__(self, parent, s_frame=None, h_frame=None, speed_frame=None, diameter_frame=None, width_frame=None,
+                 height_frame=None, hole_type_frame=None, type_hole=None, type_quad=None, s_hole=None,
+                 perfomance_label=None, per_in_hour_label=None):
         super().__init__(parent)
         self.parameter_list = [s_frame, h_frame, speed_frame, diameter_frame, width_frame, height_frame]
+        self.hole_type_frame = hole_type_frame
         self.type_hole = type_hole
         self.type_quad = type_quad
         self.s_hole = s_hole
-        self.per_in_hour_label = per_in_hour_label
         self.perfomance_label = perfomance_label
+        self.per_in_hour_label = per_in_hour_label
 
         self.doc_frame = app_classes.FrameWithName(self, "МР 4.3.0212-20")
         self.parameter_list[0] = app_classes.EntryValue(self, "Площадь помещения, м²")
@@ -170,8 +171,7 @@ class CalcFlow(QtWidgets.QWidget):
         for size_i in self.parameter_list[0:3]:
             size_i.setFixedSize(240, 90)
 
-        self.hole_type_frame = self.create_frame_radio(self)
-        self.hole_type_frame.setFixedSize(250, 90)
+        self.create_frame_radio()
         self.parameter_list[3] = app_classes.EntryValue(self, "Диаметр, см")
         self.parameter_list[4] = app_classes.EntryValue(self, "Ширина, см")
         self.parameter_list[5] = app_classes.EntryValue(self, "Высота, см")
@@ -196,22 +196,22 @@ class CalcFlow(QtWidgets.QWidget):
 
         self.setup_frame_position()
 
-    def create_frame_radio(self, parent):
-        frame = app_classes.StyledFrame(parent)
-        label = QtWidgets.QLabel("Тип вентиляционного отверстия", frame)
+    def create_frame_radio(self):
+        self.hole_type_frame = QtWidgets.QWidget(self)
+        self.hole_type_frame.setFixedSize(250, 90)
+        
+        label = QtWidgets.QLabel("Тип вентиляционного отверстия", self.hole_type_frame)
 
-        self.type_hole = QtWidgets.QRadioButton("Окружность", frame)
+        self.type_hole = QtWidgets.QRadioButton("Окружность", self.hole_type_frame)
         self.type_hole.clicked.connect(self.lock_quad_frames)
 
-        self.type_quad = QtWidgets.QRadioButton("Прямоугольник", frame)
+        self.type_quad = QtWidgets.QRadioButton("Прямоугольник", self.hole_type_frame)
         self.type_quad.clicked.connect(self.lock_diameter_frame)
 
-        box = QtWidgets.QGridLayout(frame)
+        box = QtWidgets.QGridLayout(self.hole_type_frame)
         box.addWidget(label, 0, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignCenter)
         box.addWidget(self.type_hole, 1, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
         box.addWidget(self.type_quad, 1, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
-        box.setVerticalSpacing(15)
-        return frame
 
     def lock_quad_frames(self):
         self.type_hole.toggle()
@@ -247,7 +247,7 @@ class CalcFlow(QtWidgets.QWidget):
                            QtCore.Qt.AlignmentFlag.AlignCenter)
         calc_box.addWidget(self.perfomance_frame, 6, 0, 1, 2)
         calc_box.addWidget(self.per_in_hour_frame, 8, 0, 1, 2)
-        calc_box.addWidget(self.calc_control, 1, 3, 4, 1)
+        calc_box.addWidget(self.calc_control, 2, 3, 3, 1)
 
     @QtCore.pyqtSlot()
     def calculate_result(self):
@@ -300,8 +300,8 @@ class CalcFlow(QtWidgets.QWidget):
 
 class CalcNoise(QtWidgets.QWidget):
     def __init__(self, parent, band_31=None, band_63=None, band_125=None, band_250=None, band_500=None, band_1k=None,
-                 band_2k=None, band_4k=None, band_8k=None, band_l_as=None, main_result_name_frame=None,
-                 delta_name_frame=None, phone_name_frame=None, other_name_frame=None, unit_name_frame=None):
+                 band_2k=None, band_4k=None, band_8k=None, band_l_as=None, unit_name_frame=None, other_name_frame=None,
+                 phone_name_frame=None, delta_name_frame=None, main_result_name_frame=None):
         super().__init__(parent)
         self.band_list = [band_31, band_63, band_125, band_250, band_500, band_1k, band_2k, band_4k, band_8k, band_l_as]
         self.side_frame_list = [unit_name_frame, other_name_frame, phone_name_frame, delta_name_frame,
@@ -339,7 +339,7 @@ class CalcNoise(QtWidgets.QWidget):
         self.setup_frame_position()
 
     def setup_frame_position(self):
-        title_side = QtWidgets.QFrame(self)
+        title_side = QtWidgets.QWidget(self)
         title_box = QtWidgets.QVBoxLayout(title_side)
         title_box.setSpacing(5)
         title_box.setContentsMargins(0, 0, 0, 0)

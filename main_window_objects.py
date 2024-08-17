@@ -1,5 +1,4 @@
 from PyQt6 import QtWidgets, QtCore, QtGui
-from app_classes import StyledFrame
 from calc_objects import CalcAir, CalcZone, CalcFlow, CalcNoise
 
 
@@ -26,18 +25,21 @@ class ApplicationWindow(QtWidgets.QWidget):
         self.activateWindow()
         self.show()
 
-        self.main_menu = self.create_main_menu()
+        '''self.main_menu = self.create_main_menu()
         self.main_menu.setFixedHeight(23)
         self.box = QtWidgets.QHBoxLayout(self)
         self.box.setContentsMargins(0, 0, 0, 0)
         self.box.addWidget(self.main_menu)
-        self.box.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
-
-        self.selector_frame = StyledFrame(self)
+        self.box.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)'''
+        self.create_main_menu()
+    ################################### func
+        self.selector_frame = QtWidgets.QWidget(self)
         self.selector_frame.setGeometry(5, 35, 225, 600)
+        self.selector_frame.show()
 
-        self.calc_frame = StyledFrame(self)
+        self.calc_frame = QtWidgets.QWidget(self)
         self.calc_frame.setGeometry(245, 35, 1035, 600)
+        self.calc_frame.show()
        # Шрифты !
         self.set_light_style()
         #self.setStyleSheet("* {border-style: solid; border-width: 1px;}")
@@ -47,8 +49,8 @@ class ApplicationWindow(QtWidgets.QWidget):
     def set_app_style(self, colors_list):
         self.setStyleSheet("background-color: " + colors_list[0])
 
-        self.main_menu.setStyleSheet("* {background-color: " + colors_list[0] + " font: 12px arial; color: "
-                                     + colors_list[1] + "}")
+        '''self.main_menu.setStyleSheet("* {background-color: " + colors_list[0] + " font: 12px arial; color: "
+                                     + colors_list[1] + "}")'''
 
         self.selector_frame.setStyleSheet("QWidget>QListView {background-color: " + colors_list[4] +
                                           "font: 12px arial, sans-serif; color: " + colors_list[3] +
@@ -75,12 +77,7 @@ class ApplicationWindow(QtWidgets.QWidget):
         self.set_app_style(ApplicationWindow.LIGHT_COLORS)
 
     def create_main_menu(self):
-        frame = StyledFrame(self)
-        frame.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
-
-        main_menu = QtWidgets.QMenuBar(frame)
-        main_menu.move(1, 1)
-
+        main_menu = QtWidgets.QMenuBar(self)
         submenu_file = QtWidgets.QMenu("Файл", main_menu)
         submenu_view = QtWidgets.QMenu("Вид", main_menu)
         submenu_help = QtWidgets.QMenu("Справка", main_menu)
@@ -107,7 +104,6 @@ class ApplicationWindow(QtWidgets.QWidget):
         main_menu.addMenu(submenu_view)
         main_menu.addMenu(submenu_help)
         main_menu.show()
-        return frame
 
 
 class CalcSelector(QtWidgets.QWidget):
