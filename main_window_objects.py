@@ -42,7 +42,7 @@ class ApplicationWindow(QtWidgets.QWidget):
         self.calc_frame.show()
        # Шрифты !
         self.set_light_style()
-        #self.setStyleSheet("* {border-style: solid; border-width: 1px;}")
+        self.setStyleSheet("* {font: 14px arial, sans-serif; background-color: grey;} .QListView {font: 12px arial, sans-serif;}")
 
         CalcSelector(self.selector_frame, self.calc_frame)
 
@@ -50,19 +50,19 @@ class ApplicationWindow(QtWidgets.QWidget):
         self.setStyleSheet("background-color: " + colors_list[0])
 
         '''self.main_menu.setStyleSheet("* {background-color: " + colors_list[0] + " font: 12px arial; color: "
-                                     + colors_list[1] + "}")'''
+                                     + colors_list[1] + "}")
 
         self.selector_frame.setStyleSheet("QWidget>QListView {background-color: " + colors_list[4] +
                                           "font: 12px arial, sans-serif; color: " + colors_list[3] +
-                                          "} QFrame {background-color: " + colors_list[4] +
+                                          "} QWidget {background-color: " + colors_list[4] +
                                           "} * {color: " + colors_list[5] + "}")
 
         self.calc_frame.setStyleSheet("* {background-color: " + colors_list[6] +
                                       "font: 14px arial, sans-serif; color: " + colors_list[7] +
                                       "} .QLineEdit {background-color: " + colors_list[8] + " color: " +
-                                      colors_list[9] + "} .QWidget>QLabel, .QWidget {background-color: " +
-                                      colors_list[10] + " color: " + colors_list[11] +
-                                      "} .QPushButton {background-color: " + colors_list[2] + "}")
+                                      colors_list[9] + "} .QWidget {background-color: " +
+                                      colors_list[5] + " color: " + colors_list[11] +
+                                      "} .QPushButton {background-color: " + colors_list[2] + "}")'''
 
     @QtCore.pyqtSlot()
     def set_dark_style(self):

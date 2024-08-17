@@ -3,7 +3,7 @@ import locale
 from functools import partial
 
 
-class FrameWithName(QtWidgets.QFrame):
+class FrameWithName(QtWidgets.QWidget):
     def __init__(self, parent, name):
         super().__init__(parent)
         self.name = name
@@ -90,7 +90,7 @@ class EntryValue(EntryDB):
         self.enter.setTextMargins(5, 5, 5, 5)
 
         self.box.insertWidget(0, self.label, QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.box.setSpacing(12)
+        self.box.setSpacing(5)
         self.box.setContentsMargins(5, 10, 5, 5)
 
 
@@ -128,18 +128,14 @@ class ControlFrame(QtWidgets.QWidget):
 class ResultFrame(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
-        self.result_line = QtWidgets.QWidget(self)
+        self.result_label = QtWidgets.QLabel(self)
+        self.result_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
+        self.result_label.setMargin(10)                                    # Any
 
-        self.result_label = QtWidgets.QLabel(self.result_line)
-        self.result_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignLeft)
-
-        self.label_box = QtWidgets.QHBoxLayout(self.result_line)
+        self.label_box = QtWidgets.QHBoxLayout(self)
         self.label_box.addWidget(self.result_label, QtCore.Qt.AlignmentFlag.AlignCenter)
-
-        self.line_box = QtWidgets.QHBoxLayout(self)
-        self.line_box.addWidget(self.result_line, QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.line_box.setContentsMargins(0, 0, 0, 0)
-        self.result_line.show()
+        self.label_box.setContentsMargins(0, 0, 0, 0)
+        self.show()
 
 
 class BandLineLevels(QtWidgets.QWidget):
@@ -159,9 +155,6 @@ class BandLineLevels(QtWidgets.QWidget):
         for size in self.bandline_items:
             size.setFixedSize(55, 40)
 
-        '''for style in self.bandline_items[1:]:
-            style.setFrameStyle(QtWidgets.QFrame.Shape.NoFrame)'''
-
         for check in self.bandline_items[1:3]:
             check.check_all_value()
 
@@ -172,6 +165,10 @@ class BandLineLevels(QtWidgets.QWidget):
             self.box.addWidget(add, QtCore.Qt.AlignmentFlag.AlignCenter)
 
         self.show()
+
+    def set_result_color(self, back, font):
+        for color in self.bandline_items[3:5]:
+            color.setStyleSheet("background-color: " + back + "color: " + font)
 
     @QtCore.pyqtSlot()
     def calculate_result(self):

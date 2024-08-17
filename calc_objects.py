@@ -36,6 +36,13 @@ class CalcAir(QtWidgets.QWidget):
 
         self.setup_frames_position()
 
+    def set_theme(self, color_list):
+        self.doc_frame.setStyleSheet("color: " + color_list[0])
+        self.setStyleSheet("QLineEdit {background-color: " + color_list[1] + "color: " + color_list[2] +
+                           "} QPushButton {background-color: " + color_list[3] + "} * {color: " + color_list[4] + "}")
+
+        self.result_frame.setStyleSheet("background-color: " + color_list[5] + "color: " + color_list[6])
+
     def setup_header_names(self):
         names_list = ("РД 52.04.893-2020", "Объем взятого на анализ\nатмосферного воздуха, л",
                       "Температура воздуха,\nпрошедшего через ротаметр, ℃",
@@ -51,7 +58,7 @@ class CalcAir(QtWidgets.QWidget):
         calc_box.setContentsMargins(40, 30, 20, 20)
         calc_box.setRowMinimumHeight(4, 30)
 
-        calc_box.addWidget(self.doc_frame, 0, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignVCenter)
+        calc_box.addWidget(self.doc_frame, 0, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignLeft)
         calc_box.addWidget(self.parameter_list[1], 1, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignCenter)
         calc_box.addWidget(self.parameter_list[0], 2, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
         calc_box.addWidget(self.parameter_list[2], 2, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
@@ -195,11 +202,20 @@ class CalcFlow(QtWidgets.QWidget):
         self.calc_control.button_clear.clicked.connect(self.clear_frames)
 
         self.setup_frame_position()
+        #self.set_theme()
+
+    def set_theme(self, color_list):
+        self.doc_frame.setStyleSheet("color: " + color_list[0])
+        self.setStyleSheet("QLineEdit {background-color: " + color_list[1] + "color: " + color_list[2] +
+                           "} QPushButton {background-color: " + color_list[3] + "} * {color: " + color_list[4] + "}")
+
+        for color in [self.perfomance_frame, self.per_in_hour_frame]:
+            color.setStyleSheet("background-color: " + color_list[5] + "color: " + color_list[6])
 
     def create_frame_radio(self):
         self.hole_type_frame = QtWidgets.QWidget(self)
         self.hole_type_frame.setFixedSize(250, 90)
-        
+
         label = QtWidgets.QLabel("Тип вентиляционного отверстия", self.hole_type_frame)
 
         self.type_hole = QtWidgets.QRadioButton("Окружность", self.hole_type_frame)
@@ -234,7 +250,7 @@ class CalcFlow(QtWidgets.QWidget):
         calc_box.setRowMinimumHeight(7, 0)
         calc_box.setColumnMinimumWidth(2, 20)
 
-        calc_box.addWidget(self.doc_frame, 0, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignVCenter)
+        calc_box.addWidget(self.doc_frame, 0, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignLeft)
         calc_box.addWidget(self.parameter_list[0], 1, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
         calc_box.addWidget(self.parameter_list[1], 2, 0, 2, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
         calc_box.addWidget(self.parameter_list[2], 4, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
@@ -338,6 +354,14 @@ class CalcNoise(QtWidgets.QWidget):
 
         self.setup_frame_position()
 
+    def set_theme(self, color_list):
+        self.doc_name.setStyleSheet("color: " + color_list[0])
+        self.setStyleSheet("QLineEdit {background-color: " + color_list[1] + "color: " + color_list[2] +
+                           "} QPushButton {background-color: " + color_list[3] + "} * {color: " + color_list[4] + "}")
+
+        for color in self.band_list:
+            color.set_result_color(color_list[5], color_list[6])
+
     def setup_frame_position(self):
         title_side = QtWidgets.QWidget(self)
         title_box = QtWidgets.QVBoxLayout(title_side)
@@ -352,7 +376,7 @@ class CalcNoise(QtWidgets.QWidget):
         calc_box.setColumnMinimumWidth(11, 30)
         calc_box.setSpacing(15)
 
-        calc_box.addWidget(self.doc_name, 0, 0, 1, 11, QtCore.Qt.AlignmentFlag.AlignVCenter)
+        calc_box.addWidget(self.doc_name, 0, 0, 1, 11, QtCore.Qt.AlignmentFlag.AlignLeft)
         calc_box.addWidget(title_side, 2, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
         calc_box.addWidget(self.band_list[0], 2, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
         calc_box.addWidget(self.band_list[1], 2, 2, QtCore.Qt.AlignmentFlag.AlignCenter)
