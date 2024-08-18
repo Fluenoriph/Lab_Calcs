@@ -12,13 +12,12 @@ class CalcAir(QtWidgets.QWidget):
         self.headers_list = self.setup_header_names()
         self.result_label = result_label
 
-        self.doc_frame = app_classes.FrameWithName(self, self.headers_list[0])
-        self.parameter_list[1] = app_classes.EntryValue(self, self.headers_list[1])
-        self.parameter_list[0] = app_classes.EntryValue(self, self.headers_list[2])
+        self.parameter_list[1] = app_classes.EntryValue(self, self.headers_list[0])
+        self.parameter_list[0] = app_classes.EntryValue(self, self.headers_list[1])
         self.parameter_list[0].check_temp_value()
-        self.parameter_list[2] = app_classes.EntryValue(self, self.headers_list[3])
-        self.parameter_list[3] = app_classes.EntryValue(self, self.headers_list[4])
-        self.parameter_list[4] = app_classes.EntryValue(self, self.headers_list[5])
+        self.parameter_list[2] = app_classes.EntryValue(self, self.headers_list[2])
+        self.parameter_list[3] = app_classes.EntryValue(self, self.headers_list[3])
+        self.parameter_list[4] = app_classes.EntryValue(self, self.headers_list[4])
 
         for size in self.parameter_list:
             size.setFixedSize(230, 90)
@@ -36,15 +35,8 @@ class CalcAir(QtWidgets.QWidget):
 
         self.setup_frames_position()
 
-    def set_theme(self, color_list):
-        self.doc_frame.setStyleSheet("color: " + color_list[0])
-        self.setStyleSheet("QLineEdit {background-color: " + color_list[1] + "color: " + color_list[2] +
-                           "} QPushButton {background-color: " + color_list[3] + "} * {color: " + color_list[4] + "}")
-
-        self.result_frame.setStyleSheet("background-color: " + color_list[5] + "color: " + color_list[6])
-
     def setup_header_names(self):
-        names_list = ("РД 52.04.893-2020", "Объем взятого на анализ\nатмосферного воздуха, л",
+        names_list = ("Объем взятого на анализ\nатмосферного воздуха, л",
                       "Температура воздуха,\nпрошедшего через ротаметр, ℃",
                       "Атмосферное давление\nв месте отбора, мм.рт.ст.",
                       "Среднее значение массы\nфильтра до отбора пробы, г",
@@ -58,13 +50,12 @@ class CalcAir(QtWidgets.QWidget):
         calc_box.setContentsMargins(40, 30, 20, 20)
         calc_box.setRowMinimumHeight(4, 30)
 
-        calc_box.addWidget(self.doc_frame, 0, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignLeft)
-        calc_box.addWidget(self.parameter_list[1], 1, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.parameter_list[0], 2, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.parameter_list[2], 2, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.parameter_list[3], 3, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.parameter_list[4], 3, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.calc_control, 2, 2, 2, 1)
+        calc_box.addWidget(self.parameter_list[1], 0, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignCenter)
+        calc_box.addWidget(self.parameter_list[0], 1, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
+        calc_box.addWidget(self.parameter_list[2], 1, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
+        calc_box.addWidget(self.parameter_list[3], 2, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
+        calc_box.addWidget(self.parameter_list[4], 2, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
+        calc_box.addWidget(self.calc_control, 1, 2, 2, 1)
         calc_box.addWidget(self.result_frame, 5, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignVCenter)
 
     @QtCore.pyqtSlot()
@@ -114,7 +105,7 @@ class CalcZone(CalcAir):
         super().__init__(parent)
 
     def setup_header_names(self):
-        names_list = ("МУК 4.1.2468-09", "Объем воздуха,\nотобранный для анализа, л",
+        names_list = ("Объем воздуха,\nотобранный для анализа, л",
                       "Температура воздуха\nв месте отбора пробы, ℃",
                       "Барометрическое давление\nв месте отбора пробы, мм.рт.ст.",
                       "Масса фильтра\nдо отбора пробы, г",
@@ -169,7 +160,6 @@ class CalcFlow(QtWidgets.QWidget):
         self.perfomance_label = perfomance_label
         self.per_in_hour_label = per_in_hour_label
 
-        self.doc_frame = app_classes.FrameWithName(self, "МР 4.3.0212-20")
         self.parameter_list[0] = app_classes.EntryValue(self, "Площадь помещения, м²")
         self.parameter_list[1] = app_classes.EntryValue(self, "Высота помещения, м")
         self.parameter_list[2] = app_classes.EntryValue(self, "Скорость движения воздуха\nв вентиляционном "
@@ -202,15 +192,6 @@ class CalcFlow(QtWidgets.QWidget):
         self.calc_control.button_clear.clicked.connect(self.clear_frames)
 
         self.setup_frame_position()
-        #self.set_theme()
-
-    def set_theme(self, color_list):
-        self.doc_frame.setStyleSheet("color: " + color_list[0])
-        self.setStyleSheet("QLineEdit {background-color: " + color_list[1] + "color: " + color_list[2] +
-                           "} QPushButton {background-color: " + color_list[3] + "} * {color: " + color_list[4] + "}")
-
-        for color in [self.perfomance_frame, self.per_in_hour_frame]:
-            color.setStyleSheet("background-color: " + color_list[5] + "color: " + color_list[6])
 
     def create_frame_radio(self):
         self.hole_type_frame = QtWidgets.QWidget(self)
@@ -250,11 +231,10 @@ class CalcFlow(QtWidgets.QWidget):
         calc_box.setRowMinimumHeight(7, 0)
         calc_box.setColumnMinimumWidth(2, 20)
 
-        calc_box.addWidget(self.doc_frame, 0, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignLeft)
-        calc_box.addWidget(self.parameter_list[0], 1, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
+        calc_box.addWidget(self.parameter_list[0], 0, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
         calc_box.addWidget(self.parameter_list[1], 2, 0, 2, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
         calc_box.addWidget(self.parameter_list[2], 4, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.hole_type_frame, 1, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
+        calc_box.addWidget(self.hole_type_frame, 0, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
         calc_box.addWidget(self.parameter_list[3], 2, 1, QtCore.Qt.AlignmentFlag.AlignTop |
                            QtCore.Qt.AlignmentFlag.AlignCenter)
         calc_box.addWidget(self.parameter_list[4], 3, 1, QtCore.Qt.AlignmentFlag.AlignTop |
@@ -263,7 +243,7 @@ class CalcFlow(QtWidgets.QWidget):
                            QtCore.Qt.AlignmentFlag.AlignCenter)
         calc_box.addWidget(self.perfomance_frame, 6, 0, 1, 2)
         calc_box.addWidget(self.per_in_hour_frame, 8, 0, 1, 2)
-        calc_box.addWidget(self.calc_control, 2, 3, 3, 1)
+        calc_box.addWidget(self.calc_control, 3, 3, 3, 1)
 
     @QtCore.pyqtSlot()
     def calculate_result(self):
@@ -323,19 +303,19 @@ class CalcNoise(QtWidgets.QWidget):
         self.side_frame_list = [unit_name_frame, other_name_frame, phone_name_frame, delta_name_frame,
                                 main_result_name_frame]
 
-        self.doc_name = app_classes.FrameWithName(self, "МУК 4.3.3722-21")
-        self.side_frame_list[0] = app_classes.FrameWithName(self, "дБ    \\    Гц")
-        self.side_frame_list[1] = app_classes.FrameWithName(self, "Общий уровень")
-        self.side_frame_list[2] = app_classes.FrameWithName(self, "Фоновый уровень")
-        self.side_frame_list[3] = app_classes.FrameWithName(self, "Разность с фоном")
-        self.side_frame_list[4] = app_classes.FrameWithName(self, "С поправкой на фон")
+        self.side_frame_list[0] = QtWidgets.QLabel("дБ    \\    Гц", self)
+        self.side_frame_list[1] = QtWidgets.QLabel("Общий уровень", self)
+        self.side_frame_list[2] = QtWidgets.QLabel("Фоновый уровень", self)
+        self.side_frame_list[3] = QtWidgets.QLabel("Разность с фоном", self)
+        self.side_frame_list[4] = QtWidgets.QLabel("С поправкой на фон", self)
 
         for size in self.side_frame_list:
             size.setFixedHeight(40)
 
+        self.side_frame_list[0].setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         for align in self.side_frame_list[1:]:
-            align.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft |
-                                     QtCore.Qt.AlignmentFlag.AlignVCenter)
+            align.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft |
+                               QtCore.Qt.AlignmentFlag.AlignVCenter)
 
         self.band_list[0] = app_classes.BandLineLevels(self, "31.5")
         self.band_list[1] = app_classes.BandLineLevels(self, "63")
@@ -354,14 +334,6 @@ class CalcNoise(QtWidgets.QWidget):
 
         self.setup_frame_position()
 
-    def set_theme(self, color_list):
-        self.doc_name.setStyleSheet("color: " + color_list[0])
-        self.setStyleSheet("QLineEdit {background-color: " + color_list[1] + "color: " + color_list[2] +
-                           "} QPushButton {background-color: " + color_list[3] + "} * {color: " + color_list[4] + "}")
-
-        for color in self.band_list:
-            color.set_result_color(color_list[5], color_list[6])
-
     def setup_frame_position(self):
         title_side = QtWidgets.QWidget(self)
         title_box = QtWidgets.QVBoxLayout(title_side)
@@ -371,24 +343,22 @@ class CalcNoise(QtWidgets.QWidget):
             title_box.addWidget(add, QtCore.Qt.AlignmentFlag.AlignCenter)
 
         calc_box = QtWidgets.QGridLayout(self)
-        calc_box.setContentsMargins(20, 20, 20, 20)
-        calc_box.setRowMinimumHeight(1, 15)
+        calc_box.setContentsMargins(30, 40, 20, 20)
         calc_box.setColumnMinimumWidth(11, 30)
         calc_box.setSpacing(15)
 
-        calc_box.addWidget(self.doc_name, 0, 0, 1, 11, QtCore.Qt.AlignmentFlag.AlignLeft)
-        calc_box.addWidget(title_side, 2, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.band_list[0], 2, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.band_list[1], 2, 2, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.band_list[2], 2, 3, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.band_list[3], 2, 4, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.band_list[4], 2, 5, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.band_list[5], 2, 6, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.band_list[6], 2, 7, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.band_list[7], 2, 8, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.band_list[8], 2, 9, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.band_list[9], 2, 10, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.control_frame, 2, 12)
+        calc_box.addWidget(title_side, 0, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
+        calc_box.addWidget(self.band_list[0], 0, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
+        calc_box.addWidget(self.band_list[1], 0, 2, QtCore.Qt.AlignmentFlag.AlignCenter)
+        calc_box.addWidget(self.band_list[2], 0, 3, QtCore.Qt.AlignmentFlag.AlignCenter)
+        calc_box.addWidget(self.band_list[3], 0, 4, QtCore.Qt.AlignmentFlag.AlignCenter)
+        calc_box.addWidget(self.band_list[4], 0, 5, QtCore.Qt.AlignmentFlag.AlignCenter)
+        calc_box.addWidget(self.band_list[5], 0, 6, QtCore.Qt.AlignmentFlag.AlignCenter)
+        calc_box.addWidget(self.band_list[6], 0, 7, QtCore.Qt.AlignmentFlag.AlignCenter)
+        calc_box.addWidget(self.band_list[7], 0, 8, QtCore.Qt.AlignmentFlag.AlignCenter)
+        calc_box.addWidget(self.band_list[8], 0, 9, QtCore.Qt.AlignmentFlag.AlignCenter)
+        calc_box.addWidget(self.band_list[9], 0, 10, QtCore.Qt.AlignmentFlag.AlignCenter)
+        calc_box.addWidget(self.control_frame, 0, 12)
 
     @QtCore.pyqtSlot()
     def calculate_band_lines(self):

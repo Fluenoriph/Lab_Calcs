@@ -3,32 +3,6 @@ import locale
 from functools import partial
 
 
-class FrameWithName(QtWidgets.QWidget):
-    def __init__(self, parent, name):
-        super().__init__(parent)
-        self.name = name
-
-        self.label = QtWidgets.QLabel(name, self)
-        self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-
-        self.box = QtWidgets.QHBoxLayout(self)
-        self.box.addWidget(self.label, QtCore.Qt.AlignmentFlag.AlignCenter)
-
-
-class ErrorMessage(QtWidgets.QMessageBox):
-    TEXT = "\nВведите верное значение !"
-    STYLE = "* {background-color: #ff7538; color: #181513;} QPushButton {background-color: #9cf0e7;}"
-
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.setIcon(QtWidgets.QMessageBox.Icon.Warning)
-        self.setWindowFlag(QtCore.Qt.WindowType.FramelessWindowHint)
-        self.setText(ErrorMessage.TEXT)
-        self.setStyleSheet(ErrorMessage.STYLE)
-        self.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
-        self.exec()
-
-
 class EntryDB(QtWidgets.QWidget):
     ALL_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,]+"))
     TEMP_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,-]+"))
@@ -125,16 +99,17 @@ class ControlFrame(QtWidgets.QWidget):
         self.box.addWidget(self.button_exit, alignment=QtCore.Qt.AlignmentFlag.AlignBottom)
 
 
-class ResultFrame(QtWidgets.QWidget):
+class ResultFrame(QtWidgets.QFrame):
     def __init__(self, parent):
         super().__init__(parent)
         self.result_label = QtWidgets.QLabel(self)
         self.result_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
-        self.result_label.setMargin(10)                                    # Any
+        self.result_label.setMargin(10)
 
         self.label_box = QtWidgets.QHBoxLayout(self)
         self.label_box.addWidget(self.result_label, QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_box.setContentsMargins(0, 0, 0, 0)
+        self.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
         self.show()
 
 
@@ -146,7 +121,8 @@ class BandLineLevels(QtWidgets.QWidget):
         self.bandline_items = [herz_frame, other_level_frame, phone_level_frame, delta_result_frame, main_result_frame]
         self.result_label = result_label
 
-        self.bandline_items[0] = FrameWithName(self, self.header)
+        self.bandline_items[0] = QtWidgets.QLabel(self.header, self)
+        self.bandline_items[0].setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.bandline_items[1] = EntryDB(self)
         self.bandline_items[2] = EntryDB(self)
         self.bandline_items[3] = ResultFrame(self)
@@ -165,10 +141,6 @@ class BandLineLevels(QtWidgets.QWidget):
             self.box.addWidget(add, QtCore.Qt.AlignmentFlag.AlignCenter)
 
         self.show()
-
-    def set_result_color(self, back, font):
-        for color in self.bandline_items[3:5]:
-            color.setStyleSheet("background-color: " + back + "color: " + font)
 
     @QtCore.pyqtSlot()
     def calculate_result(self):
@@ -245,3 +217,13 @@ class ClearCalc:
     def clear_bandline(band_list):
         for frame in band_list:
             frame.clear_values()
+
+
+class ErrorMessage(QtWidgets.QLabel):
+    TEXT = "ВВЕДИТЕ ВЕРНОЕ ЗНАЧЕНИЕ !"
+    STYLE = "color: red;"
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setText(ErrorMessage.TEXT)
+        self.setStyleSheet(ErrorMessage.STYLE)

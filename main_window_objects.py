@@ -11,9 +11,12 @@ class ApplicationWindow(QtWidgets.QWidget):
 
     COLOR_COLORS = ("#013a33;", "#ffa343;", "#465945;", "#efcdb8;", "#c04000;", "#93aa00;", "#1e90ff;",
                     "#ccff00;", "#7fffd4;", "#231a24;", "#dda0dd;", "#00008b;")
-
-    def __init__(self):
+            # 9 !!!
+    def __init__(self, calc_frame=None, selector_frame=None):
         super().__init__()
+        self.calc_frame = calc_frame
+        self.selector_frame = selector_frame
+
         self.setWindowTitle("Калькуляторы")
         self.resize(1285, 700)
         self.move(self.width() * -2, 0)
@@ -25,44 +28,27 @@ class ApplicationWindow(QtWidgets.QWidget):
         self.activateWindow()
         self.show()
 
-        '''self.main_menu = self.create_main_menu()
-        self.main_menu.setFixedHeight(23)
-        self.box = QtWidgets.QHBoxLayout(self)
-        self.box.setContentsMargins(0, 0, 0, 0)
-        self.box.addWidget(self.main_menu)
-        self.box.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)'''
         self.create_main_menu()
-    ################################### func
-        self.selector_frame = QtWidgets.QWidget(self)
-        self.selector_frame.setGeometry(5, 35, 225, 600)
-        self.selector_frame.show()
-
-        self.calc_frame = QtWidgets.QWidget(self)
-        self.calc_frame.setGeometry(245, 35, 1035, 600)
-        self.calc_frame.show()
-       # Шрифты !
-        self.set_light_style()
-        self.setStyleSheet("* {font: 14px arial, sans-serif; background-color: grey;} .QListView {font: 12px arial, sans-serif;}")
+        self.create_selector_frame()
+        self.create_calc_frame()
 
         CalcSelector(self.selector_frame, self.calc_frame)
 
+        self.set_light_style()
+
     def set_app_style(self, colors_list):
-        self.setStyleSheet("background-color: " + colors_list[0])
+        self.setStyleSheet("* {background-color: " + colors_list[0] + "font: 14px arial, sans-serif;} "
+                           ".QListView {font: 12px arial, sans-serif;} QMenuBar {font: 12px arial; color: " +
+                           colors_list[1] + "}")
+        # Font Types !!
+        self.selector_frame.setStyleSheet("background-color: " + colors_list[2] + "color: " + colors_list[1])
 
-        '''self.main_menu.setStyleSheet("* {background-color: " + colors_list[0] + " font: 12px arial; color: "
-                                     + colors_list[1] + "}")
-
-        self.selector_frame.setStyleSheet("QWidget>QListView {background-color: " + colors_list[4] +
-                                          "font: 12px arial, sans-serif; color: " + colors_list[3] +
-                                          "} QWidget {background-color: " + colors_list[4] +
-                                          "} * {color: " + colors_list[5] + "}")
-
-        self.calc_frame.setStyleSheet("* {background-color: " + colors_list[6] +
-                                      "font: 14px arial, sans-serif; color: " + colors_list[7] +
-                                      "} .QLineEdit {background-color: " + colors_list[8] + " color: " +
-                                      colors_list[9] + "} .QWidget {background-color: " +
-                                      colors_list[5] + " color: " + colors_list[11] +
-                                      "} .QPushButton {background-color: " + colors_list[2] + "}")'''
+        self.calc_frame.setStyleSheet("* {background-color: " + colors_list[3] + "color: " + colors_list[4] +
+                                      "} QLineEdit {background-color: " + colors_list[5] + "color: " + colors_list[6] +
+                                      "} QPushButton {border-style: outset; border-radius: 7px; padding: 5px; "
+                                      "background-color: " + colors_list[7] +
+                                      "} QFrame>QFrame {background-color: " + colors_list[8] + "color: " +
+                                      colors_list[9] + "}")
 
     @QtCore.pyqtSlot()
     def set_dark_style(self):
@@ -104,6 +90,16 @@ class ApplicationWindow(QtWidgets.QWidget):
         main_menu.addMenu(submenu_view)
         main_menu.addMenu(submenu_help)
         main_menu.show()
+
+    def create_selector_frame(self):
+        self.selector_frame = QtWidgets.QWidget(self)
+        self.selector_frame.setGeometry(5, 35, 225, 600)
+        self.selector_frame.show()
+
+    def create_calc_frame(self):
+        self.calc_frame = QtWidgets.QWidget(self)
+        self.calc_frame.setGeometry(245, 35, 1035, 600)
+        self.calc_frame.show()
 
 
 class CalcSelector(QtWidgets.QWidget):
