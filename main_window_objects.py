@@ -1,4 +1,5 @@
 from PyQt6 import QtWidgets, QtCore, QtGui
+from functools import partial
 from calc_objects import CalcAir, CalcZone, CalcFlow, CalcNoise
 
 
@@ -18,7 +19,7 @@ class ApplicationWindow(QtWidgets.QWidget):
         self.selector_frame = selector_frame
 
         self.setWindowTitle("Калькуляторы")
-        self.resize(1285, 700)
+        self.resize(1285, 650)
         self.move(self.width() * -2, 0)
         self.setWindowOpacity(0.98)
         screen_size = self.screen().availableSize()
@@ -34,32 +35,6 @@ class ApplicationWindow(QtWidgets.QWidget):
 
         CalcSelector(self.selector_frame, self.calc_frame)
 
-        self.set_light_style()
-
-    def set_app_style(self, colors_list):
-        self.setStyleSheet("* {background-color: " + colors_list[0] + "font: 14px arial, sans-serif;} "
-                           ".QListView {font: 12px arial, sans-serif;} QMenuBar {font: 12px arial; color: " +
-                           colors_list[1] + "}")
-        # Font Types !!
-        self.selector_frame.setStyleSheet("background-color: " + colors_list[2] + "color: " + colors_list[1])
-
-        self.calc_frame.setStyleSheet("* {background-color: " + colors_list[3] + "color: " + colors_list[4] +
-                                      "} QLineEdit {background-color: " + colors_list[5] + "color: " + colors_list[6] +
-                                      "} QPushButton {border-style: outset; border-radius: 7px; padding: 5px; "
-                                      "background-color: " + colors_list[7] +
-                                      "} QFrame>QFrame {background-color: " + colors_list[8] + "color: " +
-                                      colors_list[9] + "}")
-
-    @QtCore.pyqtSlot()
-    def set_dark_style(self):
-        self.set_app_style(ApplicationWindow.DARK_COLORS)
-
-    @QtCore.pyqtSlot()
-    def set_colors_style(self):
-        self.set_app_style(ApplicationWindow.COLOR_COLORS)
-
-    @QtCore.pyqtSlot()
-    def set_light_style(self):
         self.set_app_style(ApplicationWindow.LIGHT_COLORS)
 
     def create_main_menu(self):
@@ -74,11 +49,11 @@ class ApplicationWindow(QtWidgets.QWidget):
 
         themes = submenu_view.addMenu("Темы")
         dark_style = QtGui.QAction("Темная", themes)
-        dark_style.triggered.connect(self.set_dark_style)
+        dark_style.triggered.connect(partial(self.set_app_style, ApplicationWindow.DARK_COLORS))
         light_style = QtGui.QAction("Светлая", themes)
-        light_style.triggered.connect(self.set_light_style)
+        light_style.triggered.connect(partial(self.set_app_style, ApplicationWindow.LIGHT_COLORS))
         color_style = QtGui.QAction("Цветная", themes)
-        color_style.triggered.connect(self.set_colors_style)
+        color_style.triggered.connect(partial(self.set_app_style, ApplicationWindow.COLOR_COLORS))
 
         themes.addAction(dark_style)
         themes.addSeparator()
@@ -100,6 +75,20 @@ class ApplicationWindow(QtWidgets.QWidget):
         self.calc_frame = QtWidgets.QWidget(self)
         self.calc_frame.setGeometry(245, 35, 1035, 600)
         self.calc_frame.show()
+
+    def set_app_style(self, colors_list):
+        self.setStyleSheet("* {background-color: " + colors_list[0] + "font: 14px arial, sans-serif;} "
+                                                                      ".QListView {font: 12px arial, sans-serif;} QMenuBar {font: 12px arial; color: " +
+                           colors_list[1] + "}")
+        # Font Types !!
+        self.selector_frame.setStyleSheet("background-color: " + colors_list[2] + "color: " + colors_list[1])
+
+        self.calc_frame.setStyleSheet("* {background-color: " + colors_list[3] + "color: " + colors_list[4] +
+                                      "} QLineEdit {background-color: " + colors_list[5] + "color: " + colors_list[6] +
+                                      "} QPushButton {border-style: outset; border-radius: 7px; padding: 5px; "
+                                      "background-color: " + colors_list[7] +
+                                      "} QFrame>QFrame {background-color: " + colors_list[8] + "color: " +
+                                      colors_list[9] + "}")
 
 
 class CalcSelector(QtWidgets.QWidget):

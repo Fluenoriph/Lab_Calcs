@@ -40,12 +40,10 @@ class EntryDB(QtWidgets.QWidget):
             try:
                 self.value = float(self.value)
             except ValueError:
-                ErrorMessage(self)
                 self.enter.clear()
 
             print(self.value)
         else:
-            ErrorMessage(self)
             self.enter.clear()
 
     def get_enter_value(self):
@@ -217,13 +215,3 @@ class ClearCalc:
     def clear_bandline(band_list):
         for frame in band_list:
             frame.clear_values()
-
-
-class ErrorMessage(QtWidgets.QLabel):
-    TEXT = "ВВЕДИТЕ ВЕРНОЕ ЗНАЧЕНИЕ !"
-    STYLE = "color: red;"
-
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.setText(ErrorMessage.TEXT)
-        self.setStyleSheet(ErrorMessage.STYLE)

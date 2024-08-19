@@ -68,7 +68,8 @@ class CalcAir(QtWidgets.QWidget):
             mass_before = self.parameter_list[3].get_enter_value() * 1000
             mass_after = self.parameter_list[4].get_enter_value() * 1000
         except TypeError:
-            app_classes.ErrorMessage(self)
+            for clear in self.parameter_list:
+                clear.enter.clear()
         else:
             normal_volume = (volume * 273 * pressure) / ((273 + temp) * 760)
             concentrate = (mass_after - mass_before) / normal_volume
