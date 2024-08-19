@@ -123,7 +123,7 @@ class CalcZone(CalcAir):
             mass_before = self.parameter_list[3].get_enter_value() * 1000
             mass_after = self.parameter_list[4].get_enter_value() * 1000
         except TypeError:
-            app_classes.ErrorMessage(self)
+            app_classes.ErrorLabel(self)   # Добавить очистку ??
         else:
             normal_volume = (volume * 293 * pressure) / ((273 + temp) * 760)
             concentrate = (mass_after - mass_before) * 1000 / normal_volume

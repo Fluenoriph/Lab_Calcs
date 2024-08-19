@@ -215,3 +215,13 @@ class ClearCalc:
     def clear_bandline(band_list):
         for frame in band_list:
             frame.clear_values()
+
+
+class ErrorLabel(QtWidgets.QLabel):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setText("ВВЕДИТЕ ЗНАЧЕНИЯ !")
+        self.setStyleSheet("color: red;")         # new color !!!!
+        self.setFixedSize(160, 25)
+        self.move(5, 5)
+        self.show()

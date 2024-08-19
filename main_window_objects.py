@@ -78,8 +78,8 @@ class ApplicationWindow(QtWidgets.QWidget):
 
     def set_app_style(self, colors_list):
         self.setStyleSheet("* {background-color: " + colors_list[0] + "font: 14px arial, sans-serif;} "
-                                                                      ".QListView {font: 12px arial, sans-serif;} QMenuBar {font: 12px arial; color: " +
-                           colors_list[1] + "}")
+                           ".QListView {font: 12px arial, sans-serif;} QMenuBar, QMenu {font: 12px arial, sans-serif; "
+                           "color: " + colors_list[1] + "}")
         # Font Types !!
         self.selector_frame.setStyleSheet("background-color: " + colors_list[2] + "color: " + colors_list[1])
 
