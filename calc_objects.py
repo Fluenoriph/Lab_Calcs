@@ -56,7 +56,7 @@ class CalcAir(QtWidgets.QWidget):
         calc_box.addWidget(self.parameter_list[3], 2, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
         calc_box.addWidget(self.parameter_list[4], 2, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
         calc_box.addWidget(self.calc_control, 1, 2, 2, 1)
-        calc_box.addWidget(self.result_frame, 5, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignVCenter)
+        calc_box.addWidget(self.result_frame, 5, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignLeft)
 
     @QtCore.pyqtSlot()
     def calculate_result(self):
@@ -68,8 +68,8 @@ class CalcAir(QtWidgets.QWidget):
             mass_before = self.parameter_list[3].get_enter_value() * 1000
             mass_after = self.parameter_list[4].get_enter_value() * 1000
         except TypeError:
-            for clear in self.parameter_list:
-                clear.enter.clear()
+            app_classes.ClearAndLockCalc.clear(self.parameter_list)
+            app_classes.ErrorLabel(self)
         else:
             normal_volume = (volume * 273 * pressure) / ((273 + temp) * 760)
             concentrate = (mass_after - mass_before) / normal_volume
@@ -91,14 +91,14 @@ class CalcAir(QtWidgets.QWidget):
                 self.result_label = QtWidgets.QLabel(result)
                 self.result_frame.label_box.addWidget(self.result_label, QtCore.Qt.AlignmentFlag.AlignCenter)
 
-            app_classes.ClearCalc.lock(self.parameter_list, self.calc_control)
+            app_classes.ClearAndLockCalc.lock(self.parameter_list, self.calc_control)
 
     @QtCore.pyqtSlot()
     def clear_frames(self):
-        app_classes.ClearCalc.clear(self.parameter_list)
+        app_classes.ClearAndLockCalc.clear(self.parameter_list)
         self.result_label.clear()
         self.result_frame.label_box.removeWidget(self.result_label)
-        app_classes.ClearCalc.activate(self.parameter_list, self.calc_control)
+        app_classes.ClearAndLockCalc.activate(self.parameter_list, self.calc_control)
 
 
 class CalcZone(CalcAir):
@@ -123,7 +123,8 @@ class CalcZone(CalcAir):
             mass_before = self.parameter_list[3].get_enter_value() * 1000
             mass_after = self.parameter_list[4].get_enter_value() * 1000
         except TypeError:
-            app_classes.ErrorLabel(self)   # Добавить очистку ??
+            app_classes.ClearAndLockCalc.clear(self.parameter_list)
+            app_classes.ErrorLabel(self)
         else:
             normal_volume = (volume * 293 * pressure) / ((273 + temp) * 760)
             concentrate = (mass_after - mass_before) * 1000 / normal_volume
@@ -145,7 +146,7 @@ class CalcZone(CalcAir):
                 self.result_label = QtWidgets.QLabel(result)
                 self.result_frame.label_box.addWidget(self.result_label, QtCore.Qt.AlignmentFlag.AlignCenter)
 
-            app_classes.ClearCalc.lock(self.parameter_list, self.calc_control)
+            app_classes.ClearAndLockCalc.lock(self.parameter_list, self.calc_control)
 
 
 class CalcFlow(QtWidgets.QWidget):
@@ -266,7 +267,8 @@ class CalcFlow(QtWidgets.QWidget):
             volume_room = s * h
             perfomance = speed * self.s_hole * 3600
         except TypeError:
-            app_classes.ErrorMessage(self)
+            app_classes.ClearAndLockCalc.clear(self.parameter_list)
+            app_classes.ErrorLabel(self)
         else:
             per_in_hour = perfomance / volume_room
             perfomance = round(perfomance, 1)
@@ -282,17 +284,17 @@ class CalcFlow(QtWidgets.QWidget):
             self.perfomance_frame.label_box.addWidget(self.perfomance_label, QtCore.Qt.AlignmentFlag.AlignCenter)
             self.per_in_hour_frame.label_box.addWidget(self.per_in_hour_label, QtCore.Qt.AlignmentFlag.AlignCenter)
 
-            app_classes.ClearCalc.lock(self.parameter_list, self.calc_control)
+            app_classes.ClearAndLockCalc.lock(self.parameter_list, self.calc_control)
 
     @QtCore.pyqtSlot()
     def clear_frames(self):
-        app_classes.ClearCalc.clear(self.parameter_list)
+        app_classes.ClearAndLockCalc.clear(self.parameter_list)
         self.perfomance_label.clear()
         self.per_in_hour_label.clear()
         self.perfomance_frame.label_box.removeWidget(self.perfomance_label)
         self.per_in_hour_frame.label_box.removeWidget(self.per_in_hour_label)
         self.lock_quad_frames()
-        app_classes.ClearCalc.activate(self.parameter_list, self.calc_control)
+        app_classes.ClearAndLockCalc.activate(self.parameter_list, self.calc_control)
 
 
 class CalcNoise(QtWidgets.QWidget):
@@ -367,12 +369,12 @@ class CalcNoise(QtWidgets.QWidget):
             for band in self.band_list:
                 band.calculate_result()
         except TypeError:
-            app_classes.ErrorMessage(self)
-            app_classes.ClearCalc.clear_bandline(self.band_list)
+            app_classes.ClearAndLockCalc.clear_bandline(self.band_list)
+            app_classes.ErrorLabel(self)
         else:
-            app_classes.ClearCalc.lock(self.band_list, self.control_frame)
+            app_classes.ClearAndLockCalc.lock(self.band_list, self.control_frame)
 
     @QtCore.pyqtSlot()
     def clear_frames(self):
-        app_classes.ClearCalc.clear_bandline(self.band_list)
-        app_classes.ClearCalc.activate(self.band_list, self.control_frame)
+        app_classes.ClearAndLockCalc.clear_bandline(self.band_list)
+        app_classes.ClearAndLockCalc.activate(self.band_list, self.control_frame)

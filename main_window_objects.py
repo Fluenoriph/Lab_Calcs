@@ -4,15 +4,12 @@ from calc_objects import CalcAir, CalcZone, CalcFlow, CalcNoise
 
 
 class ApplicationWindow(QtWidgets.QWidget):
-    DARK_COLORS = ("#151719;", "#C0C0C0;", "#404d59;", "#CCCC99;", "#2f353b;", "#008B8B;", "#293133;",
-                   "#00CED1;", "#1b1116;", "#00CC99;", "#191c16;", "#DB7093;")
+    DARK_COLORS = ("#0a0a0a;", "#dbd7d2;", "#414a4c;", "#2c3337;", "#00bfff;", "#1a0000;", "#00b300;",
+                   "#1c1c1c;", "#022027;", "#9d9101;")
 
-    LIGHT_COLORS = ("#f8f8ff;", "#131313;", "#badbad;", "#464544;", "#f5f5f5;", "#121111;", "#f8f4ff;",
-                    "#1e1e1e;", "#bde0ff;", "#26231c;", "#fdeaa8;", "#302112;")
+    LIGHT_COLORS = ("#fcfcee;", "#18171c;", "#f5f5f5;", "#f0f8ff;", "#140f0b;", "#afeeee;", "#003399;",
+                    "#e28090;", "#eedc82;", "#282828;")
 
-    COLOR_COLORS = ("#013a33;", "#ffa343;", "#465945;", "#efcdb8;", "#c04000;", "#93aa00;", "#1e90ff;",
-                    "#ccff00;", "#7fffd4;", "#231a24;", "#dda0dd;", "#00008b;")
-            # 9 !!!
     def __init__(self, calc_frame=None, selector_frame=None):
         super().__init__()
         self.calc_frame = calc_frame
@@ -52,14 +49,10 @@ class ApplicationWindow(QtWidgets.QWidget):
         dark_style.triggered.connect(partial(self.set_app_style, ApplicationWindow.DARK_COLORS))
         light_style = QtGui.QAction("Светлая", themes)
         light_style.triggered.connect(partial(self.set_app_style, ApplicationWindow.LIGHT_COLORS))
-        color_style = QtGui.QAction("Цветная", themes)
-        color_style.triggered.connect(partial(self.set_app_style, ApplicationWindow.COLOR_COLORS))
 
         themes.addAction(dark_style)
         themes.addSeparator()
         themes.addAction(light_style)
-        themes.addSeparator()
-        themes.addAction(color_style)
 
         main_menu.addMenu(submenu_file)
         main_menu.addMenu(submenu_view)

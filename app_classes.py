@@ -107,6 +107,7 @@ class ResultFrame(QtWidgets.QFrame):
         self.label_box = QtWidgets.QHBoxLayout(self)
         self.label_box.addWidget(self.result_label, QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_box.setContentsMargins(0, 0, 0, 0)
+
         self.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
         self.show()
 
@@ -190,7 +191,7 @@ class BandLineLevels(QtWidgets.QWidget):
         self.bandline_items[4].result_label.clear()
 
 
-class ClearCalc:
+class ClearAndLockCalc:
 
     @staticmethod
     def lock(frames_list, control_frame):
@@ -218,10 +219,20 @@ class ClearCalc:
 
 
 class ErrorLabel(QtWidgets.QLabel):
+    TEXT = "ВВЕДИТЕ ЗНАЧЕНИЯ !"
+    COLOR = "color: #ef0097;"
+    POSITION = QtCore.QRect(10, 5, 160, 25)
+
     def __init__(self, parent):
         super().__init__(parent)
-        self.setText("ВВЕДИТЕ ЗНАЧЕНИЯ !")
-        self.setStyleSheet("color: red;")         # new color !!!!
-        self.setFixedSize(160, 25)
-        self.move(5, 5)
+        self.setText(ErrorLabel.TEXT)
+        self.setStyleSheet(ErrorLabel.COLOR)
+        self.setGeometry(ErrorLabel.POSITION)
         self.show()
+
+        self.timer = QtCore.QTimer(self)
+        self.timer.start(3000)
+        self.timer.timeout.connect(self.clear_error_label)
+
+    def clear_error_label(self):
+        self.close()
