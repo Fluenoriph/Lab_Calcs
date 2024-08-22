@@ -16,7 +16,7 @@ class ApplicationWindow(QtWidgets.QWidget):
         self.selector_frame = selector_frame
 
         self.setWindowTitle("Калькуляторы")
-        self.resize(1285, 650)
+        self.resize(1285, 670)
         self.move(self.width() * -2, 0)
         self.setWindowOpacity(0.98)
         screen_size = self.screen().availableSize()
@@ -29,10 +29,9 @@ class ApplicationWindow(QtWidgets.QWidget):
         self.create_main_menu()
         self.create_selector_frame()
         self.create_calc_frame()
-
         CalcSelector(self.selector_frame, self.calc_frame)
 
-        self.set_app_style(ApplicationWindow.LIGHT_COLORS)
+        self.set_app_style(ApplicationWindow.DARK_COLORS)
 
     def create_main_menu(self):
         main_menu = QtWidgets.QMenuBar(self)
@@ -73,7 +72,7 @@ class ApplicationWindow(QtWidgets.QWidget):
         self.setStyleSheet("* {background-color: " + colors_list[0] + "font: 14px arial, sans-serif;} "
                            ".QListView {font: 12px arial, sans-serif;} QMenuBar, QMenu {font: 12px arial, sans-serif; "
                            "color: " + colors_list[1] + "}")
-        # Font Types !!
+
         self.selector_frame.setStyleSheet("background-color: " + colors_list[2] + "color: " + colors_list[1])
 
         self.calc_frame.setStyleSheet("* {background-color: " + colors_list[3] + "color: " + colors_list[4] +

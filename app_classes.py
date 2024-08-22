@@ -6,22 +6,24 @@ from functools import partial
 class EntryDB(QtWidgets.QWidget):
     ALL_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,]+"))
     TEMP_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,-]+"))
+    MAX_SIMBOLS = 5
+    SIZE = QtCore.QSize(55, 40)
+    NULL_MARGINS = QtCore.QMargins(0, 0, 0, 0)
 
     def __init__(self, parent, value=None):
         super().__init__(parent)
         self.value = value
 
         self.enter = QtWidgets.QLineEdit(self)
-        self.enter.setEchoMode(QtWidgets.QLineEdit.EchoMode.Normal)
         self.enter.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.enter.setFrame(False)
-        self.enter.setMaxLength(5)
-        self.enter.setTextMargins(0, 10, 0, 10)
+        self.enter.setFixedSize(EntryDB.SIZE)
+        self.enter.setMaxLength(EntryDB.MAX_SIMBOLS)
         self.enter.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
 
         self.box = QtWidgets.QVBoxLayout(self)
-        self.box.addWidget(self.enter, QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.box.setContentsMargins(0, 0, 0, 0)
+        self.box.addWidget(self.enter, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.box.setContentsMargins(EntryDB.NULL_MARGINS)
 
     def check_all_value(self):
         return self.enter.textEdited.connect(partial(self.check_text, EntryDB.ALL_RE_STRING))
@@ -51,6 +53,10 @@ class EntryDB(QtWidgets.QWidget):
 
 
 class EntryValue(EntryDB):
+    MAX_SIMBOLS_AND_SPACE = 10
+    ENTRY_SIZE = QtCore.QSize(100, 30)
+    CONTENT_MARGIN = QtCore.QMargins(5, 5, 5, 5)
+
     def __init__(self, parent, header):
         super().__init__(parent)
         self.header = header
@@ -58,16 +64,17 @@ class EntryValue(EntryDB):
         self.label = QtWidgets.QLabel(self.header, self)
         self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 
-        self.enter.setMaxLength(10)
-        self.enter.setTextMargins(5, 5, 5, 5)
+        self.enter.setMaxLength(EntryValue.MAX_SIMBOLS_AND_SPACE)
+        self.enter.setFixedSize(EntryValue.ENTRY_SIZE)
 
-        self.box.insertWidget(0, self.label, QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.box.setSpacing(5)
-        self.box.setContentsMargins(5, 10, 5, 5)
+        self.box.insertWidget(0, self.label, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.box.setSpacing(EntryValue.MAX_SIMBOLS_AND_SPACE)
+        self.box.setContentsMargins(EntryValue.CONTENT_MARGIN)
 
 
 class ControlFrame(QtWidgets.QWidget):
     SIZE = QtCore.QSize(35, 35)
+    SPACE = 30
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -92,27 +99,31 @@ class ControlFrame(QtWidgets.QWidget):
         self.button_exit.clicked.connect(quit)
 
         self.box = QtWidgets.QVBoxLayout(self)
-        self.box.addWidget(self.button_ok, alignment=QtCore.Qt.AlignmentFlag.AlignTop)
-        self.box.addWidget(self.button_clear, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.box.addWidget(self.button_exit, alignment=QtCore.Qt.AlignmentFlag.AlignBottom)
+        self.box.setSpacing(ControlFrame.SPACE)
+        self.box.addWidget(self.button_ok)
+        self.box.addWidget(self.button_clear)
+        self.box.addWidget(self.button_exit)
 
 
 class ResultFrame(QtWidgets.QFrame):
+    NULL_MARGINS = QtCore.QMargins(0, 0, 0, 0)
+
     def __init__(self, parent):
         super().__init__(parent)
         self.result_label = QtWidgets.QLabel(self)
-        self.result_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
-        self.result_label.setMargin(10)
+        self.result_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 
         self.label_box = QtWidgets.QHBoxLayout(self)
         self.label_box.addWidget(self.result_label, QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.label_box.setContentsMargins(0, 0, 0, 0)
+        self.label_box.setContentsMargins(ResultFrame.NULL_MARGINS)
 
         self.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
-        self.show()
 
 
 class BandLineLevels(QtWidgets.QWidget):
+    BOX_SPACE = 7
+    SIZE = QtCore.QSize(55, 40)
+
     def __init__(self, parent, header, result_label=None, main_result_frame=None, delta_result_frame=None,
                  phone_level_frame=None, other_level_frame=None, herz_frame=None):
         super().__init__(parent)
@@ -121,25 +132,21 @@ class BandLineLevels(QtWidgets.QWidget):
         self.result_label = result_label
 
         self.bandline_items[0] = QtWidgets.QLabel(self.header, self)
-        self.bandline_items[0].setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.bandline_items[1] = EntryDB(self)
         self.bandline_items[2] = EntryDB(self)
         self.bandline_items[3] = ResultFrame(self)
         self.bandline_items[4] = ResultFrame(self)
 
-        for size in self.bandline_items:
-            size.setFixedSize(55, 40)
+        for size in self.bandline_items[3:5]:
+            size.setFixedSize(BandLineLevels.SIZE)
 
         for check in self.bandline_items[1:3]:
             check.check_all_value()
 
         self.box = QtWidgets.QVBoxLayout(self)
-        self.box.setSpacing(5)
-        self.box.setContentsMargins(0, 0, 0, 0)
+        self.box.setSpacing(BandLineLevels.BOX_SPACE)
         for add in self.bandline_items:
-            self.box.addWidget(add, QtCore.Qt.AlignmentFlag.AlignCenter)
-
-        self.show()
+            self.box.addWidget(add, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
 
     @QtCore.pyqtSlot()
     def calculate_result(self):
@@ -173,6 +180,7 @@ class BandLineLevels(QtWidgets.QWidget):
         rus_delta = locale.format_string("%.1f", delta)
         self.bandline_items[3].result_label.setText(rus_delta)
         self.bandline_items[3].result_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+
         self.bandline_items[4].result_label.setText(self.result_label)
         self.bandline_items[4].result_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 
