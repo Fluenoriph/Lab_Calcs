@@ -4,11 +4,21 @@ from calc_objects import CalcAir, CalcZone, CalcFlow, CalcNoise
 
 
 class ApplicationWindow(QtWidgets.QWidget):
-    DARK_COLORS = ("#0a0a0a;", "#dbd7d2;", "#414a4c;", "#2c3337;", "#00bfff;", "#1a0000;", "#00b300;",
+    DARK_COLORS = ("#0a0a0a;", "#bbbbbb;", "#414a4c;", "#2c3337;", "#00bfff;", "#1a0000;", "#00b300;",
                    "#1c1c1c;", "#022027;", "#9d9101;")
 
     LIGHT_COLORS = ("#fcfcee;", "#18171c;", "#f5f5f5;", "#f0f8ff;", "#140f0b;", "#afeeee;", "#003399;",
                     "#e28090;", "#eedc82;", "#282828;")
+
+    HELP_INFO = ("1.   Рассчет единичного измерения массовой концентрации взвешенных веществ в атмосферном воздухе.\n"
+                 "РД 52.04.896-2020 «Массовая концентрация взвешенных веществ в пробах атмосферного воздуха. "
+                 "Методика измерений гравиметрическим методом»\n\n2.   Расчет единичного измерения массовой "
+                 "концентрации пыли (дисперсной фазы аэрозолей) в пробах воздуха рабочей зоны.\n"
+                 "МУК 4.1.2468-09 «Измерение массовых концентраций пыли в воздухе рабочей зоны предприятий "
+                 "горнорудной и нерудной промышленности»\n\n3.   Определение показателей эффективности вентиляции.\n"
+                 "МР 4.3.0212-20 «Контроль систем вентиляции»\n\n4.   Расчет поправок для учета влияния  "
+                 "фонового шума.\nМУК 4.3.3722-21 «Контроль уровня шума на территории жилой застройки, в жилых и "
+                 "общественных зданиях и помещениях»")
 
     def __init__(self, calc_frame=None, selector_frame=None):
         super().__init__()
@@ -31,32 +41,49 @@ class ApplicationWindow(QtWidgets.QWidget):
         self.create_calc_frame()
         CalcSelector(self.selector_frame, self.calc_frame)
 
-        self.set_app_style(ApplicationWindow.DARK_COLORS)
+        self.set_app_style(ApplicationWindow.LIGHT_COLORS)
+
+    @QtCore.pyqtSlot()
+    def open_about_message(self):
+        QtWidgets.QMessageBox.about(self, "О программе", "Калькулятор Лабораторный 2.01\n\n"
+                                    "Свободное ПО с окрытым исходным кодом\n\nИван Богданов, 2024\n"
+                                                         "fluenoriph@gmail.com")
+
+    @QtCore.pyqtSlot()
+    def open_help_message(self):
+        QtWidgets.QMessageBox.information(self, "Справка", ApplicationWindow.HELP_INFO)
 
     def create_main_menu(self):
         main_menu = QtWidgets.QMenuBar(self)
         submenu_file = QtWidgets.QMenu("Файл", main_menu)
         submenu_view = QtWidgets.QMenu("Вид", main_menu)
-        submenu_help = QtWidgets.QMenu("Справка", main_menu)
+        submenu_help = QtWidgets.QMenu("Помощь", main_menu)
+        main_menu.addMenu(submenu_file)
+        main_menu.addMenu(submenu_view)
+        main_menu.addMenu(submenu_help)
+        main_menu.show()
 
-        calc_air = QtGui.QAction("Выход", submenu_file)
-        calc_air.triggered.connect(quit)
-        submenu_file.addAction(calc_air)
+        exit_programm = QtGui.QAction("Выход", submenu_file)
+        exit_programm.triggered.connect(quit)
+        submenu_file.addAction(exit_programm)
 
         themes = submenu_view.addMenu("Темы")
         dark_style = QtGui.QAction("Темная", themes)
         dark_style.triggered.connect(partial(self.set_app_style, ApplicationWindow.DARK_COLORS))
         light_style = QtGui.QAction("Светлая", themes)
         light_style.triggered.connect(partial(self.set_app_style, ApplicationWindow.LIGHT_COLORS))
-
         themes.addAction(dark_style)
         themes.addSeparator()
         themes.addAction(light_style)
 
-        main_menu.addMenu(submenu_file)
-        main_menu.addMenu(submenu_view)
-        main_menu.addMenu(submenu_help)
-        main_menu.show()
+        link = QtGui.QAction("Справка", submenu_help)
+        link.triggered.connect(self.open_help_message)
+        about = QtGui.QAction("О программе", submenu_help)
+        about.triggered.connect(self.open_about_message)
+
+        submenu_help.addAction(link)
+        submenu_help.addSeparator()
+        submenu_help.addAction(about)
 
     def create_selector_frame(self):
         self.selector_frame = QtWidgets.QWidget(self)
@@ -69,9 +96,11 @@ class ApplicationWindow(QtWidgets.QWidget):
         self.calc_frame.show()
 
     def set_app_style(self, colors_list):
-        self.setStyleSheet("* {background-color: " + colors_list[0] + "font: 14px arial, sans-serif;} "
-                           ".QListView {font: 12px arial, sans-serif;} QMenuBar, QMenu {font: 12px arial, sans-serif; "
-                           "color: " + colors_list[1] + "}")
+        self.setStyleSheet("* {background-color: " + colors_list[0] + "font: 14px arial, sans-serif; color: " +
+                           colors_list[1] + "} QPushButton {background-color: " + colors_list[7] + "} "
+                           ".QListView {font: 12px arial, sans-serif;} "
+                           "QMenuBar, QMenu {font: 12px arial, sans-serif; color: " +
+                           colors_list[1] + "}")
 
         self.selector_frame.setStyleSheet("background-color: " + colors_list[2] + "color: " + colors_list[1])
 
@@ -110,15 +139,23 @@ class CalcSelector(QtWidgets.QWidget):
         self.resize(220, 160)
         self.show()
 
+        self.info_text = self.create_default_info_label()
+
         self.index_air = self.model_type.index(0, 0)
         self.index_zone = self.model_type.index(1, 0)
         self.index_flow = self.model_type.index(2, 0)
         self.index_noise = self.model_type.index(3, 0)
 
+        self.select_list.activated.connect(self.destroy_info_label)
         self.select_list.activated.connect(self.click_air_calc)
         self.select_list.activated.connect(self.click_zone_calc)
         self.select_list.activated.connect(self.click_flow_calc)
         self.select_list.activated.connect(self.click_noise_calc)
+
+    @QtCore.pyqtSlot()
+    def destroy_info_label(self):
+        if self.info_text:
+            self.info_text.close()
 
     @QtCore.pyqtSlot()
     def click_air_calc(self):
@@ -147,3 +184,11 @@ class CalcSelector(QtWidgets.QWidget):
             for calc in (self.zone_calc, self.flow_calc, self.air_calc):
                 calc.close()
             self.noise_calc.show()
+
+    def create_default_info_label(self):
+        label = QtWidgets.QLabel(ApplicationWindow.HELP_INFO, self.calc_parent)
+        label.setContentsMargins(10, 20, 0, 0)
+        label.setFixedWidth(1010)
+        label.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
+        label.show()
+        return label
