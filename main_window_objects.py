@@ -45,7 +45,7 @@ class ApplicationWindow(QtWidgets.QWidget):
 
     @QtCore.pyqtSlot()
     def open_about_message(self):
-        QtWidgets.QMessageBox.about(self, "О программе", "Калькулятор Лабораторный 2.01\n\n"
+        QtWidgets.QMessageBox.about(self, "О программе", "Калькулятор Лабораторный 2.0\n\n"
                                     "Свободное ПО с окрытым исходным кодом\n\nИван Богданов, 2024\n"
                                                          "fluenoriph@gmail.com")
 

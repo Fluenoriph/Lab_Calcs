@@ -228,7 +228,7 @@ class ClearAndLockCalc:
 
 class ErrorLabel(QtWidgets.QLabel):
     TEXT = "ВВЕДИТЕ ЗНАЧЕНИЯ !"
-    COLOR = "color: #ef0097;"
+    COLOR = "color: #ff0033;"
     POSITION = QtCore.QRect(10, 5, 160, 25)
 
     def __init__(self, parent):
