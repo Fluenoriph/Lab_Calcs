@@ -7,9 +7,3 @@ app = QtWidgets.QApplication(sys.argv)
 app.setWindowIcon(QtGui.QIcon("calc_type.ico"))
 app_window = ApplicationWindow()
 sys.exit(app.exec())
-
-
-
-
-
-# Повтор значений ?
