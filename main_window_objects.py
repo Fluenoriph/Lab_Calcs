@@ -1,3 +1,4 @@
+import sys
 from PyQt6 import QtWidgets, QtCore, QtGui
 from functools import partial
 from calc_objects import CalcAir, CalcZone, CalcFlow, CalcNoise
@@ -8,7 +9,7 @@ class ApplicationWindow(QtWidgets.QWidget):
                    "#1c1c1c;", "#022027;", "#9d9101;")
 
     LIGHT_COLORS = ("#fcfcee;", "#18171c;", "#f5f5f5;", "#f0f8ff;", "#140f0b;", "#afeeee;", "#003399;",
-                    "#e28090;", "#eedc82;", "#282828;")
+                    "#45cea2;", "#eedc82;", "#282828;")
 
     HELP_INFO = ("1.   Рассчет единичного измерения массовой концентрации взвешенных веществ в атмосферном воздухе.\n"
                  "РД 52.04.896-2020 «Массовая концентрация взвешенных веществ в пробах атмосферного воздуха. "
@@ -64,7 +65,7 @@ class ApplicationWindow(QtWidgets.QWidget):
         main_menu.show()
 
         exit_programm = QtGui.QAction("Выход", submenu_file)
-        exit_programm.triggered.connect(quit)
+        exit_programm.triggered.connect(sys.exit)
         submenu_file.addAction(exit_programm)
 
         themes = submenu_view.addMenu("Темы")
@@ -95,6 +96,7 @@ class ApplicationWindow(QtWidgets.QWidget):
         self.calc_frame.setGeometry(245, 35, 1035, 600)
         self.calc_frame.show()
 
+    @QtCore.pyqtSlot()
     def set_app_style(self, colors_list):
         self.setStyleSheet("* {background-color: " + colors_list[0] + "font: 14px arial, sans-serif; color: " +
                            colors_list[1] + "} QPushButton {background-color: " + colors_list[7] + "} "
@@ -116,13 +118,14 @@ class CalcSelector(QtWidgets.QWidget):
     def __init__(self, parent, calc_parent):
         super().__init__(parent)
         self.calc_parent = calc_parent
+        self.list_names = ['Пыль в атмосферном воздухе', 'Пыль в воздухе рабочей зоны',
+                           'Эффективность вентиляции', 'Учет влияния фонового шума']
+
         self.air_calc = CalcAir(self.calc_parent)
         self.zone_calc = CalcZone(self.calc_parent)
         self.flow_calc = CalcFlow(self.calc_parent)
         self.noise_calc = CalcNoise(self.calc_parent)
 
-        self.list_names = ['Пыль в атмосферном воздухе', 'Пыль в воздухе рабочей зоны',
-                           'Эффективность вентиляции', 'Учет влияния фонового шума']
         self.select_list = QtWidgets.QListView(self)
         self.model_type = QtCore.QStringListModel(self.list_names)
         self.select_list.setModel(self.model_type)
@@ -132,7 +135,6 @@ class CalcSelector(QtWidgets.QWidget):
         self.select_list.setSpacing(10)
         self.select_list.setFrameStyle(QtWidgets.QFrame.Shape.NoFrame)
         self.select_list.setTabKeyNavigation(True)
-
         self.box = QtWidgets.QVBoxLayout(self)
         self.box.addWidget(self.select_list, QtCore.Qt.AlignmentFlag.AlignTop)
         self.box.setContentsMargins(3, 5, 3, 3)

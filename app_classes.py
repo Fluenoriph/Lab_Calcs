@@ -1,3 +1,4 @@
+import sys
 from PyQt6 import QtWidgets, QtCore, QtGui
 import locale
 from functools import partial
@@ -43,8 +44,6 @@ class EntryDB(QtWidgets.QWidget):
                 self.value = float(self.value)
             except ValueError:
                 self.enter.clear()
-
-            print(self.value)
         else:
             self.enter.clear()
 
@@ -78,9 +77,9 @@ class ControlFrame(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super().__init__(parent)
-        self.icon_ok = QtGui.QIcon("check.ico")
-        self.icon_exit = QtGui.QIcon("close.ico")
-        self.icon_clear = QtGui.QIcon("basket.ico")
+        self.icon_ok = QtGui.QIcon("images/check.ico")
+        self.icon_exit = QtGui.QIcon("images/close.ico")
+        self.icon_clear = QtGui.QIcon("images/basket.ico")
 
         self.button_ok = QtWidgets.QPushButton(self)
         self.button_ok.setIcon(self.icon_ok)
@@ -96,7 +95,7 @@ class ControlFrame(QtWidgets.QWidget):
         self.button_exit = QtWidgets.QPushButton(self)
         self.button_exit.setIcon(self.icon_exit)
         self.button_exit.setIconSize(ControlFrame.SIZE)
-        self.button_exit.clicked.connect(quit)
+        self.button_exit.clicked.connect(sys.exit)
 
         self.box = QtWidgets.QVBoxLayout(self)
         self.box.setSpacing(ControlFrame.SPACE)
@@ -113,9 +112,9 @@ class ResultFrame(QtWidgets.QFrame):
         self.result_label = QtWidgets.QLabel(self)
         self.result_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 
-        self.label_box = QtWidgets.QHBoxLayout(self)
-        self.label_box.addWidget(self.result_label, QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.label_box.setContentsMargins(ResultFrame.NULL_MARGINS)
+        self.box = QtWidgets.QHBoxLayout(self)
+        self.box.addWidget(self.result_label, QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.box.setContentsMargins(ResultFrame.NULL_MARGINS)
 
         self.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
 
@@ -124,8 +123,8 @@ class BandLineLevels(QtWidgets.QWidget):
     BOX_SPACE = 7
     SIZE = QtCore.QSize(55, 40)
 
-    def __init__(self, parent, header, result_label=None, main_result_frame=None, delta_result_frame=None,
-                 phone_level_frame=None, other_level_frame=None, herz_frame=None):
+    def __init__(self, parent, header, herz_frame=None, other_level_frame=None, phone_level_frame=None,
+                 delta_result_frame=None, main_result_frame=None, result_label=None):
         super().__init__(parent)
         self.header = header
         self.bandline_items = [herz_frame, other_level_frame, phone_level_frame, delta_result_frame, main_result_frame]
@@ -186,8 +185,10 @@ class BandLineLevels(QtWidgets.QWidget):
 
     def correcting_with_phone(self, correct):
         locale.setlocale(locale.LC_ALL, "ru")
+
         value = self.bandline_items[1].get_enter_value() - correct
         value = round(value, 1)
+
         rus_value = locale.format_string("%.1f", value)
         return rus_value
 
@@ -222,8 +223,8 @@ class ClearAndLockCalc:
 
     @staticmethod
     def clear_bandline(band_list):
-        for frame in band_list:
-            frame.clear_values()
+        for line in band_list:
+            line.clear_values()
 
 
 class ErrorLabel(QtWidgets.QLabel):
@@ -236,6 +237,7 @@ class ErrorLabel(QtWidgets.QLabel):
         self.setText(ErrorLabel.TEXT)
         self.setStyleSheet(ErrorLabel.COLOR)
         self.setGeometry(ErrorLabel.POSITION)
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, True)
         self.show()
 
         self.timer = QtCore.QTimer(self)
