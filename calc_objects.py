@@ -12,9 +12,9 @@ class CalcAir(QtWidgets.QWidget):
         self.parameter_list = [temp_frame, volume_frame, press_frame, mass_before_frame, mass_after_frame]
         self.headers_list = self.setup_header_names()
 
+        self.parameter_list[1] = app_classes.EntryValue(self, self.headers_list[0])
         self.parameter_list[0] = app_classes.EntryValue(self, self.headers_list[1])
         self.parameter_list[0].check_temp_value()
-        self.parameter_list[1] = app_classes.EntryValue(self, self.headers_list[0])
         self.parameter_list[2] = app_classes.EntryValue(self, self.headers_list[2])
         self.parameter_list[3] = app_classes.EntryValue(self, self.headers_list[3])
         self.parameter_list[4] = app_classes.EntryValue(self, self.headers_list[4])
