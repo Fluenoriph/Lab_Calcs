@@ -1,9 +1,13 @@
 from PyQt6 import QtWidgets, QtGui
-from main_window_objects import ApplicationWindow
+#from application_object import ApplicationWindow
+from calculators_objects import AtmosphericAirDust, WorkAreaAirDust, ObjectsManupulator
 import sys
 
 
 app = QtWidgets.QApplication(sys.argv)
-app.setWindowIcon(QtGui.QIcon("images/calc_type.ico"))
-app_window = ApplicationWindow()
+#app.setWindowIcon(QtGui.QIcon("images/calc_type.ico"))
+#app_window = ApplicationWindow()
+#air_test = AtmosphericAirDust()
+#zone_test = WorkAreaAirDust()
+tab_test = ObjectsManupulator()
 sys.exit(app.exec())

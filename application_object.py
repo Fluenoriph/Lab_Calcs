@@ -1,7 +1,7 @@
 import sys
 from PyQt6 import QtWidgets, QtCore, QtGui
 from functools import partial
-from calc_objects import CalcAir, CalcZone, CalcFlow, CalcNoise
+from calculators_objects import CalcAir, CalcZone, CalcFlow, CalcNoise
 
 
 class ApplicationWindow(QtWidgets.QWidget):

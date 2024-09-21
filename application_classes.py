@@ -4,74 +4,57 @@ import locale
 from functools import partial
 
 
-class EntryDB(QtWidgets.QWidget):
-    ALL_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,]+"))
-    TEMP_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,-]+"))
-    MAX_SIMBOLS = 5
-    SIZE = QtCore.QSize(55, 40)
-    NULL_MARGINS = QtCore.QMargins(0, 0, 0, 0)
+class EntryValueField(QtWidgets.QLineEdit):
+    ALL_VALUES_CHECK_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,]+"))
+    TEMPERATURE_CHECK_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,-]+"))
 
     def __init__(self, parent, value=None):
         super().__init__(parent)
         self.value = value
+        self.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.setFrame(True)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
 
-        self.enter = QtWidgets.QLineEdit(self)
-        self.enter.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.enter.setFrame(False)
-        self.enter.setFixedSize(EntryDB.SIZE)
-        self.enter.setMaxLength(EntryDB.MAX_SIMBOLS)
-        self.enter.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
+    def check_entry_value(self):
+        return self.textEdited.connect(partial(self.validate_entry_text, EntryValueField.ALL_VALUES_CHECK_RE_STRING))
 
-        self.box = QtWidgets.QVBoxLayout(self)
-        self.box.addWidget(self.enter, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.box.setContentsMargins(EntryDB.NULL_MARGINS)
-
-    def check_all_value(self):
-        return self.enter.textEdited.connect(partial(self.check_text, EntryDB.ALL_RE_STRING))
-
-    def check_temp_value(self):
-        return self.enter.editingFinished.connect(partial(self.check_text, EntryDB.TEMP_RE_STRING))
+    def check_temperature_entry_value(self):
+        return self.editingFinished.connect(partial(self.validate_entry_text,
+                                                    EntryValueField.TEMPERATURE_CHECK_RE_STRING))
 
     @QtCore.pyqtSlot()
-    def check_text(self, re_string):
-        validator = re_string
-        self.enter.setValidator(validator)
+    def validate_entry_text(self, re_string):
+        validator = re_string   # one var ?
+        self.setValidator(validator)
 
-        if self.enter.hasAcceptableInput():
-            self.value = self.enter.text()
+        if self.hasAcceptableInput():
+            self.value = self.text()
             self.value = self.value.replace(",", ".")
             try:
                 self.value = float(self.value)
             except ValueError:
-                self.enter.clear()
+                self.clear()
         else:
-            self.enter.clear()
+            self.clear()
 
-    def get_enter_value(self):
+    def get_entry_value(self):
         return self.value
 
 
-class EntryValue(EntryDB):
-    MAX_SIMBOLS_AND_SPACE = 10
-    ENTRY_SIZE = QtCore.QSize(100, 30)
-    CONTENT_MARGIN = QtCore.QMargins(5, 5, 5, 5)
+class ResultField(QtWidgets.QWidget):
+    TEXT_MARGINS = QtCore.QMargins(0, 0, 0, 0)
 
-    def __init__(self, parent, header):
+    def __init__(self, parent):
         super().__init__(parent)
-        self.header = header
+        self.result = QtWidgets.QLabel(self)
+        self.result.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 
-        self.label = QtWidgets.QLabel(self.header, self)
-        self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-
-        self.enter.setMaxLength(EntryValue.MAX_SIMBOLS_AND_SPACE)
-        self.enter.setFixedSize(EntryValue.ENTRY_SIZE)
-
-        self.box.insertWidget(0, self.label, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.box.setSpacing(EntryValue.MAX_SIMBOLS_AND_SPACE)
-        self.box.setContentsMargins(EntryValue.CONTENT_MARGIN)
+        self.box = QtWidgets.QHBoxLayout(self)
+        self.box.addWidget(self.result, QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.box.setContentsMargins(ResultField.TEXT_MARGINS)
 
 
-class ControlFrame(QtWidgets.QWidget):
+class ControlFrame(QtWidgets.QWidget):      # more classes
     SIZE = QtCore.QSize(35, 35)
     SPACE = 30
 
@@ -102,21 +85,6 @@ class ControlFrame(QtWidgets.QWidget):
         self.box.addWidget(self.button_ok)
         self.box.addWidget(self.button_clear)
         self.box.addWidget(self.button_exit)
-
-
-class ResultFrame(QtWidgets.QFrame):
-    NULL_MARGINS = QtCore.QMargins(0, 0, 0, 0)
-
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.result_label = QtWidgets.QLabel(self)
-        self.result_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-
-        self.box = QtWidgets.QHBoxLayout(self)
-        self.box.addWidget(self.result_label, QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.box.setContentsMargins(ResultFrame.NULL_MARGINS)
-
-        self.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
 
 
 class BandLineLevels(QtWidgets.QWidget):
@@ -200,6 +168,7 @@ class BandLineLevels(QtWidgets.QWidget):
         self.bandline_items[4].result_label.clear()
 
 
+'''
 class ClearAndLockCalc:
 
     @staticmethod
@@ -246,3 +215,4 @@ class ErrorLabel(QtWidgets.QLabel):
 
     def clear_error_label(self):
         self.close()
+        '''

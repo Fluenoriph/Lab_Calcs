@@ -1,79 +1,69 @@
 from PyQt6 import QtWidgets, QtCore
-import app_classes
+from application_classes import EntryValueField, ResultField
+import constants
 import math
 import locale
 
 
-class CalcAir(QtWidgets.QWidget):
+class AtmosphericAirDust(QtWidgets.QWidget):
+    def __init__(self, first_title=None, second_title=None, third_title=None, fourth_title=None, fifth_title=None,
+                 first_entry_area=None, second_entry_area=None, third_entry_area=None, fourth_entry_area=None,
+                 fifth_entry_area=None):
+        super().__init__()
+        self.title_names = self.set_title_names()
+        self.title_objects = [first_title, second_title, third_title, fourth_title, fifth_title]
+        self.entry_area_objects = [first_entry_area, second_entry_area, third_entry_area, fourth_entry_area,
+                                   fifth_entry_area]
 
-    def __init__(self, parent, temp_frame=None, volume_frame=None, press_frame=None, mass_before_frame=None,
-                 mass_after_frame=None):
-        super().__init__(parent)
-        self.parameter_list = [temp_frame, volume_frame, press_frame, mass_before_frame, mass_after_frame]
-        self.headers_list = self.setup_header_names()
+        self.create_components()
+        #self.set_checking_value()
 
-        self.parameter_list[1] = app_classes.EntryValue(self, self.headers_list[0])
-        self.parameter_list[0] = app_classes.EntryValue(self, self.headers_list[1])
-        self.parameter_list[0].check_temp_value()
-        self.parameter_list[2] = app_classes.EntryValue(self, self.headers_list[2])
-        self.parameter_list[3] = app_classes.EntryValue(self, self.headers_list[3])
-        self.parameter_list[4] = app_classes.EntryValue(self, self.headers_list[4])
+        self.show()
 
-        for size in self.parameter_list:
-            size.setFixedSize(240, 90)
+    def set_title_names(self):
+        return constants.ATMOSPHERIC_CALC_TITLE_NAMES
 
-        for check in self.parameter_list[1:]:
-            check.check_all_value()
+    def create_components(self):
+        box = QtWidgets.QGridLayout(self)
+        '''box.setVerticalSpacing(30)
+        box.setHorizontalSpacing(45)
+        box.setContentsMargins(40, 30, 20, 20)'''
 
-        self.result_name = QtWidgets.QLabel("Концентрация взвешенных веществ (пыли)", self)
-        self.result_frame = app_classes.ResultFrame(self)
-        self.result_frame.setFixedSize(120, 40)
+        i = 0
+        for title_object in self.title_objects:
+            title_object = QtWidgets.QLabel(self.title_names[i], self)
+            box.addWidget(title_object, i, 0, constants.ALIGNMENT_OTHERS_COMPONENTS)
+            i += 1
 
-        self.calc_control = app_classes.ControlFrame(self)
-        self.calc_control.button_ok.clicked.connect(self.calculate_result)
-        self.calc_control.button_clear.clicked.connect(self.clear_frames)
+        j = 0
+        for entry_area_object in self.entry_area_objects:
+            entry_area_object = EntryValueField(self)
+            entry_area_object.setFixedSize(constants.SIZE_OTHERS_ENTRY_AREAS)
+            entry_area_object.setMaxLength(10)
+            #entry_area_object.check_entry_value()
+            box.addWidget(entry_area_object, j, 1, constants.ALIGNMENT_OTHERS_COMPONENTS)
+            j += 1
 
-        self.setup_frames_position()
+    def set_checking_value(self):
+        '''for check in self.entry_area_objects:
+            check.check_entry_value()
+        self.entry_area_objects[1].check_temperature_entry_value()'''
 
-    def setup_header_names(self):
-        names_list = ("Объем взятого на анализ\nатмосферного воздуха, л",
-                      "Температура воздуха,\nпрошедшего через ротаметр, ℃",
-                      "Атмосферное давление\nв месте отбора, мм.рт.ст.",
-                      "Среднее значение массы\nфильтра до отбора пробы, г",
-                      "Среднее значение массы\nфильтра после отбора пробы, г")
-        return names_list
-
-    def setup_frames_position(self):
-        calc_box = QtWidgets.QGridLayout(self)
-        calc_box.setVerticalSpacing(30)
-        calc_box.setHorizontalSpacing(45)
-        calc_box.setContentsMargins(40, 30, 20, 20)
-        calc_box.setRowMinimumHeight(4, 30)
-
-        calc_box.addWidget(self.parameter_list[1], 0, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.parameter_list[0], 1, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.parameter_list[2], 1, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.parameter_list[3], 2, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.parameter_list[4], 2, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.calc_control, 1, 2, 2, 1)
-        calc_box.addWidget(self.result_name, 5, 0)
-        calc_box.addWidget(self.result_frame, 5, 1)
-
-    @QtCore.pyqtSlot()
-    def calculate_result(self):
+    '''@QtCore.pyqtSlot()
+    def calculate(self):
         locale.setlocale(locale.LC_ALL, "ru")
 
         try:
-            volume = self.parameter_list[1].get_enter_value() / 1000
-            temp = self.parameter_list[0].get_enter_value()
-            pressure = self.parameter_list[2].get_enter_value()
-            mass_before = self.parameter_list[3].get_enter_value() * 1000
-            mass_after = self.parameter_list[4].get_enter_value() * 1000
+            volume = self.entry_area_objects[0].get_entry_value() / 1000
+            temperature = self.entry_area_objects[1].get_entry_value()
+            pressure = self.entry_area_objects[2].get_entry_value()
+            mass_before = self.entry_area_objects[3].get_entry_value() * 1000
+            mass_after = self.entry_area_objects[4].get_entry_value() * 1000
         except TypeError:
-            app_classes.ClearAndLockCalc.clear(self.parameter_list)
-            app_classes.ErrorLabel(self)
+            #app_classes.ClearAndLockCalc.clear(self.parameter_list)
+            #app_classes.ErrorLabel(self)
         else:
-            normal_volume = (volume * 273 * pressure) / ((273 + temp) * 760)
+            normal_volume = (volume * 273 * pressure) / ((273 + temperature) * 760)
             concentrate = (mass_after - mass_before) / normal_volume
             concentrate = round(concentrate, 2)
 
@@ -90,28 +80,23 @@ class CalcAir(QtWidgets.QWidget):
 
                 self.result_frame.result_label.setText(result)
 
-            app_classes.ClearAndLockCalc.lock(self.parameter_list, self.calc_control)
+            #app_classes.ClearAndLockCalc.lock(self.parameter_list, self.calc_control)'''
 
-    @QtCore.pyqtSlot()
+    ''''@QtCore.pyqtSlot()
     def clear_frames(self):
         app_classes.ClearAndLockCalc.clear(self.parameter_list)
         self.result_frame.result_label.clear()
-        app_classes.ClearAndLockCalc.activate(self.parameter_list, self.calc_control)
+        app_classes.ClearAndLockCalc.activate(self.parameter_list, self.calc_control)'''
 
 
-class CalcZone(CalcAir):
-    def __init__(self, parent):
-        super().__init__(parent)
+class WorkAreaAirDust(AtmosphericAirDust):
+    def __init__(self):
+        super().__init__()
 
-    def setup_header_names(self):
-        names_list = ("Объем воздуха,\nотобранный для анализа, л",
-                      "Температура воздуха\nв месте отбора пробы, ℃",
-                      "Барометрическое давление\nв месте отбора пробы, мм.рт.ст.",
-                      "Масса фильтра\nдо отбора пробы, г",
-                      "Масса фильтра (с пылью)\nпосле отбора пробы, г")
-        return names_list
+    def set_title_names(self):
+        return constants.WORK_AREA_CALC_TITLE_NAMES
 
-    @QtCore.pyqtSlot()
+    '''@QtCore.pyqtSlot()
     def calculate_result(self):
         locale.setlocale(locale.LC_ALL, "ru")
 
@@ -142,7 +127,7 @@ class CalcZone(CalcAir):
 
                 self.result_frame.result_label.setText(result)
 
-            app_classes.ClearAndLockCalc.lock(self.parameter_list, self.calc_control)
+            app_classes.ClearAndLockCalc.lock(self.parameter_list, self.calc_control)'''
 
 
 class CalcFlow(QtWidgets.QWidget):
@@ -365,3 +350,31 @@ class CalcNoise(QtWidgets.QWidget):
     def clear_frames(self):
         app_classes.ClearAndLockCalc.clear_bandline(self.band_list)
         app_classes.ClearAndLockCalc.activate(self.band_list, self.calc_control)
+
+
+class ObjectsManupulator(QtWidgets.QTabWidget):
+    def __init__(self):
+        super().__init__()
+        self.addTab(AtmosphericAirDust(), "Air")
+        self.addTab(WorkAreaAirDust(), "Zone")
+        self.setCurrentIndex(0)
+        self.setDocumentMode(True)
+
+        self.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
