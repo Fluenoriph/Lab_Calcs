@@ -1,3 +1,5 @@
+from turtle import speed
+
 from PyQt6 import QtWidgets, QtCore
 from application_classes import EntryValueField, ResultField
 import constants
@@ -6,14 +8,10 @@ import locale
 
 
 class AtmosphericAirDust(QtWidgets.QWidget):
-    def __init__(self, first_title=None, second_title=None, third_title=None, fourth_title=None, fifth_title=None,
-                 first_entry_area=None, second_entry_area=None, third_entry_area=None, fourth_entry_area=None,
-                 fifth_entry_area=None):
+    def __init__(self):
         super().__init__()
-        self.title_names = self.set_title_names()
-        self.title_objects = [first_title, second_title, third_title, fourth_title, fifth_title]
-        self.entry_area_objects = [first_entry_area, second_entry_area, third_entry_area, fourth_entry_area,
-                                   fifth_entry_area]
+        self.entry_objects = self.set_area_objects()
+        #self.result_area =
 
         self.create_components()
         #self.set_checking_value()
@@ -21,27 +19,36 @@ class AtmosphericAirDust(QtWidgets.QWidget):
         self.show()
 
     def set_title_names(self):
-        return constants.ATMOSPHERIC_CALC_TITLE_NAMES
+        return constants.ATMOSPHERIC_CALC_DUST_TITLE_NAMES
+
+    def set_area_objects(self, volume=None, temperature=None, pressure=None, mass_before=None, mass_after=None):
+        return [volume, temperature, pressure, mass_before, mass_after]
+
+    #def set_result_area(self):
 
     def create_components(self):
         box = QtWidgets.QGridLayout(self)
         '''box.setVerticalSpacing(30)
         box.setHorizontalSpacing(45)
         box.setContentsMargins(40, 30, 20, 20)'''
+        title_names = self.set_title_names()
+        title_objects = self.set_area_objects()
 
         i = 0
-        for title_object in self.title_objects:
-            title_object = QtWidgets.QLabel(self.title_names[i], self)
-            box.addWidget(title_object, i, 0, constants.ALIGNMENT_OTHERS_COMPONENTS)
+        for title_object in title_objects:
+            title_object = QtWidgets.QLabel(title_names[i], self)
+
+            box.addWidget(title_object, 0, i, constants.ALIGNMENT_OTHERS_COMPONENTS)
             i += 1
 
         j = 0
-        for entry_area_object in self.entry_area_objects:
-            entry_area_object = EntryValueField(self)
-            entry_area_object.setFixedSize(constants.SIZE_OTHERS_ENTRY_AREAS)
-            entry_area_object.setMaxLength(10)
+        for entry_object in self.entry_objects:
+            entry_object = EntryValueField(self)
+
+            entry_object.setFixedSize(constants.SIZE_OTHERS_ENTRY_OBJECTS)
+            entry_object.setMaxLength(10)
             #entry_area_object.check_entry_value()
-            box.addWidget(entry_area_object, j, 1, constants.ALIGNMENT_OTHERS_COMPONENTS)
+            box.addWidget(entry_object, 1, j, constants.ALIGNMENT_OTHERS_COMPONENTS)
             j += 1
 
     def set_checking_value(self):
@@ -68,9 +75,9 @@ class AtmosphericAirDust(QtWidgets.QWidget):
             concentrate = round(concentrate, 2)
 
             if concentrate < 0.15:
-                self.result_frame.result_label.setText("менее 0,15 мг/м³")
+                self.result_frame.result_label.setText()
             elif concentrate > 10.0:
-                self.result_frame.result_label.setText("более 10 мг/м³")
+                self.result_frame.result_label.setText()
             else:
                 delta = 0.110 * concentrate
                 delta = round(delta, 2)
@@ -94,7 +101,7 @@ class WorkAreaAirDust(AtmosphericAirDust):
         super().__init__()
 
     def set_title_names(self):
-        return constants.WORK_AREA_CALC_TITLE_NAMES
+        return constants.WORK_AREA_CALC_DUST_TITLE_NAMES
 
     '''@QtCore.pyqtSlot()
     def calculate_result(self):
@@ -130,68 +137,17 @@ class WorkAreaAirDust(AtmosphericAirDust):
             app_classes.ClearAndLockCalc.lock(self.parameter_list, self.calc_control)'''
 
 
-class CalcFlow(QtWidgets.QWidget):
-    def __init__(self, parent, s_frame=None, h_frame=None, speed_frame=None, diameter_frame=None, width_frame=None,
-                 height_frame=None, hole_type_frame=None, type_hole=None, type_quad=None, s_hole=None):
-        super().__init__(parent)
-        self.parameter_list = [s_frame, h_frame, speed_frame, diameter_frame, width_frame, height_frame]
-        self.hole_type_frame = hole_type_frame
-        self.type_hole = type_hole
-        self.type_quad = type_quad
-        self.s_hole = s_hole
-        self.parameter_frame_size = QtCore.QSize(250, 90)
-        self.result_frame_size = QtCore.QSize(120, 40)
+class VentilationEfficiency(AtmosphericAirDust):
+    def __init__(self):
+        super().__init__()
 
-        self.parameter_list[0] = app_classes.EntryValue(self, "Площадь помещения, м²")
-        self.parameter_list[1] = app_classes.EntryValue(self, "Высота помещения, м")
-        self.parameter_list[2] = app_classes.EntryValue(self, "Скорость движения воздуха\nв вентиляционном "
-                                                              "отверстии, м/с")
+    def set_title_names(self):
+        return constants.VENTILATION_CALC_TITLE_NAMES
 
-        for size_i in self.parameter_list[0:3]:
-            size_i.setFixedSize(self.parameter_frame_size)
+    def set_area_objects(self, square=None, height=None, diameter_circle=None, width_quad=None, height_quad=None):
+        return [square, height, speed, diameter_circle, width_quad, height_quad]
 
-        self.create_hole_type_frame()
-        self.parameter_list[3] = app_classes.EntryValue(self, "Диаметр, см")
-        self.parameter_list[4] = app_classes.EntryValue(self, "Ширина, см")
-        self.parameter_list[5] = app_classes.EntryValue(self, "Высота, см")
-
-        for size_j in self.parameter_list[3:6]:
-            size_j.setFixedSize(150, 70)
-
-        for check in self.parameter_list:
-            check.check_all_value()
-
-        self.perfomance_name = QtWidgets.QLabel("Производительность вентиляции", self)
-        self.perfomance_frame = app_classes.ResultFrame(self)
-        self.perfomance_frame.setFixedSize(self.result_frame_size)
-
-        self.per_in_hour_name = QtWidgets.QLabel("Кратность воздухообмена", self)
-        self.per_in_hour_frame = app_classes.ResultFrame(self)
-        self.per_in_hour_frame.setFixedSize(self.result_frame_size)
-
-        self.calc_control = app_classes.ControlFrame(self)
-        self.calc_control.button_ok.clicked.connect(self.calculate_result)
-        self.calc_control.button_clear.clicked.connect(self.clear_frames)
-
-        self.setup_frame_position()
-
-    def create_hole_type_frame(self):
-        self.hole_type_frame = QtWidgets.QWidget(self)
-        self.hole_type_frame.setFixedSize(self.parameter_frame_size)
-
-        label = QtWidgets.QLabel("Тип вентиляционного отверстия", self.hole_type_frame)
-
-        self.type_hole = QtWidgets.QRadioButton("Окружность", self.hole_type_frame)
-        self.type_hole.clicked.connect(self.lock_quad_frames)
-        self.type_quad = QtWidgets.QRadioButton("Прямоугольник", self.hole_type_frame)
-        self.type_quad.clicked.connect(self.lock_diameter_frame)
-
-        box = QtWidgets.QGridLayout(self.hole_type_frame)
-        box.addWidget(label, 0, 0, 1, 2, QtCore.Qt.AlignmentFlag.AlignCenter)
-        box.addWidget(self.type_hole, 1, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
-        box.addWidget(self.type_quad, 1, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
-
-    def lock_quad_frames(self):
+    '''def lock_quad_frames(self):
         self.type_hole.toggle()
         self.parameter_list[4].setEnabled(False)
         self.parameter_list[5].setEnabled(False)
@@ -201,33 +157,9 @@ class CalcFlow(QtWidgets.QWidget):
         self.type_quad.toggle()
         self.parameter_list[3].setEnabled(False)
         self.parameter_list[4].setEnabled(True)
-        self.parameter_list[5].setEnabled(True)
+        self.parameter_list[5].setEnabled(True)'''
 
-    def setup_frame_position(self):
-        calc_box = QtWidgets.QGridLayout(self)
-        calc_box.setHorizontalSpacing(40)
-        calc_box.setVerticalSpacing(15)
-        calc_box.setContentsMargins(40, 30, 30, 30)
-        calc_box.setColumnMinimumWidth(2, 20)
-        calc_box.setRowMinimumHeight(5, 20)
-
-        calc_box.addWidget(self.parameter_list[0], 0, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.parameter_list[1], 2, 0, 2, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.parameter_list[2], 4, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.hole_type_frame, 0, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.parameter_list[3], 2, 1, QtCore.Qt.AlignmentFlag.AlignTop |
-                           QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.parameter_list[4], 3, 1, QtCore.Qt.AlignmentFlag.AlignTop |
-                           QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.parameter_list[5], 4, 1, QtCore.Qt.AlignmentFlag.AlignTop |
-                           QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.perfomance_name, 6, 0)
-        calc_box.addWidget(self.perfomance_frame, 6, 1)
-        calc_box.addWidget(self.per_in_hour_name, 7, 0)
-        calc_box.addWidget(self.per_in_hour_frame, 7, 1)
-        calc_box.addWidget(self.calc_control, 2, 3, 3, 1)
-
-    @QtCore.pyqtSlot()
+    '''@QtCore.pyqtSlot()
     def calculate_result(self):
         locale.setlocale(locale.LC_ALL, "ru")
 
@@ -268,113 +200,29 @@ class CalcFlow(QtWidgets.QWidget):
         self.perfomance_frame.result_label.clear()
         self.per_in_hour_frame.result_label.clear()
         self.lock_quad_frames()
-        app_classes.ClearAndLockCalc.activate(self.parameter_list, self.calc_control)
+        app_classes.ClearAndLockCalc.activate(self.parameter_list, self.calc_control)'''
 
 
-class CalcNoise(QtWidgets.QWidget):
-    def __init__(self, parent, band_31=None, band_63=None, band_125=None, band_250=None, band_500=None, band_1k=None,
-                 band_2k=None, band_4k=None, band_8k=None, band_l_as=None, unit_name_frame=None, other_name_frame=None,
-                 phone_name_frame=None, delta_name_frame=None, main_result_name_frame=None):
-        super().__init__(parent)
-        self.band_list = [band_31, band_63, band_125, band_250, band_500, band_1k, band_2k, band_4k, band_8k, band_l_as]
-        self.side_frame_list = [unit_name_frame, other_name_frame, phone_name_frame, delta_name_frame,
-                                main_result_name_frame]
+class NoiseLevelsWithBackground(AtmosphericAirDust):
+    def __init__(self):
+        super().__init__()
 
-        self.side_frame_list[0] = QtWidgets.QLabel("дБ  \\  Гц", self)
-        self.side_frame_list[1] = QtWidgets.QLabel("Общий уровень", self)
-        self.side_frame_list[2] = QtWidgets.QLabel("Фоновый уровень", self)
-        self.side_frame_list[3] = QtWidgets.QLabel("Разность с фоном", self)
-        self.side_frame_list[4] = QtWidgets.QLabel("С поправкой на фон", self)
+    def set_title_names(self):
+        return constants.NOISE_CALC_BANDLINE_NAMES
 
-        for size in self.side_frame_list:
-            size.setFixedHeight(40)
-
-        self.side_frame_list[0].setAlignment(QtCore.Qt.AlignmentFlag.AlignHCenter)
-        for align in self.side_frame_list[1:]:
-            align.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
-
-        self.band_list[0] = app_classes.BandLineLevels(self, "31.5")
-        self.band_list[1] = app_classes.BandLineLevels(self, "63")
-        self.band_list[2] = app_classes.BandLineLevels(self, "125")
-        self.band_list[3] = app_classes.BandLineLevels(self, "250")
-        self.band_list[4] = app_classes.BandLineLevels(self, "500")
-        self.band_list[5] = app_classes.BandLineLevels(self, "1K")
-        self.band_list[6] = app_classes.BandLineLevels(self, "2K")
-        self.band_list[7] = app_classes.BandLineLevels(self, "4K")
-        self.band_list[8] = app_classes.BandLineLevels(self, "8K")
-        self.band_list[9] = app_classes.BandLineLevels(self, "L(AS)")
-
-        self.calc_control = app_classes.ControlFrame(self)
-        self.calc_control.button_ok.clicked.connect(self.calculate_band_lines)
-        self.calc_control.button_clear.clicked.connect(self.clear_frames)
-
-        self.setup_frame_position()
-
-    def setup_frame_position(self):
-        title_left = QtWidgets.QWidget(self)
-        title_box = QtWidgets.QVBoxLayout(title_left)
-        title_box.setSpacing(7)
-        for label in self.side_frame_list:
-            title_box.addWidget(label)
-
-        calc_box = QtWidgets.QGridLayout(self)
-        calc_box.setContentsMargins(30, 40, 30, 30)
-        calc_box.setColumnMinimumWidth(11, 30)
-        calc_box.setSpacing(0)
-
-        calc_box.addWidget(title_left, 0, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.band_list[0], 0, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.band_list[1], 0, 2, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.band_list[2], 0, 3, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.band_list[3], 0, 4, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.band_list[4], 0, 5, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.band_list[5], 0, 6, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.band_list[6], 0, 7, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.band_list[7], 0, 8, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.band_list[8], 0, 9, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.band_list[9], 0, 10, QtCore.Qt.AlignmentFlag.AlignCenter)
-        calc_box.addWidget(self.calc_control, 0, 12, QtCore.Qt.AlignmentFlag.AlignCenter)
-
-    @QtCore.pyqtSlot()
-    def calculate_band_lines(self):
-        try:
-            for band in self.band_list:
-                band.calculate_result()
-        except TypeError:
-            app_classes.ClearAndLockCalc.clear_bandline(self.band_list)
-            app_classes.ErrorLabel(self)
-        else:
-            app_classes.ClearAndLockCalc.lock(self.band_list, self.calc_control)
-
-    @QtCore.pyqtSlot()
-    def clear_frames(self):
-        app_classes.ClearAndLockCalc.clear_bandline(self.band_list)
-        app_classes.ClearAndLockCalc.activate(self.band_list, self.calc_control)
+    def set_area_objects(self, band_31=None, band_63=None, band_125=None, band_250=None, band_500=None, band_1k=None,
+                         band_2k=None, band_4k=None, band_8k=None, band_l_as=None):
+        return [band_31, band_63, band_125, band_250, band_500, band_1k, band_2k, band_4k, band_8k, band_l_as]
 
 
-class ObjectsManupulator(QtWidgets.QTabWidget):
+class CalculatorObjectManipulator(QtWidgets.QTabWidget):
     def __init__(self):
         super().__init__()
         self.addTab(AtmosphericAirDust(), "Air")
         self.addTab(WorkAreaAirDust(), "Zone")
+        self.addTab(VentilationEfficiency(), "Vent")
+        self.addTab(NoiseLevelsWithBackground(), "Noise")
         self.setCurrentIndex(0)
         self.setDocumentMode(True)
 
         self.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
