@@ -11,3 +11,6 @@ app = QtWidgets.QApplication(sys.argv)
 #zone_test = WorkAreaAirDust()
 tab_test = CalculatorObjectManipulator()
 sys.exit(app.exec())
+
+
+# Рамки у фрейма сделать css стилями глобально !!!

@@ -1,26 +1,10 @@
 import sys
 from PyQt6 import QtWidgets, QtCore, QtGui
 from functools import partial
-from calculators_objects import CalcAir, CalcZone, CalcFlow, CalcNoise
+from calculators_objects import
 
 
-class ApplicationWindow(QtWidgets.QWidget):
-    DARK_COLORS = ("#0a0a0a;", "#bbbbbb;", "#414a4c;", "#2c3337;", "#00bfff;", "#1a0000;", "#00b300;",
-                   "#1c1c1c;", "#022027;", "#9d9101;")
-
-    LIGHT_COLORS = ("#fcfcee;", "#18171c;", "#f5f5f5;", "#f0f8ff;", "#140f0b;", "#afeeee;", "#003399;",
-                    "#45cea2;", "#eedc82;", "#282828;")
-
-    HELP_INFO = ("1.   Расчет единичного измерения массовой концентрации взвешенных веществ в атмосферном воздухе.\n"
-                 "РД 52.04.896-2020 «Массовая концентрация взвешенных веществ в пробах атмосферного воздуха. "
-                 "Методика измерений гравиметрическим методом»\n\n2.   Расчет единичного измерения массовой "
-                 "концентрации пыли (дисперсной фазы аэрозолей) в пробах воздуха рабочей зоны.\n"
-                 "МУК 4.1.2468-09 «Измерение массовых концентраций пыли в воздухе рабочей зоны предприятий "
-                 "горнорудной и нерудной промышленности»\n\n3.   Определение показателей эффективности вентиляции.\n"
-                 "МР 4.3.0212-20 «Контроль систем вентиляции»\n\n4.   Расчет поправок для учета влияния  "
-                 "фонового шума.\nМУК 4.3.3722-21 «Контроль уровня шума на территории жилой застройки, в жилых и "
-                 "общественных зданиях и помещениях»")
-
+class ApplicationType(QtWidgets.QMainWindow):
     def __init__(self, calc_frame=None, selector_frame=None):
         super().__init__()
         self.calc_frame = calc_frame
@@ -114,50 +98,36 @@ class ApplicationWindow(QtWidgets.QWidget):
                                       colors_list[9] + "}")
 
 
-class CalcSelector(QtWidgets.QWidget):
-    def __init__(self, parent, calc_parent):
+class SelectorPanel(QtWidgets.QWidget):
+    def __init__(self, parent):
         super().__init__(parent)
-        self.calc_parent = calc_parent
-        self.list_names = ['Пыль в атмосферном воздухе', 'Пыль в воздухе рабочей зоны',
-                           'Эффективность вентиляции', 'Учет влияния фонового шума']
 
-        self.air_calc = CalcAir(self.calc_parent)
-        self.zone_calc = CalcZone(self.calc_parent)
-        self.flow_calc = CalcFlow(self.calc_parent)
-        self.noise_calc = CalcNoise(self.calc_parent)
+        self.names = ("Калькуляторы", "Журналы")
 
-        self.select_list = QtWidgets.QListView(self)
-        self.model_type = QtCore.QStringListModel(self.list_names)
-        self.select_list.setModel(self.model_type)
-        self.select_list.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
-        self.select_list.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.select_list.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
-        self.select_list.setSpacing(10)
-        self.select_list.setFrameStyle(QtWidgets.QFrame.Shape.NoFrame)
-        self.select_list.setTabKeyNavigation(True)
+        self.model_type = QtCore.QStringListModel(self.names)
+        self.selector_object = QtWidgets.QListView(self)
+        self.selector_object.setModel(self.model_type)
+        self.selector_object.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
+        self.selector_object.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.selector_object.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
+        self.selector_object.setSpacing(10)
+        self.selector_object.setFrameStyle(QtWidgets.QFrame.Shape.NoFrame)
+        self.selector_object.setTabKeyNavigation(True)
+
         self.box = QtWidgets.QVBoxLayout(self)
-        self.box.addWidget(self.select_list, QtCore.Qt.AlignmentFlag.AlignTop)
+        self.box.addWidget(self.selector_object, QtCore.Qt.AlignmentFlag.AlignTop)
         self.box.setContentsMargins(3, 5, 3, 3)
         self.resize(220, 160)
         self.show()
 
-        self.info_text = self.create_default_info_label()
+        self.index_calculators = self.model_type.index(0, 0)
 
-        self.index_air = self.model_type.index(0, 0)
-        self.index_zone = self.model_type.index(1, 0)
-        self.index_flow = self.model_type.index(2, 0)
-        self.index_noise = self.model_type.index(3, 0)
 
-        self.select_list.activated.connect(self.destroy_info_label)
         self.select_list.activated.connect(self.click_air_calc)
         self.select_list.activated.connect(self.click_zone_calc)
         self.select_list.activated.connect(self.click_flow_calc)
         self.select_list.activated.connect(self.click_noise_calc)
 
-    @QtCore.pyqtSlot()
-    def destroy_info_label(self):
-        if self.info_text:
-            self.info_text.close()
 
     @QtCore.pyqtSlot()
     def click_air_calc(self):
@@ -187,10 +157,3 @@ class CalcSelector(QtWidgets.QWidget):
                 calc.close()
             self.noise_calc.show()
 
-    def create_default_info_label(self):
-        label = QtWidgets.QLabel(ApplicationWindow.HELP_INFO, self.calc_parent)
-        label.setContentsMargins(10, 20, 0, 0)
-        label.setFixedWidth(1010)
-        label.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
-        label.show()
-        return label

@@ -42,50 +42,58 @@ class EntryValueField(QtWidgets.QLineEdit):
         return self.value
 
 
-class ResultField(QtWidgets.QWidget):
-    TEXT_MARGINS = QtCore.QMargins(0, 0, 0, 0)
-
+class ResultField(QtWidgets.QFrame):     #Frame ????
     def __init__(self, parent):
         super().__init__(parent)
-        self.result = QtWidgets.QLabel(self)
-        self.result.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-
-        self.box = QtWidgets.QHBoxLayout(self)
-        self.box.addWidget(self.result, QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.box.setContentsMargins(ResultField.TEXT_MARGINS)
+        self.setFixedSize(500, 500)
+        self.setFrameShape(QtWidgets.QFrame.Shape.Box)
 
 
-class ControlFrame(QtWidgets.QWidget):      # more classes
-    SIZE = QtCore.QSize(35, 35)
-    SPACE = 30
-
+class MainControlField(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
-        self.icon_ok = QtGui.QIcon("images/check.ico")
-        self.icon_exit = QtGui.QIcon("images/close.ico")
-        self.icon_clear = QtGui.QIcon("images/basket.ico")
+        #self.setFixedSize()
+        self.icon_size = QtCore.QSize(35, 35)
+
+        self.icon_change_style = QtGui.QIcon("images/style.ico")
+        self.icon_ok = QtGui.QIcon("images/ok.ico")
+        self.icon_clear = QtGui.QIcon("images/clear.ico")
+        self.icon_copy = QtGui.QIcon("images/copy.ico")
+        self.icon_exit = QtGui.QIcon("images/exit.ico")
+
+        self.button_change_style = QtWidgets.QPushButton(self)
+        self.button_change_style.setIcon(self.icon_change_style)
+        self.button_change_style.setIconSize(self.icon_size)
 
         self.button_ok = QtWidgets.QPushButton(self)
         self.button_ok.setIcon(self.icon_ok)
-        self.button_ok.setIconSize(ControlFrame.SIZE)
+        self.button_ok.setIconSize(self.icon_size)
         self.button_ok.setAutoDefault(True)
 
         self.button_clear = QtWidgets.QPushButton(self)
         self.button_clear.setIcon(self.icon_clear)
-        self.button_clear.setIconSize(ControlFrame.SIZE)
-        self.button_clear.setEnabled(False)
+        self.button_clear.setIconSize(self.icon_size)
+        #self.button_clear.setEnabled(False)
         self.button_clear.setAutoDefault(True)
+
+        self.button_copy = QtWidgets.QPushButton(self)
+        self.button_copy.setIcon(self.icon_copy)
+        self.button_copy.setIconSize(self.icon_size)
 
         self.button_exit = QtWidgets.QPushButton(self)
         self.button_exit.setIcon(self.icon_exit)
-        self.button_exit.setIconSize(ControlFrame.SIZE)
+        self.button_exit.setIconSize(self.icon_size)
         self.button_exit.clicked.connect(sys.exit)
 
         self.box = QtWidgets.QVBoxLayout(self)
-        self.box.setSpacing(ControlFrame.SPACE)
+        self.box.setSpacing(20)
+        self.box.addWidget(self.button_change_style)
         self.box.addWidget(self.button_ok)
         self.box.addWidget(self.button_clear)
+        self.box.addWidget(self.button_copy)
         self.box.addWidget(self.button_exit)
+
+#class ChangeStyle:
 
 
 class BandLineLevels(QtWidgets.QWidget):
