@@ -49,10 +49,10 @@ class ResultField(QtWidgets.QFrame):     #Frame ????
         self.setFrameShape(QtWidgets.QFrame.Shape.Box)
 
 
-class MainControlField(QtWidgets.QWidget):
+class MainControlField(QtWidgets.QWidget):   # methods ??
     def __init__(self, parent):
         super().__init__(parent)
-        #self.setFixedSize()
+        self.resize(80, 300)
         self.icon_size = QtCore.QSize(35, 35)
 
         self.icon_change_style = QtGui.QIcon("images/style.ico")
@@ -92,16 +92,18 @@ class MainControlField(QtWidgets.QWidget):
         self.box.addWidget(self.button_clear)
         self.box.addWidget(self.button_copy)
         self.box.addWidget(self.button_exit)
+        #self.show()
 
 #class ChangeStyle:
 
 
-class BandLineLevels(QtWidgets.QWidget):
+'''class BandLineLevels(QtWidgets.QWidget):
     BOX_SPACE = 7
     SIZE = QtCore.QSize(55, 40)
 
     def __init__(self, parent, header, herz_frame=None, other_level_frame=None, phone_level_frame=None,
-                 delta_result_frame=None, main_result_frame=None, result_label=None):
+                 delta_result_frame=None, main_result_frame=None, result_label=None, ResultFrame=None, ResultFrame=None,
+                 EntryDB=None, EntryDB=None):
         super().__init__(parent)
         self.header = header
         self.bandline_items = [herz_frame, other_level_frame, phone_level_frame, delta_result_frame, main_result_frame]
@@ -224,4 +226,4 @@ class ErrorLabel(QtWidgets.QLabel):
 
     def clear_error_label(self):
         self.close()
-        '''
+

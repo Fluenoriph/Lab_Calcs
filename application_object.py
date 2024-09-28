@@ -1,86 +1,42 @@
 import sys
 from PyQt6 import QtWidgets, QtCore, QtGui
 from functools import partial
-from calculators_objects import
+import constants
+from application_classes import MainControlField
+from calculators_objects import CalculatorObjectManipulator as CalcsArea
 
 
-class ApplicationType(QtWidgets.QMainWindow):
-    def __init__(self, calc_frame=None, selector_frame=None):
+class ApplicationType(QtWidgets.QWidget):
+    def __init__(self):
         super().__init__()
-        self.calc_frame = calc_frame
-        self.selector_frame = selector_frame
-
-        self.setWindowTitle("Калькуляторы")
-        self.resize(1285, 670)
+        self.setWindowTitle("Лабораторная система")
+        self.resize(1000, 600)
         self.move(self.width() * -2, 0)
-        self.setWindowOpacity(0.98)
         screen_size = self.screen().availableSize()
         x = (screen_size.width() - self.frameSize().width()) // 2
         y = (screen_size.height() - self.frameSize().height()) // 2
         self.move(x, y)
         self.activateWindow()
+
+        self.main_menu_area = MainMenu(self)
+        self.selector_area = SelectorPanel(self)
+        self.main_area = CalcsArea(self)
+        self.control_area = MainControlField(self)
+
+        self.box = QtWidgets.QGridLayout(self)
+        self.box.setContentsMargins(0, 0, 0, 0)
+        self.box.addWidget(self.main_menu_area, 0, 0, 1, 3, QtCore.Qt.AlignmentFlag.AlignTop)
+        self.box.addWidget(self.selector_area, 1, 0, constants.ALIGNMENT_TOP_LEFT)
+        self.box.addWidget(self.main_area, 1, 1, constants.ALIGNMENT_TOP_LEFT)
+        self.box.addWidget(self.control_area, 1, 2, constants.ALIGNMENT_LEFT_CENTER)
+
+
+
         self.show()
 
-        self.create_main_menu()
-        self.create_selector_frame()
-        self.create_calc_frame()
-        CalcSelector(self.selector_frame, self.calc_frame)
 
-        self.set_app_style(ApplicationWindow.LIGHT_COLORS)
 
-    @QtCore.pyqtSlot()
-    def open_about_message(self):
-        QtWidgets.QMessageBox.about(self, "О программе", "Калькулятор Лабораторный 2.0\n\n"
-                                    "Свободное ПО с окрытым исходным кодом\n\nИван Богданов, 2024\n"
-                                                         "fluenoriph@gmail.com")
-
-    @QtCore.pyqtSlot()
-    def open_help_message(self):
-        QtWidgets.QMessageBox.information(self, "Справка", ApplicationWindow.HELP_INFO)
-
-    def create_main_menu(self):
-        main_menu = QtWidgets.QMenuBar(self)
-        submenu_file = QtWidgets.QMenu("Файл", main_menu)
-        submenu_view = QtWidgets.QMenu("Вид", main_menu)
-        submenu_help = QtWidgets.QMenu("Помощь", main_menu)
-        main_menu.addMenu(submenu_file)
-        main_menu.addMenu(submenu_view)
-        main_menu.addMenu(submenu_help)
-        main_menu.show()
-
-        exit_programm = QtGui.QAction("Выход", submenu_file)
-        exit_programm.triggered.connect(sys.exit)
-        submenu_file.addAction(exit_programm)
-
-        themes = submenu_view.addMenu("Темы")
-        dark_style = QtGui.QAction("Темная", themes)
-        dark_style.triggered.connect(partial(self.set_app_style, ApplicationWindow.DARK_COLORS))
-        light_style = QtGui.QAction("Светлая", themes)
-        light_style.triggered.connect(partial(self.set_app_style, ApplicationWindow.LIGHT_COLORS))
-        themes.addAction(dark_style)
-        themes.addSeparator()
-        themes.addAction(light_style)
-
-        link = QtGui.QAction("Справка", submenu_help)
-        link.triggered.connect(self.open_help_message)
-        about = QtGui.QAction("О программе", submenu_help)
-        about.triggered.connect(self.open_about_message)
-
-        submenu_help.addAction(link)
-        submenu_help.addSeparator()
-        submenu_help.addAction(about)
-
-    def create_selector_frame(self):
-        self.selector_frame = QtWidgets.QWidget(self)
-        self.selector_frame.setGeometry(5, 35, 225, 600)
-        self.selector_frame.show()
-
-    def create_calc_frame(self):
-        self.calc_frame = QtWidgets.QWidget(self)
-        self.calc_frame.setGeometry(245, 35, 1035, 600)
-        self.calc_frame.show()
-
-    @QtCore.pyqtSlot()
+    '''@QtCore.pyqtSlot()
     def set_app_style(self, colors_list):
         self.setStyleSheet("* {background-color: " + colors_list[0] + "font: 14px arial, sans-serif; color: " +
                            colors_list[1] + "} QPushButton {background-color: " + colors_list[7] + "} "
@@ -95,7 +51,51 @@ class ApplicationType(QtWidgets.QMainWindow):
                                       "} QPushButton {border-style: outset; border-radius: 7px; padding: 5px; "
                                       "background-color: " + colors_list[7] +
                                       "} QFrame>QFrame {background-color: " + colors_list[8] + "color: " +
-                                      colors_list[9] + "}")
+                                      colors_list[9] + "}")'''
+
+
+class MainMenu(QtWidgets.QMenuBar):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.submenu_file = QtWidgets.QMenu("Файл", self)
+        self.submenu_view = QtWidgets.QMenu("Вид", self)
+        self.submenu_help = QtWidgets.QMenu("Помощь", self)
+
+        self.addMenu(self.submenu_file)
+        self.addMenu(self.submenu_view)
+        self.addMenu(self.submenu_help)
+        self.show()
+
+        self.exit_act = QtGui.QAction("Выход", self.submenu_file)
+        self.exit_act.triggered.connect(sys.exit)
+        self.submenu_file.addAction(self.exit_act)
+
+        self.themes = self.submenu_view.addMenu("Темы")
+        self.dark = QtGui.QAction("Темная", self.themes)
+        #dark_style.triggered.connect(partial(self.set_app_style, ApplicationWindow.DARK_COLORS))
+        self.light = QtGui.QAction("Светлая", self.themes)
+        #light_style.triggered.connect(partial(self.set_app_style, ApplicationWindow.LIGHT_COLORS))
+        self.themes.addAction(self.dark)
+        self.themes.addSeparator()
+        self.themes.addAction(self.light)
+
+        self.help_link = QtGui.QAction(constants.HELP_INFO_MESSAGE[0], self.submenu_help)
+        self.help_link.triggered.connect(self.open_help_message)
+
+        self.about = QtGui.QAction(constants.ABOUT_INFO_MESSAGE[0], self.submenu_help)
+        self.about.triggered.connect(self.open_about_app_message)
+
+        self.submenu_help.addAction(self.help_link)
+        self.submenu_help.addSeparator()
+        self.submenu_help.addAction(self.about)
+
+    @QtCore.pyqtSlot()
+    def open_about_app_message(self):
+        QtWidgets.QMessageBox.about(self, constants.ABOUT_INFO_MESSAGE[0], constants.ABOUT_INFO_MESSAGE[1])
+
+    @QtCore.pyqtSlot()
+    def open_help_message(self):
+        QtWidgets.QMessageBox.information(self, constants.HELP_INFO_MESSAGE[0], constants.HELP_INFO_MESSAGE[1])
 
 
 class SelectorPanel(QtWidgets.QWidget):
@@ -117,13 +117,12 @@ class SelectorPanel(QtWidgets.QWidget):
         self.box = QtWidgets.QVBoxLayout(self)
         self.box.addWidget(self.selector_object, QtCore.Qt.AlignmentFlag.AlignTop)
         self.box.setContentsMargins(3, 5, 3, 3)
-        self.resize(220, 160)
+        self.setFixedSize(220, 160)
         self.show()
 
-        self.index_calculators = self.model_type.index(0, 0)
+        self.calculators_index = self.model_type.index(0, 0)
 
-
-        self.select_list.activated.connect(self.click_air_calc)
+        '''self.select_list.activated.connect(self.click_air_calc)
         self.select_list.activated.connect(self.click_zone_calc)
         self.select_list.activated.connect(self.click_flow_calc)
         self.select_list.activated.connect(self.click_noise_calc)
@@ -155,5 +154,6 @@ class SelectorPanel(QtWidgets.QWidget):
         if self.select_list.currentIndex() == self.index_noise:
             for calc in (self.zone_calc, self.flow_calc, self.air_calc):
                 calc.close()
-            self.noise_calc.show()
+            self.noise_calc.show()'''
+
 

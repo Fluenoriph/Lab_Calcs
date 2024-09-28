@@ -1,5 +1,5 @@
 from PyQt6 import QtWidgets, QtCore
-from application_classes import EntryValueField
+from application_classes import EntryValueField, ResultField
 import constants
 import math
 import locale
@@ -11,7 +11,7 @@ class AtmosphericAirDust(QtWidgets.QWidget):
         self.set_global_size()
 
         self.title_names = self.set_title_names()
-        self.entry_objects = self.set_area_objects()
+        self.entry_objects = AtmosphericAirDust.set_area_objects()
 
         self.box = QtWidgets.QGridLayout(self)
         self.box.setVerticalSpacing(10)
@@ -33,7 +33,8 @@ class AtmosphericAirDust(QtWidgets.QWidget):
     def set_title_names(self):
         return constants.ATMOSPHERIC_CALC_DUST_TITLE_NAMES
 
-    def set_area_objects(self, volume=None, temperature=None, pressure=None, mass_before=None, mass_after=None):
+    @staticmethod
+    def set_area_objects(volume=None, temperature=None, pressure=None, mass_before=None, mass_after=None):
         return volume, temperature, pressure, mass_before, mass_after
 
     def create_components(self):
@@ -148,8 +149,9 @@ class VentilationEfficiency(AtmosphericAirDust):
     def set_title_names(self):
         return constants.VENTILATION_CALC_TITLE_NAMES
 
-    def set_area_objects(self, room_square=None, room_height=None, flow_speed=None, diameter_circle=None,
-                         width_quad=None, height_quad=None):
+    @staticmethod
+    def set_area_objects(room_square=None, room_height=None, flow_speed=None, diameter_circle=None, width_quad=None,
+                         height_quad=None):
         return room_square, room_height, flow_speed, diameter_circle, width_quad, height_quad
 
     '''def lock_quad_frames(self):
@@ -215,7 +217,8 @@ class NoiseLevelsWithBackground(AtmosphericAirDust):
     def set_title_names(self):
         return constants.NOISE_CALC_BANDLINE_NAMES
 
-    def set_area_objects(self, band_31_source=None, band_63_source=None, band_125_source=None, band_250_source=None,
+    @staticmethod
+    def set_area_objects(band_31_source=None, band_63_source=None, band_125_source=None, band_250_source=None,
                          band_500_source=None, band_1k_source=None, band_2k_source=None, band_4k_source=None,
                          band_8k_source=None, band_l_as_source=None, band_31_background=None, band_63_background=None,
                          band_125_background=None, band_250_background=None, band_500_background=None,
@@ -263,16 +266,25 @@ class NoiseLevelsWithBackground(AtmosphericAirDust):
             j += 1
 
 
-class CalculatorObjectManipulator(QtWidgets.QTabWidget):
-    def __init__(self):
-        super().__init__()
+class CalculatorObjectManipulator(QtWidgets.QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
         self.resize(900, 700)
 
-        self.addTab(AtmosphericAirDust(), "Air")
-        self.addTab(WorkAreaAirDust(), "Zone")
-        self.addTab(VentilationEfficiency(), "Vent")
-        self.addTab(NoiseLevelsWithBackground(), "Noise")
+        self.tab_selector = QtWidgets.QTabWidget(self)
+        self.tab_selector.addTab(AtmosphericAirDust(), "Air")
+        self.tab_selector.addTab(WorkAreaAirDust(), "Zone")
+        self.tab_selector.addTab(VentilationEfficiency(), "Vent")
+        self.tab_selector.addTab(NoiseLevelsWithBackground(), "Noise")
+        self.tab_selector.setCurrentIndex(0)
+        self.tab_selector.setDocumentMode(True)
 
-        self.setCurrentIndex(0)
-        self.setDocumentMode(True)
+        self.result_area = ResultField(self)
+
+        self.box = QtWidgets.QVBoxLayout(self)
+        self.box.addWidget(self.tab_selector)
+        self.box.addWidget(self.result_area)
+
+
+
         self.show()
