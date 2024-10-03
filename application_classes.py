@@ -8,9 +8,9 @@ class EntryValueField(QtWidgets.QLineEdit):
     ALL_VALUES_CHECK_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,]+"))
     TEMPERATURE_CHECK_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,-]+"))
 
-    def __init__(self, parent, value=None):
+    def __init__(self, parent):
         super().__init__(parent)
-        self.value = value
+        self.value = None
         self.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.setFrame(True)
         self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
@@ -24,8 +24,7 @@ class EntryValueField(QtWidgets.QLineEdit):
                                                     EntryValueField.TEMPERATURE_CHECK_RE_STRING))
 
     @QtCore.pyqtSlot()
-    def validate_entry_text(self, re_string):
-        validator = re_string   # one var ?
+    def validate_entry_text(self, validator):
         self.setValidator(validator)
 
         if self.hasAcceptableInput():
@@ -42,11 +41,14 @@ class EntryValueField(QtWidgets.QLineEdit):
         return self.value
 
 
-class ResultField(QtWidgets.QFrame):     #Frame ????
+class ResultField(QtWidgets.QFrame):     #Frame ????  in manipulator ??
     def __init__(self, parent):
         super().__init__(parent)
-        self.setFixedSize(500, 500)
+        self.setFixedSize(500, 90)
         self.setFrameShape(QtWidgets.QFrame.Shape.Box)
+        self.result_text = QtWidgets.QLabel(self)
+        self.box = QtWidgets.QGridLayout(self)
+        self.box.addWidget(self.result_text)
 
 
 class MainControlField(QtWidgets.QWidget):   # methods ??
@@ -86,13 +88,15 @@ class MainControlField(QtWidgets.QWidget):   # methods ??
         self.button_exit.clicked.connect(sys.exit)
 
         self.box = QtWidgets.QVBoxLayout(self)
-        self.box.setSpacing(20)
+        self.box.setSpacing(15)
         self.box.addWidget(self.button_change_style)
         self.box.addWidget(self.button_ok)
         self.box.addWidget(self.button_clear)
         self.box.addWidget(self.button_copy)
         self.box.addWidget(self.button_exit)
-        #self.show()
+
+    def set_button_ok_signal(self, slot_type):
+        self.button_ok.clicked.connect(slot_type)
 
 #class ChangeStyle:
 

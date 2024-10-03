@@ -10,7 +10,7 @@ class ApplicationType(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Лабораторная система")
-        self.resize(1000, 600)
+        self.resize(1050, 600)
         self.move(self.width() * -2, 0)
         screen_size = self.screen().availableSize()
         x = (screen_size.width() - self.frameSize().width()) // 2
@@ -23,14 +23,17 @@ class ApplicationType(QtWidgets.QWidget):
         self.main_area = CalcsArea(self)
         self.control_area = MainControlField(self)
 
+        #self.control_area.button_ok.clicked.connect(AtmosphericAirDust.calculate)
+
         self.box = QtWidgets.QGridLayout(self)
         self.box.setContentsMargins(0, 0, 0, 0)
+
         self.box.addWidget(self.main_menu_area, 0, 0, 1, 3, QtCore.Qt.AlignmentFlag.AlignTop)
         self.box.addWidget(self.selector_area, 1, 0, constants.ALIGNMENT_TOP_LEFT)
         self.box.addWidget(self.main_area, 1, 1, constants.ALIGNMENT_TOP_LEFT)
         self.box.addWidget(self.control_area, 1, 2, constants.ALIGNMENT_LEFT_CENTER)
 
-
+        self.setStyleSheet("font: 13px arial, sans-serif")
 
         self.show()
 
@@ -117,7 +120,7 @@ class SelectorPanel(QtWidgets.QWidget):
         self.box = QtWidgets.QVBoxLayout(self)
         self.box.addWidget(self.selector_object, QtCore.Qt.AlignmentFlag.AlignTop)
         self.box.setContentsMargins(3, 5, 3, 3)
-        self.setFixedSize(220, 160)
+        self.setFixedSize(constants.SIZE_SELECTOR_AREA)
         self.show()
 
         self.calculators_index = self.model_type.index(0, 0)
