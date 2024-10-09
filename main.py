@@ -1,6 +1,5 @@
 from PyQt6 import QtWidgets, QtGui
 from application_object import ApplicationType
-from calculators_objects import AtmosphericAirDust, WorkAreaAirDust, VentilationEfficiency, CalculatorObjectManipulator
 import sys
 
 
@@ -12,6 +11,3 @@ app = QtWidgets.QApplication(sys.argv)
 #tab_test = CalculatorObjectManipulator()
 app_type = ApplicationType()
 sys.exit(app.exec())
-
-
-# Рамки у фрейма сделать css стилями глобально !!!

@@ -19,7 +19,7 @@ class EntryValueField(QtWidgets.QLineEdit):
         return self.textEdited.connect(partial(self.validate_entry_text,
                                                EntryValueField.ALL_VALUES_CHECK_RE_STRING))
 
-    def check_temperature_entry_value(self):
+    def check_temperature_entry_value(self):            # signal ??
         return self.editingFinished.connect(partial(self.validate_entry_text,
                                                     EntryValueField.TEMPERATURE_CHECK_RE_STRING))
 
@@ -41,62 +41,12 @@ class EntryValueField(QtWidgets.QLineEdit):
         return self.value
 
 
-class ResultField(QtWidgets.QFrame):     #Frame ????  in manipulator ??
+class ResultField(QtWidgets.QLabel):
     def __init__(self, parent):
         super().__init__(parent)
         self.setFixedSize(500, 90)
         self.setFrameShape(QtWidgets.QFrame.Shape.Box)
-        self.result_text = QtWidgets.QLabel(self)
-        self.box = QtWidgets.QGridLayout(self)
-        self.box.addWidget(self.result_text)
 
-
-class MainControlField(QtWidgets.QWidget):   # methods ??
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.resize(80, 300)
-        self.icon_size = QtCore.QSize(35, 35)
-
-        self.icon_change_style = QtGui.QIcon("images/style.ico")
-        self.icon_ok = QtGui.QIcon("images/ok.ico")
-        self.icon_clear = QtGui.QIcon("images/clear.ico")
-        self.icon_copy = QtGui.QIcon("images/copy.ico")
-        self.icon_exit = QtGui.QIcon("images/exit.ico")
-
-        self.button_change_style = QtWidgets.QPushButton(self)
-        self.button_change_style.setIcon(self.icon_change_style)
-        self.button_change_style.setIconSize(self.icon_size)
-
-        self.button_ok = QtWidgets.QPushButton(self)
-        self.button_ok.setIcon(self.icon_ok)
-        self.button_ok.setIconSize(self.icon_size)
-        self.button_ok.setAutoDefault(True)
-
-        self.button_clear = QtWidgets.QPushButton(self)
-        self.button_clear.setIcon(self.icon_clear)
-        self.button_clear.setIconSize(self.icon_size)
-        #self.button_clear.setEnabled(False)
-        self.button_clear.setAutoDefault(True)
-
-        self.button_copy = QtWidgets.QPushButton(self)
-        self.button_copy.setIcon(self.icon_copy)
-        self.button_copy.setIconSize(self.icon_size)
-
-        self.button_exit = QtWidgets.QPushButton(self)
-        self.button_exit.setIcon(self.icon_exit)
-        self.button_exit.setIconSize(self.icon_size)
-        self.button_exit.clicked.connect(sys.exit)
-
-        self.box = QtWidgets.QVBoxLayout(self)
-        self.box.setSpacing(15)
-        self.box.addWidget(self.button_change_style)
-        self.box.addWidget(self.button_ok)
-        self.box.addWidget(self.button_clear)
-        self.box.addWidget(self.button_copy)
-        self.box.addWidget(self.button_exit)
-
-    def set_button_ok_signal(self, slot_type):
-        self.button_ok.clicked.connect(slot_type)
 
 #class ChangeStyle:
 

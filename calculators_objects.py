@@ -1,11 +1,11 @@
 from PyQt6 import QtWidgets, QtCore
-from application_classes import EntryValueField, ResultField
+from application_classes import EntryValueField
 import constants
 import math
 import locale
 
 
-class AtmosphericAirDust(QtWidgets.QWidget):  # константы указаны не в классе ?
+class AtmosphericAirDust(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.setFixedSize(constants.SIZE_AIR_CALC_OBJECT)
@@ -27,12 +27,6 @@ class AtmosphericAirDust(QtWidgets.QWidget):  # константы указан�
         self.create_components()
 
         self.set_checking_value()
-
-        self.but = QtWidgets.QPushButton(self)
-        self.box.addWidget(self.but)
-        self.but.clicked.connect(self.calculate)
-
-        self.show()
 
     def set_title_names(self):
         return constants.ATMOSPHERIC_CALC_DUST_TITLE_NAMES
@@ -142,14 +136,14 @@ class VentilationEfficiency(QtWidgets.QWidget):
         self.diameter = EntryValueField(self)
         self.width = EntryValueField(self)
         self.height = EntryValueField(self)
+        self.hole_square = None
 
         self.entry_objects = (self.room_square, self.room_height, self.flow_speed, self.diameter, self.width,
                               self.height)
 
         self.create_components()
         self.set_checking_value()
-
-        self.show()
+        self.set_hole_type()
 
     def create_components(self):
         i = 0
@@ -174,50 +168,49 @@ class VentilationEfficiency(QtWidgets.QWidget):
             check.setMaxLength(7)
             check.check_entry_value()
 
-    '''def lock_quad_frames(self):
-        self.type_hole.toggle()
-        self.parameter_list[4].setEnabled(False)
-        self.parameter_list[5].setEnabled(False)
-        self.parameter_list[3].setEnabled(True)
+    @QtCore.pyqtSlot()
+    def lock_rectangle_entry_objects(self):
+        self.width.clear()
+        self.height.clear()
 
-    def lock_diameter_frame(self):
-        self.type_quad.toggle()
-        self.parameter_list[3].setEnabled(False)
-        self.parameter_list[4].setEnabled(True)
-        self.parameter_list[5].setEnabled(True)'''
+    @QtCore.pyqtSlot()
+    def lock_circle_entry_object(self):
+        self.diameter.clear()
+
+    def set_hole_type(self):
+        self.diameter.textEdited.connect(self.lock_rectangle_entry_objects)
+        self.width.textEdited.connect(self.lock_circle_entry_object)
+        self.height.textEdited.connect(self.lock_circle_entry_object)
 
     @QtCore.pyqtSlot()
     def calculate(self):
         locale.setlocale(locale.LC_ALL, "ru")
 
         room_square = self.room_square.get_entry_value()
-        h = self.parameter_list[1].get_enter_value()
-        speed = self.parameter_list[2].get_enter_value()
-        try:
-            if self.type_hole.isChecked():
-                diameter = self.parameter_list[3].get_enter_value() / 100
-                self.s_hole = (math.pi * pow(diameter, 2)) / 4
-            if self.type_quad.isChecked():
-                width = self.parameter_list[4].get_enter_value() / 100
-                height = self.parameter_list[5].get_enter_value() / 100
-                self.s_hole = width * height
+        room_height = self.room_height.get_entry_value()
+        flow_speed = self.flow_speed.get_entry_value()
 
-            volume_room = s * h
-            perfomance = speed * self.s_hole * 3600
-        except TypeError:
-            app_classes.ClearAndLockCalc.clear(self.parameter_list)
-            app_classes.ErrorLabel(self)
+        if self.diameter.get_entry_value():
+            diameter = self.diameter.get_entry_value() / 100
+            self.hole_square = (math.pi * pow(diameter, 2)) / 4
         else:
-            per_in_hour = perfomance / volume_room
-            perfomance = round(perfomance, 1)
-            per_in_hour = round(per_in_hour, 1)
-            rus_perfomance = locale.format_string("%.1f", perfomance)
-            rus_per_in_hour = locale.format_string("%.1f", per_in_hour)
-            perfomance_result = f"{rus_perfomance} м³/ч"
-            per_in_hour_result = f"{rus_per_in_hour} раз/ч"
+            width = self.width.get_entry_value() / 100
+            height = self.height.get_entry_value() / 100
+            self.hole_square = width * height
 
-            self.perfomance_frame.result_label.setText(perfomance_result)
-            self.per_in_hour_frame.result_label.setText(per_in_hour_result)
+        room_volume = room_square * room_height
+        perfomance = flow_speed * self.hole_square * 3600
+
+        per_in_hour = perfomance / room_volume
+        perfomance = round(perfomance, 1)
+        per_in_hour = round(per_in_hour, 1)
+        rus_perfomance = locale.format_string("%.1f", perfomance)
+        rus_per_in_hour = locale.format_string("%.1f", per_in_hour)
+        perfomance_result = f"{rus_perfomance} м³/ч"
+        per_in_hour_result = f"{rus_per_in_hour} раз/ч"
+
+        print(perfomance_result)
+        print(per_in_hour_result)
 
 
 
@@ -273,8 +266,6 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
 
         self.create_and_check_components()
 
-        self.show()
-
     def create_and_check_components(self):
         title_source = QtWidgets.QLabel(constants.NOISE_CALC_RESULT_NAMES[0], self)
         self.box.addWidget(title_source, 1, 0, constants.ALIGNMENT_LEFT_CENTER)
@@ -310,27 +301,6 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
             i += 1
             j += 1
 
+    def calculate(self):
 
-class CalculatorObjectManipulator(QtWidgets.QWidget):
-    def __init__(self, parent):
-        super().__init__(parent)
-        #self.setFixedSize(900, 700)
 
-        self.tab_selector = QtWidgets.QTabWidget(self)
-        self.tab_selector.addTab(AtmosphericAirDust(), "Air")
-        self.tab_selector.addTab(WorkAreaAirDust(), "Zone")
-        self.tab_selector.addTab(VentilationEfficiency(), "Vent")
-        self.tab_selector.addTab(NoiseLevelsWithBackground(), "Noise")
-        self.tab_selector.setCurrentIndex(0)
-        self.tab_selector.setDocumentMode(True)
-
-        self.result_area = ResultField(self)
-
-        self.box = QtWidgets.QVBoxLayout(self)
-        self.box.addWidget(self.tab_selector)
-        self.box.addWidget(self.result_area)
-
-        self.show()
-
-    def set_air_result_text(self, value):
-        self.result_area.result_text.setText(constants.ATMOSPHERIC_CALC_DUST_RESULT_NAMES[0] + value)
