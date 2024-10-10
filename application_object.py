@@ -2,7 +2,6 @@ import sys
 from PyQt6 import QtWidgets, QtCore, QtGui
 import application_components
 import constants
-from application_classes import ResultField
 
 
 class ApplicationType(QtWidgets.QWidget):
@@ -35,17 +34,15 @@ class LabSystemObject(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         #fixedsize
-        self.box = QtWidgets.QGridLayout(self)
+        self.box = QtWidgets.QHBoxLayout(self)
 
         self.selector_area = application_components.SelectorPanel(self)
         self.main_work_area = application_components.CalculatorObjectManipulator(self)
-        self.result_area = ResultField(self)
         self.control_area = application_components.MainControlField(self)
 
-        self.box.addWidget(self.selector_area, 0, 0, 2, 1, constants.ALIGNMENT_TOP_LEFT)
-        self.box.addWidget(self.main_work_area, 0, 1, 1, 1)
-        self.box.addWidget(self.result_area, 1, 1, 1, 1)
-        self.box.addWidget(self.control_area, 0, 2, 2, 1)
+        self.box.addWidget(self.selector_area, alignment=constants.ALIGNMENT_TOP_LEFT)
+        self.box.addWidget(self.main_work_area, alignment=constants.ALIGNMENT_TOP_LEFT)
+        self.box.addWidget(self.control_area, alignment=constants.ALIGNMENT_TOP_LEFT)
 
         self.control_area.button_ok.clicked.connect(self.main_work_area.set_calculate_slot)
 

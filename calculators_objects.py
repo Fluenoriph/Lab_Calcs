@@ -1,6 +1,6 @@
 from PyQt6 import QtWidgets, QtCore
-from application_classes import EntryValueField
 import constants
+from application_classes import EntryValueField
 import math
 import locale
 
@@ -24,8 +24,9 @@ class AtmosphericAirDust(QtWidgets.QWidget):
 
         self.entry_objects = (self.volume, self.temperature, self.pressure, self.mass_before, self.mass_after)
 
-        self.create_components()
+        self.result = None
 
+        self.create_components()
         self.set_checking_value()
 
     def set_title_names(self):
@@ -67,23 +68,21 @@ class AtmosphericAirDust(QtWidgets.QWidget):
         concentrate = round(concentrate, 2)
 
         if concentrate < 0.15:
-            print("low")  #self.fixed(constants.ATMOSPHERIC_CALC_DUST_RESULT_NAMES[1])
+            self.result = constants.ATMOSPHERIC_CALC_DUST_RESULT_NAMES[1]
+
         elif concentrate > 10.0:
-            print("down")  #self.fixed(constants.ATMOSPHERIC_CALC_DUST_RESULT_NAMES[2])
+            self.result = constants.ATMOSPHERIC_CALC_DUST_RESULT_NAMES[2]
+
         else:
             delta = 0.110 * concentrate
             delta = round(delta, 2)
             rus_concentrate = locale.format_string("%.2f", concentrate)
             rus_delta = locale.format_string("%.2f", delta)
-            result = f"{rus_concentrate} ± {rus_delta} мг/м³"
 
-            print(result)
+            self.result = f"{constants.ATMOSPHERIC_CALC_DUST_RESULT_NAMES[0]} {rus_concentrate} ± {rus_delta} мг/м³"
 
-    ''''@QtCore.pyqtSlot()
-    def clear_frames(self):
-        app_classes.ClearAndLockCalc.clear(self.parameter_list)
-        self.result_frame.result_label.clear()
-        app_classes.ClearAndLockCalc.activate(self.parameter_list, self.calc_control)'''
+    def get_result_text(self):
+        return self.result
 
 
 class WorkAreaAirDust(AtmosphericAirDust):
@@ -108,17 +107,18 @@ class WorkAreaAirDust(AtmosphericAirDust):
         concentrate = round(concentrate, 2)
 
         if concentrate < 1.0:
-            print("low")  #self.result_frame.result_label.setText("менее 1,0 мг/м³")
+            self.result = constants.WORK_AREA_CALC_DUST_RESULT_NAMES[1]
+
         elif concentrate > 250.0:
-            print("down")  #self.result_frame.result_label.setText("более 250 мг/м³")
+            self.result = constants.WORK_AREA_CALC_DUST_RESULT_NAMES[2]
+
         else:
             delta = 0.24 * concentrate
             delta = round(delta, 2)
             rus_concentrate = locale.format_string("%.2f", concentrate)
             rus_delta = locale.format_string("%.2f", delta)
-            result = f"{rus_concentrate} ± {rus_delta} мг/м³"
 
-            print(result)
+            self.result = f"{constants.WORK_AREA_CALC_DUST_RESULT_NAMES[0]} {rus_concentrate} ± {rus_delta} мг/м³"
 
 
 class VentilationEfficiency(QtWidgets.QWidget):
@@ -136,10 +136,12 @@ class VentilationEfficiency(QtWidgets.QWidget):
         self.diameter = EntryValueField(self)
         self.width = EntryValueField(self)
         self.height = EntryValueField(self)
-        self.hole_square = None
 
         self.entry_objects = (self.room_square, self.room_height, self.flow_speed, self.diameter, self.width,
                               self.height)
+
+        self.hole_square = None
+        self.result = None
 
         self.create_components()
         self.set_checking_value()
@@ -193,6 +195,7 @@ class VentilationEfficiency(QtWidgets.QWidget):
         if self.diameter.get_entry_value():
             diameter = self.diameter.get_entry_value() / 100
             self.hole_square = (math.pi * pow(diameter, 2)) / 4
+
         else:
             width = self.width.get_entry_value() / 100
             height = self.height.get_entry_value() / 100
@@ -206,21 +209,12 @@ class VentilationEfficiency(QtWidgets.QWidget):
         per_in_hour = round(per_in_hour, 1)
         rus_perfomance = locale.format_string("%.1f", perfomance)
         rus_per_in_hour = locale.format_string("%.1f", per_in_hour)
-        perfomance_result = f"{rus_perfomance} м³/ч"
-        per_in_hour_result = f"{rus_per_in_hour} раз/ч"
 
-        print(perfomance_result)
-        print(per_in_hour_result)
+        self.result = (f"{constants.VENTILATION_CALC_RESULT_NAMES[0]} {rus_perfomance} м³/ч\n\n"
+                       f"{constants.VENTILATION_CALC_RESULT_NAMES[1]} {rus_per_in_hour} раз/ч")
 
-
-
-    '''@QtCore.pyqtSlot()
-    def clear_frames(self):
-        app_classes.ClearAndLockCalc.clear(self.parameter_list)
-        self.perfomance_frame.result_label.clear()
-        self.per_in_hour_frame.result_label.clear()
-        self.lock_quad_frames()
-        app_classes.ClearAndLockCalc.activate(self.parameter_list, self.calc_control)'''
+    def get_result_text(self):
+        return self.result
 
 
 class NoiseLevelsWithBackground(QtWidgets.QWidget):
@@ -264,6 +258,9 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
                                          self.band_2k_background, self.band_4k_background, self.band_8k_background,
                                          self.band_l_as_background)
 
+        self.delta = None
+        self.result = None
+
         self.create_and_check_components()
 
     def create_and_check_components(self):
@@ -301,6 +298,58 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
             i += 1
             j += 1
 
+    def
+
+
     def calculate(self):
+        i = 0
+        while i < 11:
+
+
+
+
+
+
+            '''def calculate_result(self):
+                locale.setlocale(locale.LC_ALL, "ru")
+
+                delta = self.bandline_items[1].get_enter_value() - self.bandline_items[2].get_enter_value()
+
+                if delta < 3:
+                    self.result_label = str(self.bandline_items[1].get_enter_value())
+                elif 3.0 <= delta <= 3.4:
+                    self.result_label = self.correcting_with_phone(2.8)
+                elif 3.5 <= delta <= 3.9:
+                    self.result_label = self.correcting_with_phone(2.4)
+                elif 4.0 <= delta <= 4.4:
+                    self.result_label = self.correcting_with_phone(2.0)
+                elif 4.5 <= delta <= 4.9:
+                    self.result_label = self.correcting_with_phone(1.8)
+                elif 5.0 <= delta <= 5.9:
+                    self.result_label = self.correcting_with_phone(1.4)
+                elif 6.0 <= delta <= 6.9:
+                    self.result_label = self.correcting_with_phone(1.1)
+                elif 7.0 <= delta <= 7.9:
+                    self.result_label = self.correcting_with_phone(0.9)
+                elif 8.0 <= delta <= 8.9:
+                    self.result_label = self.correcting_with_phone(0.7)
+                elif 9.0 <= delta <= 9.9:
+                    self.result_label = self.correcting_with_phone(0.5)
+                elif delta >= 10:
+                    self.result_label = "—"
+
+                rus_delta = locale.format_string("%.1f", delta)
+
+
+
+
+            def correcting_with_phone(self, correct):
+                locale.setlocale(locale.LC_ALL, "ru")
+
+                value = self.bandline_items[1].get_enter_value() - correct
+                value = round(value, 1)
+
+                rus_value = locale.format_string("%.1f", value)
+                return rus_value'''
 
 

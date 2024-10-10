@@ -1,6 +1,5 @@
 import sys
 from PyQt6 import QtWidgets, QtCore, QtGui
-import locale
 from functools import partial
 
 
@@ -46,95 +45,21 @@ class ResultField(QtWidgets.QLabel):
         super().__init__(parent)
         self.setFixedSize(500, 90)
         self.setFrameShape(QtWidgets.QFrame.Shape.Box)
+        self.setWordWrap(True)
 
 
-#class ChangeStyle:
 
 
-'''class BandLineLevels(QtWidgets.QWidget):
-    BOX_SPACE = 7
-    SIZE = QtCore.QSize(55, 40)
-
-    def __init__(self, parent, header, herz_frame=None, other_level_frame=None, phone_level_frame=None,
-                 delta_result_frame=None, main_result_frame=None, result_label=None, ResultFrame=None, ResultFrame=None,
-                 EntryDB=None, EntryDB=None):
-        super().__init__(parent)
-        self.header = header
-        self.bandline_items = [herz_frame, other_level_frame, phone_level_frame, delta_result_frame, main_result_frame]
-        self.result_label = result_label
-
-        self.bandline_items[0] = QtWidgets.QLabel(self.header, self)
-        self.bandline_items[1] = EntryDB(self)
-        self.bandline_items[2] = EntryDB(self)
-        self.bandline_items[3] = ResultFrame(self)
-        self.bandline_items[4] = ResultFrame(self)
-
-        for size in self.bandline_items[3:5]:
-            size.setFixedSize(BandLineLevels.SIZE)
-
-        for check in self.bandline_items[1:3]:
-            check.check_all_value()
-
-        self.box = QtWidgets.QVBoxLayout(self)
-        self.box.setSpacing(BandLineLevels.BOX_SPACE)
-        for add in self.bandline_items:
-            self.box.addWidget(add, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
-
-    @QtCore.pyqtSlot()
-    def calculate_result(self):
-        locale.setlocale(locale.LC_ALL, "ru")
-
-        delta = self.bandline_items[1].get_enter_value() - self.bandline_items[2].get_enter_value()
-
-        if delta < 3:
-            self.result_label = str(self.bandline_items[1].get_enter_value())
-        elif 3.0 <= delta <= 3.4:
-            self.result_label = self.correcting_with_phone(2.8)
-        elif 3.5 <= delta <= 3.9:
-            self.result_label = self.correcting_with_phone(2.4)
-        elif 4.0 <= delta <= 4.4:
-            self.result_label = self.correcting_with_phone(2.0)
-        elif 4.5 <= delta <= 4.9:
-            self.result_label = self.correcting_with_phone(1.8)
-        elif 5.0 <= delta <= 5.9:
-            self.result_label = self.correcting_with_phone(1.4)
-        elif 6.0 <= delta <= 6.9:
-            self.result_label = self.correcting_with_phone(1.1)
-        elif 7.0 <= delta <= 7.9:
-            self.result_label = self.correcting_with_phone(0.9)
-        elif 8.0 <= delta <= 8.9:
-            self.result_label = self.correcting_with_phone(0.7)
-        elif 9.0 <= delta <= 9.9:
-            self.result_label = self.correcting_with_phone(0.5)
-        elif delta >= 10:
-            self.result_label = "—"
-
-        rus_delta = locale.format_string("%.1f", delta)
-        self.bandline_items[3].result_label.setText(rus_delta)
-        self.bandline_items[3].result_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-
-        self.bandline_items[4].result_label.setText(self.result_label)
-        self.bandline_items[4].result_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-
-    def correcting_with_phone(self, correct):
-        locale.setlocale(locale.LC_ALL, "ru")
-
-        value = self.bandline_items[1].get_enter_value() - correct
-        value = round(value, 1)
-
-        rus_value = locale.format_string("%.1f", value)
-        return rus_value
-
-    @QtCore.pyqtSlot()
-    def clear_values(self):
-        self.bandline_items[1].enter.clear()
-        self.bandline_items[2].enter.clear()
-        self.bandline_items[3].result_label.clear()
-        self.bandline_items[4].result_label.clear()
 
 
-'''
-class ClearAndLockCalc:
+
+
+
+
+
+
+
+'''class ClearAndLockCalc:
 
     @staticmethod
     def lock(frames_list, control_frame):
@@ -179,5 +104,5 @@ class ErrorLabel(QtWidgets.QLabel):
         self.timer.timeout.connect(self.clear_error_label)
 
     def clear_error_label(self):
-        self.close()
+        self.close()'''
 

@@ -2,6 +2,7 @@ from PyQt6 import QtWidgets, QtCore, QtGui
 import sys
 from functools import partial
 import constants           # импорт нужных !!
+from application_classes import ResultField
 import calculators_objects
 
 
@@ -111,36 +112,42 @@ class SelectorPanel(QtWidgets.QListView):
             self.noise_calc.show()'''
 
 
-class CalculatorObjectManipulator(QtWidgets.QTabWidget):
+class CalculatorObjectManipulator(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         #self.setFixedSize(900, 700)
+        self.tab_area = QtWidgets.QTabWidget(self)
+        self.tab_area.setCurrentIndex(0)
+        self.tab_area.setDocumentMode(True)
+
+        self.result_area = ResultField(self)
 
         self.air_calc = calculators_objects.AtmosphericAirDust()
         self.work_area_calc = calculators_objects.WorkAreaAirDust()
         self.flow_calc = calculators_objects.VentilationEfficiency()
         self.noise_calc = calculators_objects.NoiseLevelsWithBackground()
 
-        self.addTab(self.air_calc, constants.CALCULATORS_NAMES[0])
-        self.addTab(self.work_area_calc, constants.CALCULATORS_NAMES[1])
-        self.addTab(self.flow_calc, constants.CALCULATORS_NAMES[2])
-        self.addTab(self.noise_calc, constants.CALCULATORS_NAMES[3])
+        self.tab_area.addTab(self.air_calc, constants.CALCULATORS_NAMES[0])
+        self.tab_area.addTab(self.work_area_calc, constants.CALCULATORS_NAMES[1])
+        self.tab_area.addTab(self.flow_calc, constants.CALCULATORS_NAMES[2])
+        self.tab_area.addTab(self.noise_calc, constants.CALCULATORS_NAMES[3])
 
-        self.setCurrentIndex(0)
-        self.setDocumentMode(True)
+        self.box = QtWidgets.QVBoxLayout(self)
+        self.box.addWidget(self.tab_area, alignment=constants.ALIGNMENT_TOP_LEFT)
+        self.box.addWidget(self.result_area, alignment=constants.ALIGNMENT_TOP_LEFT)
 
     @QtCore.pyqtSlot()
     def set_calculate_slot(self):
-        match self.currentIndex():
+        match self.tab_area.currentIndex():
             case 0:
                 self.air_calc.calculate()
+                self.result_area.setText(self.air_calc.get_result_text())
             case 1:
                 self.work_area_calc.calculate()
+                self.result_area.setText(self.work_area_calc.get_result_text())
             case 2:
                 self.flow_calc.calculate()
-
-
-
+                self.result_area.setText(self.flow_calc.get_result_text())
 
 
 class MainControlField(QtWidgets.QWidget):   # methods ??
