@@ -137,7 +137,7 @@ class CalculatorObjectManipulator(QtWidgets.QWidget):
         self.box.addWidget(self.result_area, alignment=constants.ALIGNMENT_TOP_LEFT)
 
     @QtCore.pyqtSlot()
-    def set_calculate_slot(self):
+    def select_calculate_slot(self):
         match self.tab_area.currentIndex():
             case 0:
                 self.air_calc.calculate()

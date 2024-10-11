@@ -258,8 +258,9 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
                                          self.band_2k_background, self.band_4k_background, self.band_8k_background,
                                          self.band_l_as_background)
 
-        self.delta = None
-        self.result = None
+        self.delta_result = None
+        self.correct_result = None
+        self.result = []
 
         self.create_and_check_components()
 
@@ -298,58 +299,58 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
             i += 1
             j += 1
 
-    def
+    '''def adjust_level(self, repair_value):
+        locale.setlocale(locale.LC_ALL, "ru")
+
+        value = self.bandline_items[1].get_enter_value() - correct
+        value = round(value, 1)
+
+        rus_value = locale.format_string("%.1f", value)'''
 
 
     def calculate(self):
+        locale.setlocale(locale.LC_ALL, "ru")
+
+        source_level = self.entry_objects_source
+        background_level = self.entry_objects_background
+
         i = 0
         while i < 11:
+            self.delta_result = source_level[i].get_entry_value() - background_level[i].get_entry_value()
+
+            if self.delta_result < 3.0:
+                self.correct_result = self.entry_objects_source[i].get_entry_value()
+            elif 3.0 <= self.delta_result <= 3.4:
+                self.correct_result = self.entry_objects_source[i].get_entry_value() - 2.8
+            elif 3.5 <= self.delta_result <= 3.9:
+                self.correct_result = self.entry_objects_source[i].get_entry_value() - 2.4
+            elif 4.0 <= self.delta_result <= 4.4:
+                self.correct_result = self.entry_objects_source[i].get_entry_value() - 2.0
+            elif 4.5 <= self.delta_result <= 4.9:
+                self.correct_result = self.entry_objects_source[i].get_entry_value() - 1.8
+            elif 5.0 <= self.delta_result <= 5.9:
+                self.correct_result = self.entry_objects_source[i].get_entry_value() - 1.4
+            elif 6.0 <= self.delta_result <= 6.9:
+                self.correct_result = self.entry_objects_source[i].get_entry_value() - 1.1
+            elif 7.0 <= self.delta_result <= 7.9:
+                self.correct_result = self.entry_objects_source[i].get_entry_value() - 0.9
+            elif 8.0 <= self.delta_result <= 8.9:
+                self.correct_result = self.entry_objects_source[i].get_entry_value() - 0.7
+            elif 9.0 <= self.delta_result <= 9.9:
+                self.correct_result = self.entry_objects_source[i].get_entry_value() - 0.5
+            elif self.delta_result >= 10.0:
+                self.correct_result = "—"    # !!!!
+
+            rus_delta_result = locale.format_string("%.1f", self.delta_result)
+            rus_correct_result = locale.format_string("%.1f", self.correct_result)
 
 
 
 
 
 
-            '''def calculate_result(self):
-                locale.setlocale(locale.LC_ALL, "ru")
-
-                delta = self.bandline_items[1].get_enter_value() - self.bandline_items[2].get_enter_value()
-
-                if delta < 3:
-                    self.result_label = str(self.bandline_items[1].get_enter_value())
-                elif 3.0 <= delta <= 3.4:
-                    self.result_label = self.correcting_with_phone(2.8)
-                elif 3.5 <= delta <= 3.9:
-                    self.result_label = self.correcting_with_phone(2.4)
-                elif 4.0 <= delta <= 4.4:
-                    self.result_label = self.correcting_with_phone(2.0)
-                elif 4.5 <= delta <= 4.9:
-                    self.result_label = self.correcting_with_phone(1.8)
-                elif 5.0 <= delta <= 5.9:
-                    self.result_label = self.correcting_with_phone(1.4)
-                elif 6.0 <= delta <= 6.9:
-                    self.result_label = self.correcting_with_phone(1.1)
-                elif 7.0 <= delta <= 7.9:
-                    self.result_label = self.correcting_with_phone(0.9)
-                elif 8.0 <= delta <= 8.9:
-                    self.result_label = self.correcting_with_phone(0.7)
-                elif 9.0 <= delta <= 9.9:
-                    self.result_label = self.correcting_with_phone(0.5)
-                elif delta >= 10:
-                    self.result_label = "—"
-
-                rus_delta = locale.format_string("%.1f", delta)
 
 
 
-
-            def correcting_with_phone(self, correct):
-                locale.setlocale(locale.LC_ALL, "ru")
-
-                value = self.bandline_items[1].get_enter_value() - correct
-                value = round(value, 1)
-
-                rus_value = locale.format_string("%.1f", value)
-                return rus_value'''
 
 
