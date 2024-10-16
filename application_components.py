@@ -148,6 +148,9 @@ class CalculatorObjectManipulator(QtWidgets.QWidget):
             case 2:
                 self.flow_calc.calculate()
                 self.result_area.setText(self.flow_calc.get_result_text())
+            case 3:
+                self.noise_calc.calculate()
+                self.result_area.setText(self.noise_calc.get_result_text())
 
 
 class MainControlField(QtWidgets.QWidget):   # methods ??

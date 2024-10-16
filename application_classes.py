@@ -18,7 +18,7 @@ class EntryValueField(QtWidgets.QLineEdit):
         return self.textEdited.connect(partial(self.validate_entry_text,
                                                EntryValueField.ALL_VALUES_CHECK_RE_STRING))
 
-    def check_temperature_entry_value(self):            # signal ??
+    def check_temperature_entry_value(self):
         return self.editingFinished.connect(partial(self.validate_entry_text,
                                                     EntryValueField.TEMPERATURE_CHECK_RE_STRING))
 

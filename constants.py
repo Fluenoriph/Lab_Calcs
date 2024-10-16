@@ -58,7 +58,7 @@ VENTILATION_CALC_RESULT_NAMES = ("Производительность вент�
 
 NOISE_CALC_BANDLINE_NAMES = ("31.5", "63", "125", "250", "500", "1K", "2K", "4K", "8K", "L(AS)")
 
-NOISE_CALC_RESULT_NAMES = ("Общий уровень", "Фоновый уровень", "Разность с фоном", "С поправкой на фон")
+NOISE_CALC_RESULT_NAMES = ("Общий уровень", "Фоновый уровень", "Разность с фоном >", "С поправкой на фон >")
 
 
 ALIGNMENT_LEFT_CENTER = QtCore.Qt.AlignmentFlag.AlignCenter | QtCore.Qt.AlignmentFlag.AlignLeft

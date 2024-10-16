@@ -260,7 +260,8 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
 
         self.delta_result = None
         self.correct_result = None
-        self.result = []
+        self.delta_result_massive = []
+        self.correct_result_massive = []
 
         self.create_and_check_components()
 
@@ -299,24 +300,14 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
             i += 1
             j += 1
 
-    '''def adjust_level(self, repair_value):
-        locale.setlocale(locale.LC_ALL, "ru")
-
-        value = self.bandline_items[1].get_enter_value() - correct
-        value = round(value, 1)
-
-        rus_value = locale.format_string("%.1f", value)'''
-
-
+    @QtCore.pyqtSlot()
     def calculate(self):
         locale.setlocale(locale.LC_ALL, "ru")
 
-        source_level = self.entry_objects_source
-        background_level = self.entry_objects_background
-
         i = 0
-        while i < 11:
-            self.delta_result = source_level[i].get_entry_value() - background_level[i].get_entry_value()
+        while i < 10:
+            self.delta_result = (self.entry_objects_source[i].get_entry_value() -
+                                 self.entry_objects_background[i].get_entry_value())
 
             if self.delta_result < 3.0:
                 self.correct_result = self.entry_objects_source[i].get_entry_value()
@@ -339,18 +330,12 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
             elif 9.0 <= self.delta_result <= 9.9:
                 self.correct_result = self.entry_objects_source[i].get_entry_value() - 0.5
             elif self.delta_result >= 10.0:
-                self.correct_result = "—"    # !!!!
+                self.correct_result = self.entry_objects_source[i].get_entry_value() * 0
 
-            rus_delta_result = locale.format_string("%.1f", self.delta_result)
-            rus_correct_result = locale.format_string("%.1f", self.correct_result)
+            self.delta_result_massive.append(locale.format_string("%.1f", self.delta_result))
+            self.correct_result_massive.append(locale.format_string("%.1f", self.correct_result))
+            i += 1
 
-
-
-
-
-
-
-
-
-
-
+    def get_result_text(self):
+        return (f"{constants.NOISE_CALC_RESULT_NAMES[2]} {"|".join(self.delta_result_massive)}\n\n"
+                f"{constants.NOISE_CALC_RESULT_NAMES[3]} {"|".join(self.correct_result_massive)}")
