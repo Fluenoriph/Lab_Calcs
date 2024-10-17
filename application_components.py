@@ -1,7 +1,6 @@
 from PyQt6 import QtWidgets, QtCore, QtGui
 import sys
-from functools import partial
-import constants           # импорт нужных !!
+import constants  # импорт нужных !!
 from application_classes import ResultField
 import calculators_objects
 
@@ -119,6 +118,7 @@ class CalculatorObjectManipulator(QtWidgets.QWidget):
         self.tab_area = QtWidgets.QTabWidget(self)
         self.tab_area.setCurrentIndex(0)
         self.tab_area.setDocumentMode(True)
+        self.tab_area.currentChanged.connect(self.clear_result_area)
 
         self.result_area = ResultField(self)
 
@@ -138,22 +138,52 @@ class CalculatorObjectManipulator(QtWidgets.QWidget):
 
     @QtCore.pyqtSlot()
     def select_calculate_slot(self):
+        try:
+            match self.tab_area.currentIndex():
+                case 0:
+                    self.air_calc.calculate()
+                    self.result_area.setText(self.air_calc.get_result_text())
+                case 1:
+                    self.work_area_calc.calculate()
+                    self.result_area.setText(self.work_area_calc.get_result_text())
+                case 2:
+                    self.flow_calc.calculate()
+                    self.result_area.setText(self.flow_calc.get_result_text())
+                case 3:
+                    self.noise_calc.calculate()
+                    self.result_area.setText(self.noise_calc.get_result_text())
+        except TypeError:
+            self.show_error_message()
+
+    def clear_fields(self, entry_objects):
+        for clear in entry_objects:
+            clear.clear()
+            clear.value = None
+        self.result_area.clear()
+
+    @QtCore.pyqtSlot()
+    def select_clear_calc_type(self):
         match self.tab_area.currentIndex():
             case 0:
-                self.air_calc.calculate()
-                self.result_area.setText(self.air_calc.get_result_text())
+                self.clear_fields(self.air_calc.entry_objects)
             case 1:
-                self.work_area_calc.calculate()
-                self.result_area.setText(self.work_area_calc.get_result_text())
+                self.clear_fields(self.work_area_calc.entry_objects)
             case 2:
-                self.flow_calc.calculate()
-                self.result_area.setText(self.flow_calc.get_result_text())
+                self.clear_fields(self.flow_calc.entry_objects)
             case 3:
-                self.noise_calc.calculate()
-                self.result_area.setText(self.noise_calc.get_result_text())
+                self.clear_fields(self.noise_calc.entry_objects)
+
+    @QtCore.pyqtSlot()
+    def clear_result_area(self):
+        if self.result_area.text():
+            self.result_area.clear()
+
+    def show_error_message(self):
+        QtWidgets.QMessageBox.warning(self, "Ошибка", "Введите значения !",
+                                      defaultButton=QtWidgets.QMessageBox.StandardButton.Ok)
 
 
-class MainControlField(QtWidgets.QWidget):   # methods ??
+class MainControlField(QtWidgets.QWidget):  # methods ??
     def __init__(self, parent):
         super().__init__(parent)
         self.resize(80, 300)
@@ -196,7 +226,6 @@ class MainControlField(QtWidgets.QWidget):   # methods ??
         self.box.addWidget(self.button_clear)
         self.box.addWidget(self.button_copy)
         self.box.addWidget(self.button_exit)
-
 
 
 '''@QtCore.pyqtSlot()

@@ -1,4 +1,3 @@
-import sys
 from PyQt6 import QtWidgets, QtCore, QtGui
 from functools import partial
 
@@ -30,7 +29,7 @@ class EntryValueField(QtWidgets.QLineEdit):
             self.value = self.text()
             self.value = self.value.replace(",", ".")
             try:
-                self.value = float(self.value)
+                self.value = float(self.value)  # ok button activate factor
             except ValueError:
                 self.clear()
         else:
@@ -45,64 +44,5 @@ class ResultField(QtWidgets.QLabel):
         super().__init__(parent)
         self.setFixedSize(500, 90)
         self.setFrameShape(QtWidgets.QFrame.Shape.Box)
-        self.setWordWrap(True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-'''class ClearAndLockCalc:
-
-    @staticmethod
-    def lock(frames_list, control_frame):
-        for lock in frames_list:
-            lock.setEnabled(False)
-        control_frame.button_ok.setEnabled(False)
-        control_frame.button_clear.setEnabled(True)
-
-    @staticmethod
-    def clear(frames_list):
-        for clear in frames_list:
-            clear.enter.clear()
-
-    @staticmethod
-    def activate(frames_list, control_frame):
-        for activate in frames_list:
-            activate.setEnabled(True)
-        control_frame.button_ok.setEnabled(True)
-        control_frame.button_clear.setEnabled(False)
-
-    @staticmethod
-    def clear_bandline(band_list):
-        for line in band_list:
-            line.clear_values()
-
-
-class ErrorLabel(QtWidgets.QLabel):
-    TEXT = "ВВЕДИТЕ ЗНАЧЕНИЯ !"
-    COLOR = "color: #ff0033;"
-    POSITION = QtCore.QRect(10, 5, 160, 25)
-
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.setText(ErrorLabel.TEXT)
-        self.setStyleSheet(ErrorLabel.COLOR)
-        self.setGeometry(ErrorLabel.POSITION)
-        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, True)
-        self.show()
-
-        self.timer = QtCore.QTimer(self)
-        self.timer.start(3000)
-        self.timer.timeout.connect(self.clear_error_label)
-
-    def clear_error_label(self):
-        self.close()'''
-
+        self.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByKeyboard |
+                                     QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)

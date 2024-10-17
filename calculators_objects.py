@@ -53,7 +53,6 @@ class AtmosphericAirDust(QtWidgets.QWidget):
         self.mass_before.check_entry_value()
         self.mass_after.check_entry_value()
 
-    @QtCore.pyqtSlot()
     def calculate(self):
         locale.setlocale(locale.LC_ALL, "ru")
 
@@ -65,7 +64,7 @@ class AtmosphericAirDust(QtWidgets.QWidget):
 
         normal_volume = (volume * 273 * pressure) / ((273 + temperature) * 760)
         concentrate = (mass_after - mass_before) / normal_volume
-        concentrate = round(concentrate, 2)
+        #concentrate = round(concentrate, 2)
 
         if concentrate < 0.15:
             self.result = constants.ATMOSPHERIC_CALC_DUST_RESULT_NAMES[1]
@@ -75,11 +74,11 @@ class AtmosphericAirDust(QtWidgets.QWidget):
 
         else:
             delta = 0.110 * concentrate
-            delta = round(delta, 2)
-            rus_concentrate = locale.format_string("%.2f", concentrate)
-            rus_delta = locale.format_string("%.2f", delta)
+            #delta = round(delta, 2)
 
-            self.result = f"{constants.ATMOSPHERIC_CALC_DUST_RESULT_NAMES[0]} {rus_concentrate} ± {rus_delta} мг/м³"
+            self.result = (f"{constants.ATMOSPHERIC_CALC_DUST_RESULT_NAMES[0]} "
+                           f"{locale.format_string("%0.2f", concentrate)} ± {locale.format_string("%0.2f", delta)} "
+                           f"мг/м³")
 
     def get_result_text(self):
         return self.result
@@ -92,7 +91,6 @@ class WorkAreaAirDust(AtmosphericAirDust):
     def set_title_names(self):
         return constants.WORK_AREA_CALC_DUST_TITLE_NAMES
 
-    @QtCore.pyqtSlot()
     def calculate(self):
         locale.setlocale(locale.LC_ALL, "ru")
 
@@ -104,7 +102,7 @@ class WorkAreaAirDust(AtmosphericAirDust):
 
         normal_volume = (volume * 293 * pressure) / ((273 + temperature) * 760)
         concentrate = (mass_after - mass_before) * 1000 / normal_volume
-        concentrate = round(concentrate, 2)
+        #concentrate = round(concentrate, 2)
 
         if concentrate < 1.0:
             self.result = constants.WORK_AREA_CALC_DUST_RESULT_NAMES[1]
@@ -114,11 +112,11 @@ class WorkAreaAirDust(AtmosphericAirDust):
 
         else:
             delta = 0.24 * concentrate
-            delta = round(delta, 2)
-            rus_concentrate = locale.format_string("%.2f", concentrate)
-            rus_delta = locale.format_string("%.2f", delta)
+            #delta = round(delta, 2)
 
-            self.result = f"{constants.WORK_AREA_CALC_DUST_RESULT_NAMES[0]} {rus_concentrate} ± {rus_delta} мг/м³"
+            self.result = (f"{constants.WORK_AREA_CALC_DUST_RESULT_NAMES[0]} "
+                           f"{locale.format_string("%0.2f", concentrate)} ± {locale.format_string("%0.2f", delta)} "
+                           f"мг/м³")
 
 
 class VentilationEfficiency(QtWidgets.QWidget):
@@ -184,7 +182,6 @@ class VentilationEfficiency(QtWidgets.QWidget):
         self.width.textEdited.connect(self.lock_circle_entry_object)
         self.height.textEdited.connect(self.lock_circle_entry_object)
 
-    @QtCore.pyqtSlot()
     def calculate(self):
         locale.setlocale(locale.LC_ALL, "ru")
 
@@ -203,15 +200,13 @@ class VentilationEfficiency(QtWidgets.QWidget):
 
         room_volume = room_square * room_height
         perfomance = flow_speed * self.hole_square * 3600
-
         per_in_hour = perfomance / room_volume
-        perfomance = round(perfomance, 1)
-        per_in_hour = round(per_in_hour, 1)
-        rus_perfomance = locale.format_string("%.1f", perfomance)
-        rus_per_in_hour = locale.format_string("%.1f", per_in_hour)
+        #perfomance = round(perfomance, 1)
+        #per_in_hour = round(per_in_hour, 1)
 
-        self.result = (f"{constants.VENTILATION_CALC_RESULT_NAMES[0]} {rus_perfomance} м³/ч\n\n"
-                       f"{constants.VENTILATION_CALC_RESULT_NAMES[1]} {rus_per_in_hour} раз/ч")
+        self.result = (f"{constants.VENTILATION_CALC_RESULT_NAMES[0]} {locale.format_string("%0.1f", perfomance)} "
+                       f"м³/ч\n\n {constants.VENTILATION_CALC_RESULT_NAMES[1]} "
+                       f"{locale.format_string("%0.1f", per_in_hour)} раз/ч")
 
     def get_result_text(self):
         return self.result
@@ -258,6 +253,8 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
                                          self.band_2k_background, self.band_4k_background, self.band_8k_background,
                                          self.band_l_as_background)
 
+        self.entry_objects = self.entry_objects_source + self.entry_objects_background
+
         self.delta_result = None
         self.correct_result = None
         self.delta_result_massive = []
@@ -300,7 +297,6 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
             i += 1
             j += 1
 
-    @QtCore.pyqtSlot()
     def calculate(self):
         locale.setlocale(locale.LC_ALL, "ru")
 
@@ -332,8 +328,8 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
             elif self.delta_result >= 10.0:
                 self.correct_result = self.entry_objects_source[i].get_entry_value() * 0
 
-            self.delta_result_massive.append(locale.format_string("%.1f", self.delta_result))
-            self.correct_result_massive.append(locale.format_string("%.1f", self.correct_result))
+            self.delta_result_massive.append(locale.format_string("%0.1f", self.delta_result))
+            self.correct_result_massive.append(locale.format_string("%0.1f", self.correct_result))
             i += 1
 
     def get_result_text(self):
