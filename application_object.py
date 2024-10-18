@@ -44,7 +44,7 @@ class LabSystemObject(QtWidgets.QWidget):
             self.box.addWidget(area, alignment=constants.ALIGNMENT_TOP_LEFT)
 
         self.control_area.button_ok.clicked.connect(self.main_work_area.select_calculate_slot)
-        self.control_area.button_clear.clicked.connect(self.main_work_area.select_clear_calc_type)
+        self.control_area.button_clear.clicked.connect(self.main_work_area.select_clear_calc_object)
 
 
 

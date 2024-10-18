@@ -64,6 +64,10 @@ NOISE_CALC_BANDLINE_NAMES = ("31.5", "63", "125", "250", "500", "1K", "2K", "4K"
 NOISE_CALC_RESULT_NAMES = ("Общий уровень", "Фоновый уровень", "Разность с фоном >", "С поправкой на фон >")
 
 
+MAGAZINE_HEADER_NAMES = ("№ протокола", "Дата проведения измерений", "Дата выпуска протокола",
+                         "Наименование объекта, адрес", "бюджет/ внебюджет")
+
+
 ALIGNMENT_LEFT_CENTER = QtCore.Qt.AlignmentFlag.AlignCenter | QtCore.Qt.AlignmentFlag.AlignLeft
 
 ALIGNMENT_CENTER_CENTER = QtCore.Qt.AlignmentFlag.AlignCenter

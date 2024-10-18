@@ -162,7 +162,7 @@ class CalculatorObjectManipulator(QtWidgets.QWidget):
         self.result_area.clear()
 
     @QtCore.pyqtSlot()
-    def select_clear_calc_type(self):
+    def select_clear_calc_object(self):
         match self.tab_area.currentIndex():
             case 0:
                 self.clear_fields(self.air_calc.entry_objects)
