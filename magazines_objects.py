@@ -2,54 +2,59 @@ from PyQt6 import QtWidgets, QtCore, QtGui, QtSql
 import constants
 
 
-class MagazineAllFactors(QtWidgets.QWidget):
+class PhysicalFactorsMagazine(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-        self.connect_db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
-        self.connect_db.setDatabaseName('magazine.sqlite')
-        self.connect_db.open()
+        #self.setFixedSize()
+        self.box = QtWidgets.QGridLayout(self)
+        self.box.setVerticalSpacing(5)
+        self.box.setHorizontalSpacing(40)
 
-        self.model_type = QtSql.QSqlTableModel(parent=self)
-        self.model_type.setTable('objects')
-        self.model_type.setSort(1, QtCore.Qt.SortOrder.AscendingOrder)
-        #self.model_type.setEditStrategy(QtSql.QSqlTableModel.EditStrategy.OnRowChange)
-        self.model_type.select()
+        self.protocol_number = QtWidgets.QLineEdit(self)
+        self.first_date = QtWidgets.QDateEdit(self)
+        self.last_date = QtWidgets.QDateEdit(self)
+        self.work_type = QtWidgets.QLineEdit(self)
+        self.object_name = QtWidgets.QLineEdit(self)
+        self.object_address = QtWidgets.QLineEdit(self)
+        self.administrator = QtWidgets.QLineEdit(self)
 
-        self.rec = self.connect_db.record('objects')
-        self.rec.setValue('fff', 'iii')
-        self.rec.setValue('hhh', 'gggg')
-        self.model_type.insertRecord(-1, self.rec)
+        self.entry_objects = (self.protocol_number, self.first_date, self.last_date, self.work_type, self.object_name,
+                              self.object_address, self.administrator)
 
-
-        self.model_type.setHeaderData(1, QtCore.Qt.Orientation.Horizontal, constants.MAGAZINE_HEADER_NAMES[0])
-
-
-        self.box = QtWidgets.QVBoxLayout(self)
-        self.table_type = QtWidgets.QTableView(self)
-        self.table_type.setModel(self.model_type)
-        self.table_type.hideColumn(0)
-        self.table_type.setColumnWidth(1, 90)
-        self.table_type.setColumnWidth(2, 150)
-        self.table_type.setColumnWidth(3, 150)
-        self.table_type.setColumnWidth(4, 200)
-        self.table_type.setColumnWidth(5, 80)
-        self.box.addWidget(self.table_type)
-        '''self.button_add = QtWidgets.QPushButton("Добавить запись")
-        self.button_add.clicked.connect(self.add_record)
-        self.button_delete = QtWidgets.QPushButton("Удалить запись")
-        self.button_delete.clicked.connect(self.delete_record)'''
-        self.resize(600, 500)
-
+        self.create_main_components()
         self.show()
 
-    @QtCore.pyqtSlot()
-    def add_record(self):
-        self.model_type.insertRow(self.model_type.rowCount())
+    def create_main_components(self):
+        i = 0
+        for title_object in range(len(constants.MAGAZINE_MAIN_TITLE_NAMES)):
+            title_object = QtWidgets.QLabel(constants.MAGAZINE_MAIN_TITLE_NAMES[i], self)
+            self.box.addWidget(title_object, i, 0, constants.ALIGNMENT_LEFT_CENTER)
+            i += 1
 
-    @QtCore.pyqtSlot()
-    def delete_record(self):
-        self.model_type.removeRow(self.table_type.currentIndex().row())
-        self.model_type.select()
+        i = 0
+        for entry_object in self.entry_objects:
+            self.box.addWidget(entry_object, i, 1, constants.ALIGNMENT_LEFT_CENTER)
+            i += 1
+
+        work_type_completer = QtWidgets.QCompleter(constants.WORK_TYPE_AUTO_NAMES, self)
+        self.entry_objects[3].setCompleter(work_type_completer)
+        administrator_completer = QtWidgets.QCompleter(constants.EMPLOYEE_AUTO_NAMES, self)
+        self.entry_objects[6].setCompleter(administrator_completer)
+
+    #def create_area_of_factors(self):
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -73,5 +78,5 @@ class MagazineAllFactors(QtWidgets.QWidget):
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    table = MagazineAllFactors()
+    table = PhysicalFactorsMagazine()
     sys.exit(app.exec())

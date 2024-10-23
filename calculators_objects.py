@@ -58,7 +58,12 @@ class AtmosphericAirDust(QtWidgets.QWidget):
 
         volume = self.volume.get_entry_value() / 1000
         temperature = self.temperature.get_entry_value()
-        pressure = self.pressure.get_entry_value()
+
+        if self.pressure.get_entry_value() < 640:
+            pressure = self.pressure.get_entry_value() * 7.5
+        else:
+            pressure = self.pressure.get_entry_value()
+
         mass_before = self.mass_before.get_entry_value() * 1000
         mass_after = self.mass_after.get_entry_value() * 1000
 
@@ -96,7 +101,12 @@ class WorkAreaAirDust(AtmosphericAirDust):
 
         volume = self.volume.get_entry_value()
         temperature = self.temperature.get_entry_value()
-        pressure = self.pressure.get_entry_value()
+
+        if self.pressure.get_entry_value() < 640:
+            pressure = self.pressure.get_entry_value() * 7.5
+        else:
+            pressure = self.pressure.get_entry_value()
+
         mass_before = self.mass_before.get_entry_value() * 1000
         mass_after = self.mass_after.get_entry_value() * 1000
 
