@@ -2,6 +2,17 @@ from PyQt6 import QtWidgets, QtCore, QtGui, QtSql
 import constants
 
 
+'''class PhysicalFactorsTable(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+        # self.setFixedSize()'''
+
+
+
+
+
+
+
 class PhysicalFactorsMagazine(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
@@ -20,6 +31,14 @@ class PhysicalFactorsMagazine(QtWidgets.QWidget):
 
         self.entry_objects = (self.protocol_number, self.first_date, self.last_date, self.work_type, self.object_name,
                               self.object_address, self.administrator)
+
+        self.connect_db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
+        self.connect_db.setDatabaseName('physical_data.db')
+        self.connect_db.open()
+        print(self.connect_db.tables())
+        self.connect_db.close()
+
+
 
         self.create_main_components()
         self.show()
