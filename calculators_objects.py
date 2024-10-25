@@ -169,7 +169,7 @@ class VentilationEfficiency(QtWidgets.QWidget):
             i += 1
 
         for holy_type_entry_object in self.entry_objects[3:6]:
-            holy_type_entry_object.setFixedSize(constants.SIZE_HOLE_ENTRY_OBJECTS)
+            holy_type_entry_object.setFixedSize(constants.SIZE_VENTILATION_HOLE_ENTRY_OBJECTS)
             self.box.addWidget(holy_type_entry_object, i, 1, constants.ALIGNMENT_CENTER_CENTER)
             i += 1
 
@@ -287,25 +287,21 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
             i += 1
             j += 1
 
-        i = 0
-        j = 1
+        i = 1
         for entry_object_source in self.entry_objects_source:
             entry_object_source.setFixedSize(constants.SIZE_NOISE_CALC_ENTRY_OBJECTS)
             entry_object_source.setMaxLength(5)
             entry_object_source.check_entry_value()
-            self.box.addWidget(entry_object_source, 1, j, constants.ALIGNMENT_CENTER_CENTER)
+            self.box.addWidget(entry_object_source, 1, i, constants.ALIGNMENT_CENTER_CENTER)
             i += 1
-            j += 1
 
-        i = 0
-        j = 1
+        i = 1
         for entry_object_background in self.entry_objects_background:
             entry_object_background.setFixedSize(constants.SIZE_NOISE_CALC_ENTRY_OBJECTS)
             entry_object_background.setMaxLength(5)
             entry_object_background.check_entry_value()
-            self.box.addWidget(entry_object_background, 2, j, constants.ALIGNMENT_CENTER_CENTER)
+            self.box.addWidget(entry_object_background, 2, i, constants.ALIGNMENT_CENTER_CENTER)
             i += 1
-            j += 1
 
     def calculate(self):
         locale.setlocale(locale.LC_ALL, "ru")

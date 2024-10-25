@@ -70,6 +70,8 @@ NOISE_CALC_RESULT_NAMES = ("Общий уровень", "Фоновый уров
 
 # Значения журналов ####################################################################################################
 
+DATABASES_NAMES = 'physical_data.db'
+
 MAGAZINE_MAIN_TITLE_NAMES = ("Номер протокола", "Дата проведения измерений", "Дата выпуска протокола", "Вид работ",
                              "Наименование объекта", "Адрес объекта", "Исполнитель (Ф.И.О.)")
 
@@ -78,6 +80,24 @@ WORK_TYPE_AUTO_NAMES = ("поручение", "план", "проф. визит"
 EMPLOYEE_AUTO_NAMES = ("Люлькова Н.В.", "Мотыляк А.А.", "Житникова В.В.", "Богданов И.И.")
 
 PHYSICAL_FACTORS_NAMES = ("Микроклимат", "Освещенность", "Шум", "Вибрация", "ЭМП", "Аэроионы", "Вентиляция")
+
+TYPE_STANDART_NAMES = ("соотв.", "не соотв.")
+
+#BUTTON_TEXT = ("Сохранить протокол")
+
+PHYSICAL_FACTORS_COMMANDS_ADD_TO_DB = ("INSERT INTO protocols (number, type, employee) "
+                                       "VALUES (:number, :type, :employee)",
+                                       "INSERT INTO first_date (date) VALUES (:date)",
+                                       "INSERT INTO last_date (date) VALUES (:date)",
+                                       "INSERT INTO object_name (name) VALUES (:name)",
+                                       "INSERT INTO object_address (address) VALUES (:address)",
+                                       "INSERT INTO microclimate (ok_norm, not_norm) VALUES (:ok_norm, :not_norm)",
+                                       "INSERT INTO light (ok_norm, not_norm) VALUES (:ok_norm, :not_norm)",
+                                       "INSERT INTO noise (ok_norm, not_norm) VALUES (:ok_norm, :not_norm)",
+                                       "INSERT INTO vibration (ok_norm, not_norm) VALUES (:ok_norm, :not_norm)",
+                                       "INSERT INTO emf (ok_norm, not_norm) VALUES (:ok_norm, :not_norm)",
+                                       "INSERT INTO aeroionics (ok_norm, not_norm) VALUES (:ok_norm, :not_norm)",
+                                       "INSERT INTO ventilation (ok_norm, not_norm) VALUES (:ok_norm, :not_norm)")
 
 
 # Выравнивания и размеры объектов и элементов ##########################################################################
@@ -88,18 +108,22 @@ ALIGNMENT_CENTER_CENTER = QtCore.Qt.AlignmentFlag.AlignCenter
 
 ALIGNMENT_TOP_LEFT = QtCore.Qt.AlignmentFlag.AlignTop | QtCore.Qt.AlignmentFlag.AlignLeft
 
+ALIGNMENT_LEFT_BOTTOM = QtCore.Qt.AlignmentFlag.AlignBottom | QtCore.Qt.AlignmentFlag.AlignLeft
+
 SIZE_AIR_CALC_OBJECT = QtCore.QSize(500, 250)
 
 SIZE_VENTILATION_CALC_OBJECT = QtCore.QSize(500, 300)
 
 SIZE_NOISE_CALC_OBJECT = QtCore.QSize(630, 100)
 
-SIZE_OTHERS_ENTRY_OBJECTS = QtCore.QSize(80, 30)
+SIZE_OTHERS_ENTRY_OBJECTS = QtCore.QSize(80, 25)
 
-SIZE_HOLE_ENTRY_OBJECTS = QtCore.QSize(60, 30)
+SIZE_VENTILATION_HOLE_ENTRY_OBJECTS = QtCore.QSize(60, 30)
 
 SIZE_NOISE_CALC_ENTRY_OBJECTS = QtCore.QSize(40, 25)
 
 SIZE_SELECTOR_AREA = QtCore.QSize(150, 200)
+
+SIZE_PHYS_FACTORS_TABLE_ENTRY_OBJECTS = QtCore.QSize(45, 25)
 
 CONTENTS_MARGINS_CALC_OBJECTS = QtCore.QMargins(5, 5, 5, 5)
