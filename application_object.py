@@ -37,7 +37,7 @@ class LabSystemObject(QtWidgets.QWidget):
         self.box = QtWidgets.QHBoxLayout(self)
 
         self.selector_area = application_components.SelectorPanel(self)
-        self.main_work_area = application_components.CalculatorObjectManipulator(self)
+        self.main_work_area = application_components.CalculatorObjectsController(self)
         self.control_area = application_components.MainControlField(self)
 
         for area in (self.selector_area, self.main_work_area, self.control_area):

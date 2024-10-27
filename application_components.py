@@ -111,7 +111,7 @@ class SelectorPanel(QtWidgets.QListView):
             self.noise_calc.show()'''
 
 
-class CalculatorObjectManipulator(QtWidgets.QWidget):
+class CalculatorObjectsController(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         #self.setFixedSize(900, 700)
@@ -183,17 +183,41 @@ class CalculatorObjectManipulator(QtWidgets.QWidget):
                                       defaultButton=QtWidgets.QMessageBox.StandardButton.Ok)
 
 
+class RegisterObjectsController(QtWidgets.QTabWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class MainControlField(QtWidgets.QWidget):  # methods ??
     def __init__(self, parent):
         super().__init__(parent)
         self.resize(80, 300)
         self.icon_size = QtCore.QSize(35, 35)
 
-        self.icon_change_style = QtGui.QIcon("images/style.ico")
-        self.icon_ok = QtGui.QIcon("images/ok.ico")
-        self.icon_clear = QtGui.QIcon("images/clear.ico")
-        self.icon_copy = QtGui.QIcon("images/copy.ico")
-        self.icon_exit = QtGui.QIcon("images/exit.ico")
+        self.icon_change_style = QtGui.QIcon('images/style.ico')
+        self.icon_ok = QtGui.QIcon('images/ok.ico')
+        self.icon_clear = QtGui.QIcon('images/clear.ico')
+        self.icon_save = QtGui.QIcon('images/save.ico')
+        self.icon_copy = QtGui.QIcon('images/copy.ico')
+        self.icon_exit = QtGui.QIcon('images/exit.ico')
 
         self.button_change_style = QtWidgets.QPushButton(self)
         self.button_change_style.setIcon(self.icon_change_style)
@@ -210,6 +234,11 @@ class MainControlField(QtWidgets.QWidget):  # methods ??
         #self.button_clear.setEnabled(False)
         self.button_clear.setAutoDefault(True)
 
+        self.button_save = QtWidgets.QPushButton(self)
+        self.button_save.setIcon(self.icon_save)
+        self.button_save.setIconSize(self.icon_size)
+        self.button_save.setAutoDefault(True)
+
         self.button_copy = QtWidgets.QPushButton(self)
         self.button_copy.setIcon(self.icon_copy)
         self.button_copy.setIconSize(self.icon_size)
@@ -224,6 +253,7 @@ class MainControlField(QtWidgets.QWidget):  # methods ??
         self.box.addWidget(self.button_change_style)
         self.box.addWidget(self.button_ok)
         self.box.addWidget(self.button_clear)
+        self.box.addWidget(self.button_save)
         self.box.addWidget(self.button_copy)
         self.box.addWidget(self.button_exit)
 

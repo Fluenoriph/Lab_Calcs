@@ -222,18 +222,20 @@ class RadiationControlOptions(QtWidgets.QWidget):
         super().__init__()
         self.ok_standart_gamma_radiation = QtWidgets.QSpinBox(self)
         self.ok_standart_radon_volume_activity = QtWidgets.QSpinBox(self)
-        self.ok_standart_eeva = QtWidgets.QSpinBox(self)                  # equivalent equilibrium volumetric activity
+        self.ok_standart_radon_equivalent_equilibrium_volumetric_activity = QtWidgets.QSpinBox(self)
         self.ok_standart_radon_flux_density = QtWidgets.QSpinBox(self)
 
         self.no_standart_gamma_radiation = QtWidgets.QSpinBox(self)
         self.no_standart_radon_volume_activity = QtWidgets.QSpinBox(self)
-        self.no_standart_eeva = QtWidgets.QSpinBox(self)
+        self.no_standart_radon_equivalent_equilibrium_volumetric_activity = QtWidgets.QSpinBox(self)
         self.no_standart_radon_flux_density = QtWidgets.QSpinBox(self)
 
         self.entry_objects_radiation_control = (self.ok_standart_gamma_radiation,
-                                                self.ok_standart_radon_volume_activity, self.ok_standart_eeva,
+                                                self.ok_standart_radon_volume_activity,
+                                                self.ok_standart_radon_equivalent_equilibrium_volumetric_activity,
                                                 self.ok_standart_radon_flux_density, self.no_standart_gamma_radiation,
-                                                self.no_standart_radon_volume_activity, self.no_standart_eeva,
+                                                self.no_standart_radon_volume_activity,
+                                                self.no_standart_radon_equivalent_equilibrium_volumetric_activity,
                                                 self.no_standart_radon_flux_density)
 
         for entry_object in self.entry_objects_radiation_control:
