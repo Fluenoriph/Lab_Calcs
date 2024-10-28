@@ -1,0 +1,52 @@
+CREATE TABLE protocols (
+   	number TEXT PRIMARY KEY UNIQUE NOT NULL,
+	protocol_date TEXT NULL,
+	work_type TEXT NULL,
+	employee TEXT NULL DEFAULT 'Люлькова'
+	);
+
+CREATE TABLE dates_of_research (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	current_date TEXT NULL,
+	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
+	);
+
+CREATE TABLE objects_names (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	name TEXT NOT NULL CHECK (name != ''),
+	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
+	);
+
+CREATE TABLE objects_addresses (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	address TEXT NOT NULL CHECK (address != ''),
+	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
+	);
+
+CREATE TABLE gamma_radiation (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	ok_standart INTEGER NULL,
+	no_standart INTEGER NULL,
+	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
+	);
+
+CREATE TABLE radon_volume_activity (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	ok_standart INTEGER NULL,
+	no_standart INTEGER NULL,
+	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
+	);
+
+CREATE TABLE eeva (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	ok_standart INTEGER NULL,
+	no_standart INTEGER NULL,
+	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
+	);
+
+CREATE TABLE radon_flux_density (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	ok_standart INTEGER NULL,
+	no_standart INTEGER NULL,
+	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
+	);

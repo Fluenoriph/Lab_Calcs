@@ -3,6 +3,7 @@ import sys
 import constants  # импорт нужных !!
 from application_classes import ResultField
 import calculators_objects
+from registers_objects import PhysicalFactorsRegister # RadiationControlRegister
 
 
 class MainMenu(QtWidgets.QMenuBar):
@@ -186,6 +187,23 @@ class CalculatorObjectsController(QtWidgets.QWidget):
 class RegisterObjectsController(QtWidgets.QTabWidget):
     def __init__(self, parent):
         super().__init__(parent)
+        self.setDocumentMode(True)
+        self.setCurrentIndex(0)
+
+        self.physical_register = PhysicalFactorsRegister()
+        #self.radiation_register = RadiationControlRegister()
+
+        self.addTab(self.physical_register, constants.REGISTERS_NAMES[0])
+        #self.addTab(self.radiation_register, constants.REGISTERS_NAMES[1])
+
+
+    @QtCore.pyqtSlot()
+    def select_register_insert_slot(self):
+        match self.currentIndex():
+            case 0:
+                self.physical_register.insert_to_database()
+            #case 1:
+                # self.radiation_register.insert_to_database()
 
 
 

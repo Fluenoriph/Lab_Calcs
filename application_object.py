@@ -37,14 +37,16 @@ class LabSystemObject(QtWidgets.QWidget):
         self.box = QtWidgets.QHBoxLayout(self)
 
         self.selector_area = application_components.SelectorPanel(self)
-        self.main_work_area = application_components.CalculatorObjectsController(self)
+        #self.main_work_area = application_components.CalculatorObjectsController(self)
+        self.main_work_area = application_components.RegisterObjectsController(self)
         self.control_area = application_components.MainControlField(self)
 
         for area in (self.selector_area, self.main_work_area, self.control_area):
             self.box.addWidget(area, alignment=constants.ALIGNMENT_TOP_LEFT)
 
-        self.control_area.button_ok.clicked.connect(self.main_work_area.select_calculate_slot)
-        self.control_area.button_clear.clicked.connect(self.main_work_area.select_clear_calc_object)
+        self.control_area.button_save.clicked.connect(self.main_work_area.select_register_insert_slot)
+        #self.control_area.button_ok.clicked.connect(self.main_work_area.select_calculate_slot)
+        #self.control_area.button_clear.clicked.connect(self.main_work_area.select_clear_calc_object)
 
 
 

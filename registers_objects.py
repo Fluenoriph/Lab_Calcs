@@ -1,71 +1,70 @@
 from PyQt6 import QtWidgets, QtCore, QtGui, QtSql
 import constants
+from application_classes import AbstractEntryArea
 
 
-class BaseRegister(QtWidgets.QWidget):
+class BaseRegister(AbstractEntryArea):
     def __init__(self):
         super().__init__()
-        self.box = QtWidgets.QGridLayout(self)
-        self.box.setVerticalSpacing(5)
-        self.box.setHorizontalSpacing(40)
-
         self.visual_date = QtCore.QDate(2025, 1, 1)
 
         self.protocol_number = QtWidgets.QLineEdit(self)
-        self.first_date = QtWidgets.QDateEdit(self.visual_date, self)
-        self.last_date = QtWidgets.QDateEdit(self.visual_date, self)
+        self.date_of_research = QtWidgets.QDateEdit(self.visual_date, self)
+        self.protocol_date = QtWidgets.QDateEdit(self.visual_date, self)
         self.work_type = QtWidgets.QLineEdit(self)
         self.object_name = QtWidgets.QLineEdit(self)
         self.object_address = QtWidgets.QLineEdit(self)
         self.administrator = QtWidgets.QLineEdit(self)
 
-        self.entry_objects = (self.protocol_number, self.first_date, self.last_date, self.work_type, self.object_name,
-                              self.object_address, self.administrator)
+        self.entry_objects = (self.protocol_number, self.date_of_research, self.protocol_date, self.work_type,
+                              self.object_name, self.object_address, self.administrator)
 
-        self.ok_standart_title = QtWidgets.QLabel(constants.TYPE_STANDART_NAMES[0], self)
-        self.no_standart_title = QtWidgets.QLabel(constants.TYPE_STANDART_NAMES[1], self)
-
-        self.connection_with_database = QtSql.QSqlDatabase.addDatabase('QSQLITE')
-
-        self.button_add_to_database = QtWidgets.QPushButton('Сохранить протокол', self)
-
-        self.create_base_area()
-
-    def create_base_area(self):
-        i = 0
-        for title_object in range(len(constants.BASE_REGISTER_TITLE_NAMES)):
-            title_object = QtWidgets.QLabel(constants.BASE_REGISTER_TITLE_NAMES[i], self)
-            self.box.addWidget(title_object, i, 0, constants.ALIGNMENT_LEFT_CENTER)
-            i += 1
-
-        i = 0
-        for entry_object in self.entry_objects:
-            self.box.addWidget(entry_object, i, 1, constants.ALIGNMENT_LEFT_CENTER)
-            i += 1
-
-        for first_objects in self.entry_objects[:4]:
-            first_objects.setFixedSize(constants.SIZE_OTHERS_ENTRY_OBJECTS)
-
-        self.entry_objects[0].setMaxLength(10)
-
-        for objects_data in self.entry_objects[4:6]:
-            objects_data.setFixedSize(200, 25)
-            #objects_data.setAlignment(constants.ALIGNMENT_LEFT_CENTER)
-
+        self.create_title_objects(constants.BASE_REGISTER_TITLE_NAMES)
+        self.create_entry_objects(self.entry_objects)
+        self.set_size_entry_objects(self.entry_objects[:4], constants.SIZE_OTHERS_ENTRY_OBJECTS)
+        self.set_size_entry_objects(self.entry_objects[4:6], constants.SIZE_BASE_REGISTER_OBJECT_DATA)
         self.entry_objects[6].setFixedSize(100, 25)
 
-        self.box.addWidget(self.button_add_to_database, i, 0, constants.ALIGNMENT_LEFT_CENTER)
+        self.entry_objects[0].setMaxLength(10)     # add fields on len !!!!
 
-        work_type_completer = QtWidgets.QCompleter(constants.WORK_TYPE_AUTO_NAMES, self)
-        self.entry_objects[3].setCompleter(work_type_completer)
+        self.work_type_completer = QtWidgets.QCompleter(constants.WORK_TYPE_AUTO_NAMES, self)
+        self.entry_objects[3].setCompleter(self.work_type_completer)
 
-        administrator_completer = QtWidgets.QCompleter(constants.EMPLOYEE_AUTO_NAMES, self)
-        self.entry_objects[6].setCompleter(administrator_completer)
+        self.administrator_completer = QtWidgets.QCompleter(constants.EMPLOYEE_AUTO_NAMES, self)
+        self.entry_objects[6].setCompleter(self.administrator_completer)
+
+        self.connection_with_database = QtSql.QSqlDatabase.addDatabase('QSQLITE')
+        self.connection_with_database.setDatabaseName(constants.DATABASE_NAME)
+
+    def ready_insert_to_protocol_table(self):
+        self.query_to_protocols = QtSql.QSqlQuery()
+        self.query_to_protocols.prepare(constants.BASE_REGISTER_COMMANDS_INSERT[0])
+        self.query_to_protocols.bindValue(':number', self.protocol_number.text())
+        self.query_to_protocols.bindValue(':protocol_date', self.protocol_date.text())
+        self.query_to_protocols.bindValue(':work_type', self.work_type.text())
+        self.query_to_protocols.bindValue(':employee', self.administrator.text())
+
+    def ready_insert_to_dates_of_research_table(self):
+        query = QtSql.QSqlQuery()
+        query.prepare(constants.BASE_REGISTER_COMMANDS_INSERT[1])
+        query.bindValue(':current_date', self.date_of_research.text())
+        return query
+
+
+
+    def ready_insert_to_objects_addresses_table(self):
+        query = QtSql.QSqlQuery()
+        query.prepare(constants.BASE_REGISTER_COMMANDS_INSERT[3])
+        query.bindValue(':address', self.object_address.text())
+        return query
 
 
 class PhysicalFactorsOptions(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+        self.ok_standart_title = QtWidgets.QLabel(constants.TYPE_STANDART_NAMES[0], self)
+        self.no_standart_title = QtWidgets.QLabel(constants.TYPE_STANDART_NAMES[1], self)
+
         self.ok_standart_microclimate = QtWidgets.QSpinBox(self)
         self.ok_standart_light = QtWidgets.QSpinBox(self)
         self.ok_standart_noise = QtWidgets.QSpinBox(self)
@@ -93,15 +92,16 @@ class PhysicalFactorsOptions(QtWidgets.QWidget):
             entry_object.setFixedSize(constants.SIZE_PHYS_FACTORS_TABLE_ENTRY_OBJECTS)
             entry_object.setRange(0, 999)
 
+        self.box =
 
-class PhysicalFactorsRegister(BaseRegister, PhysicalFactorsOptions):
+
+'''class PhysicalFactorsRegister(BaseRegister, PhysicalFactorsOptions):
     def __init__(self):
         super().__init__()
         self.create_physical_factors_area()
-        self.show()
-        self.button_add_to_database.clicked.connect(self.add_record_to_database)     # Put in high level !!!
+        #self.show()
 
-        self.connection_with_database.setDatabaseName(constants.DATABASES_NAMES)
+        # self.button_add_to_database.clicked.connect(self.add_record_to_database)
 
     def create_physical_factors_area(self):
         self.box.addWidget(self.ok_standart_title, 0, 3, constants.ALIGNMENT_LEFT_BOTTOM)
@@ -126,27 +126,7 @@ class PhysicalFactorsRegister(BaseRegister, PhysicalFactorsOptions):
             i += 1
 
     def ready_queries_to_database(self):
-        self.query_to_protocols = QtSql.QSqlQuery()
-        self.query_to_protocols.prepare(constants.PHYSICAL_FACTORS_COMMANDS_ADD_TO_DB[0])
-        self.query_to_protocols.bindValue(':number', self.protocol_number.text())
-        self.query_to_protocols.bindValue(':type', self.work_type.text())
-        self.query_to_protocols.bindValue(':employee', self.administrator.text())
 
-        self.query_to_first_date = QtSql.QSqlQuery()
-        self.query_to_first_date.prepare(constants.PHYSICAL_FACTORS_COMMANDS_ADD_TO_DB[1])
-        self.query_to_first_date.bindValue(':date', self.first_date.text())
-
-        self.query_to_last_date = QtSql.QSqlQuery()
-        self.query_to_last_date.prepare(constants.PHYSICAL_FACTORS_COMMANDS_ADD_TO_DB[2])
-        self.query_to_last_date.bindValue(':date', self.last_date.text())
-
-        self.query_to_object_name = QtSql.QSqlQuery()
-        self.query_to_object_name.prepare(constants.PHYSICAL_FACTORS_COMMANDS_ADD_TO_DB[3])
-        self.query_to_object_name.bindValue(':name', self.object_name.text())
-
-        self.query_to_object_address = QtSql.QSqlQuery()
-        self.query_to_object_address.prepare(constants.PHYSICAL_FACTORS_COMMANDS_ADD_TO_DB[4])
-        self.query_to_object_address.bindValue(':address', self.object_address.text())
 
         self.query_to_microclimate = QtSql.QSqlQuery()
         self.query_to_microclimate.prepare(constants.PHYSICAL_FACTORS_COMMANDS_ADD_TO_DB[5])
@@ -188,38 +168,29 @@ class PhysicalFactorsRegister(BaseRegister, PhysicalFactorsOptions):
                              self.query_to_light, self.query_to_noise, self.query_to_vibration, self.query_to_emf,
                              self.query_to_aeroionics, self.query_to_ventilation)
 
-    @QtCore.pyqtSlot()
-    def add_record_to_database(self):
+
+    def insert_to_database(self):
         self.connection_with_database.open()
 
-        self.ready_queries_to_database()
+        ob_name = self.object_name.text()
+        self.query = QtSql.QSqlQuery()
+        self.query.prepare(constants.BASE_REGISTER_COMMANDS_INSERT[2])
+        self.query.bindValue(':name', ob_name)
 
-        '''if self.query_to_protocols.exec():
+        check = self.query.exec()
+        if check:
             print('Ok!')
         else:
             print('Bad!')
-        if self.query_to_first_date.exec():
-            print('Ok!')
-        else:
-            print('Bad!')
-        if self.query_to_last_date.exec():
-            print('Ok!')
-        else:
-            print('Bad!')'''
 
-        for query in self.queries_list:
-            check = query.exec()
-            if check:
-                print('Ok!')
-            else:
-                print('Bad!')
-
-        self.connection_with_database.close()
+        self.connection_with_database.close()'''
 
 
 class RadiationControlOptions(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+
+
         self.ok_standart_gamma_radiation = QtWidgets.QSpinBox(self)
         self.ok_standart_radon_volume_activity = QtWidgets.QSpinBox(self)
         self.ok_standart_radon_equivalent_equilibrium_volumetric_activity = QtWidgets.QSpinBox(self)
@@ -243,17 +214,48 @@ class RadiationControlOptions(QtWidgets.QWidget):
             entry_object.setRange(0, 999)
 
 
-class RadiationControlRegister(BaseRegister, RadiationControlOptions):
+'''class RadiationControlRegister(BaseRegister, RadiationControlOptions):
     def __init__(self):
         super().__init__()
-
-        self.show()
+        self.create_radiation_control_area()
+        #self.show()
 
     def create_radiation_control_area(self):
+        self.box.addWidget(self.ok_standart_title, 0, 3, constants.ALIGNMENT_LEFT_BOTTOM)
+        self.box.addWidget(self.no_standart_title, 0, 4, constants.ALIGNMENT_LEFT_BOTTOM)
 
+        i = 1
+        j = 0
+        for title_object in range(len(constants.RADIATION_CONTROL_TITLE_NAMES)):
+            title_object = QtWidgets.QLabel(constants.RADIATION_CONTROL_TITLE_NAMES[j], self)
+            self.box.addWidget(title_object, i, 2, constants.ALIGNMENT_LEFT_CENTER)
+            i += 1
+            j += 1
 
+        i = 1
+        for entry_object_ok_standart in self.entry_objects_radiation_control[0:4]:
+            self.box.addWidget(entry_object_ok_standart, i, 3, constants.ALIGNMENT_LEFT_CENTER)
+            i += 1
 
+        i = 1
+        for entry_object_no_standart in self.entry_objects_radiation_control[4:8]:
+            self.box.addWidget(entry_object_no_standart, i, 4, constants.ALIGNMENT_LEFT_CENTER)
+            i += 1
 
+    def insert_to_database(self):
+        self.connection_with_database.open()
+
+        queries_list = (self.ready_insert_to_protocol_table(), self.ready_insert_to_dates_of_research_table(),
+                        self.ready_insert_to_objects_names_table(), self.ready_insert_to_objects_addresses_table())
+
+        for query in queries_list:
+            check = query.exec()
+            if check:
+                print('Ok!')
+            else:
+                print('Bad!')
+
+        self.connection_with_database.close()
 
 
 
@@ -261,5 +263,6 @@ class RadiationControlRegister(BaseRegister, RadiationControlOptions):
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    table = PhysicalFactorsRegister()
-    sys.exit(app.exec())
+    #table = PhysicalFactorsRegister()
+    rad = RadiationControlRegister()
+    sys.exit(app.exec())'''
