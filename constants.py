@@ -67,7 +67,7 @@ NOISE_CALC_RESULT_NAMES = ("Общий уровень", "Фоновый уров
 
 DATABASE_NAME = 'registers_data.db'
 
-REGISTERS_NAMES = ("Журнал физических факторов", "Журнал радиационного контроля")
+REGISTERS_NAMES = ("Физические факторы", "Радиационные факторы")
 
 BASE_REGISTER_TITLE_NAMES = ("Номер протокола", "Дата проведения измерений", "Дата выпуска протокола", "Вид работ",
                              "Наименование объекта", "Адрес объекта", "Исполнитель (Ф.И.О.)")
@@ -78,12 +78,10 @@ EMPLOYEE_AUTO_NAMES = ("Люлькова Н.В.", "Мотыляк А.А.", "Жи
 
 TYPE_STANDART_NAMES = ("соотв.", "не соотв.")
 
-PHYSICAL_FACTORS_TITLE_NAMES = ("Микроклимат", "Освещенность", "Шум", "Вибрация", "ЭМП", "Аэроионы", "Вентиляция")
+PHYSICAL_FACTORS_TITLE_NAMES = ("", "Микроклимат", "Освещенность", "Шум", "Вибрация", "ЭМП", "Аэроионы", "Вентиляция")
 
-RADIATION_CONTROL_TITLE_NAMES = ("МЭД гамма-излучения", "Объемная активность радона", "ЭРОА радона",
+RADIATION_CONTROL_TITLE_NAMES = ("", "МЭД гамма-излучения", "Объемная активность радона", "ЭРОА радона",
                                  "Плотность потока радона")
-
-#BUTTON_TEXT = ("Сохранить протокол")
 
 BASE_REGISTER_COMMANDS_INSERT = ("INSERT INTO protocols (number, protocol_date, work_type, employee) "
                                  "VALUES (:number, :protocol_date, :work_type, :employee)",
@@ -91,22 +89,18 @@ BASE_REGISTER_COMMANDS_INSERT = ("INSERT INTO protocols (number, protocol_date, 
                                  "INSERT INTO objects_names (name) VALUES (:name)",
                                  "INSERT INTO objects_addresses (address) VALUES (:address)")
 
+PHYSICAL_REGISTER_COMMANDS_INSERT = ("INSERT INTO microclimate (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
+                                     "INSERT INTO light (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
+                                     "INSERT INTO noise (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
+                                     "INSERT INTO vibration (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
+                                     "INSERT INTO emf (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
+                                     "INSERT INTO aeroionics (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
+                                     "INSERT INTO ventilation (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)")
 
-
-
-'''PHYSICAL_FACTORS_COMMANDS_ADD_TO_DB = ("INSERT INTO protocols (number, type, employee) "
-                                       "VALUES (:number, :type, :employee)",
-                                       "INSERT INTO first_date (date) VALUES (:date)",
-                                       "INSERT INTO last_date (date) VALUES (:date)",
-                                       "INSERT INTO object_name (name) VALUES (:name)",
-                                       "INSERT INTO object_address (address) VALUES (:address)",
-                                       "INSERT INTO microclimate (ok_norm, not_norm) VALUES (:ok_norm, :not_norm)",
-                                       "INSERT INTO light (ok_norm, not_norm) VALUES (:ok_norm, :not_norm)",
-                                       "INSERT INTO noise (ok_norm, not_norm) VALUES (:ok_norm, :not_norm)",
-                                       "INSERT INTO vibration (ok_norm, not_norm) VALUES (:ok_norm, :not_norm)",
-                                       "INSERT INTO emf (ok_norm, not_norm) VALUES (:ok_norm, :not_norm)",
-                                       "INSERT INTO aeroionics (ok_norm, not_norm) VALUES (:ok_norm, :not_norm)",
-                                       "INSERT INTO ventilation (ok_norm, not_norm) VALUES (:ok_norm, :not_norm)")'''
+RADIATION_REGISTER_COMMANDS_INSERT = ("INSERT INTO gamma_radiation (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
+                                      "INSERT INTO radon_volume_activity (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
+                                      "INSERT INTO eeva (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
+                                      "INSERT INTO radon_flux_density (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)")
 
 
 # Выравнивания и размеры объектов и элементов ##########################################################################
@@ -123,9 +117,9 @@ SIZE_AIR_CALC_OBJECT = QtCore.QSize(500, 250)
 
 SIZE_VENTILATION_CALC_OBJECT = QtCore.QSize(500, 300)
 
-SIZE_NOISE_CALC_OBJECT = QtCore.QSize(630, 100)
+SIZE_NOISE_CALC_OBJECT = QtCore.QSize(650, 100)
 
-SIZE_OTHERS_ENTRY_OBJECTS = QtCore.QSize(80, 25)
+SIZE_OTHERS_ENTRY_OBJECTS = QtCore.QSize(80, 30)
 
 SIZE_VENTILATION_HOLE_ENTRY_OBJECTS = QtCore.QSize(60, 30)
 
@@ -133,8 +127,8 @@ SIZE_NOISE_CALC_ENTRY_OBJECTS = QtCore.QSize(40, 25)
 
 SIZE_SELECTOR_AREA = QtCore.QSize(150, 200)
 
-SIZE_PHYS_FACTORS_TABLE_ENTRY_OBJECTS = QtCore.QSize(45, 25)
+SIZE_OPTIONS_AREA_ENTRY_OBJECTS = QtCore.QSize(55, 25)
 
-SIZE_BASE_REGISTER_OBJECT_DATA = QtCore.QSize(200, 25)
+SIZE_BASE_REGISTER_OBJECT_DATA = QtCore.QSize(200, 30)
 
-CONTENTS_MARGINS_CALC_OBJECTS = QtCore.QMargins(5, 5, 5, 5)
+CONTENTS_MARGINS_ALL_OBJECTS = QtCore.QMargins(5, 5, 5, 5)

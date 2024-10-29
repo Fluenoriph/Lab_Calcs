@@ -1,18 +1,21 @@
 from PyQt6 import QtWidgets, QtCore
-import constants
-from application_classes import EntryValueField
+
+from constants import (SIZE_AIR_CALC_OBJECT, SIZE_OTHERS_ENTRY_OBJECTS, SIZE_VENTILATION_CALC_OBJECT,
+                       SIZE_VENTILATION_HOLE_ENTRY_OBJECTS, SIZE_NOISE_CALC_OBJECT, SIZE_NOISE_CALC_ENTRY_OBJECTS,
+                       ATMOSPHERIC_CALC_DUST_TITLE_NAMES, ATMOSPHERIC_CALC_DUST_RESULT_NAMES,
+                       WORK_AREA_CALC_DUST_TITLE_NAMES, WORK_AREA_CALC_DUST_RESULT_NAMES, VENTILATION_CALC_TITLE_NAMES,
+                       VENTILATION_CALC_RESULT_NAMES, NOISE_CALC_RESULT_NAMES, NOISE_CALC_BANDLINE_NAMES,
+                       ALIGNMENT_CENTER_CENTER)
+
+from application_classes import EntryValueField, AbstractEntryArea
 import math
 import locale
 
 
-class AtmosphericAirDust(QtWidgets.QWidget):
-    def __init__(self):
+class AtmosphericAirDust(AbstractEntryArea):
+    def __init__(self, result=None):
         super().__init__()
-        self.setFixedSize(constants.SIZE_AIR_CALC_OBJECT)
-        self.box = QtWidgets.QGridLayout(self)
-        self.box.setVerticalSpacing(5)
-        self.box.setHorizontalSpacing(40)
-        self.box.setContentsMargins(constants.CONTENTS_MARGINS_CALC_OBJECTS)
+        self.setFixedSize(SIZE_AIR_CALC_OBJECT)
 
         self.title_names = self.set_title_names()
 
@@ -24,34 +27,23 @@ class AtmosphericAirDust(QtWidgets.QWidget):
 
         self.entry_objects = (self.volume, self.temperature, self.pressure, self.mass_before, self.mass_after)
 
-        self.result = None
+        self.result = result
 
-        self.create_components()
-        self.set_checking_value()
+        self.create_title_objects(self.title_names)
+        self.create_entry_objects(self.entry_objects, row_count=0, column_count=1)
+        self.set_size_entry_objects(self.entry_objects, SIZE_OTHERS_ENTRY_OBJECTS)
+        self.set_max_length(self.entry_objects, max_len=10)
+        self.set_checking_value(self.entry_objects)
 
     def set_title_names(self):
-        return constants.ATMOSPHERIC_CALC_DUST_TITLE_NAMES
+        return ATMOSPHERIC_CALC_DUST_TITLE_NAMES
 
-    def create_components(self):
-        i = 0
-        for title_object in range(len(self.title_names)):
-            title_object = QtWidgets.QLabel(self.title_names[i], self)
-            self.box.addWidget(title_object, i, 0, constants.ALIGNMENT_LEFT_CENTER)
-            i += 1
-
-        i = 0
-        for entry_object in self.entry_objects:
-            entry_object.setFixedSize(constants.SIZE_OTHERS_ENTRY_OBJECTS)
-            entry_object.setMaxLength(10)
-            self.box.addWidget(entry_object, i, 1, constants.ALIGNMENT_LEFT_CENTER)
-            i += 1
-
-    def set_checking_value(self):
-        self.volume.check_entry_value()
-        self.temperature.check_temperature_entry_value()
-        self.pressure.check_entry_value()
-        self.mass_before.check_entry_value()
-        self.mass_after.check_entry_value()
+    def set_checking_value(self, entry_objects_list):
+        entry_objects_list[0].check_entry_value()
+        entry_objects_list[1].check_temperature_entry_value()
+        entry_objects_list[2].check_entry_value()
+        entry_objects_list[3].check_entry_value()
+        entry_objects_list[4].check_entry_value()
 
     def calculate(self):
         locale.setlocale(locale.LC_ALL, "ru")
@@ -72,16 +64,16 @@ class AtmosphericAirDust(QtWidgets.QWidget):
         #concentrate = round(concentrate, 2)
 
         if concentrate < 0.15:
-            self.result = constants.ATMOSPHERIC_CALC_DUST_RESULT_NAMES[1]
+            self.result = ATMOSPHERIC_CALC_DUST_RESULT_NAMES[1]
 
         elif concentrate > 10.0:
-            self.result = constants.ATMOSPHERIC_CALC_DUST_RESULT_NAMES[2]
+            self.result = ATMOSPHERIC_CALC_DUST_RESULT_NAMES[2]
 
         else:
             delta = 0.110 * concentrate
             #delta = round(delta, 2)
 
-            self.result = (f"{constants.ATMOSPHERIC_CALC_DUST_RESULT_NAMES[0]} "
+            self.result = (f"{ATMOSPHERIC_CALC_DUST_RESULT_NAMES[0]} "
                            f"{locale.format_string("%0.2f", concentrate)} ± {locale.format_string("%0.2f", delta)} "
                            f"мг/м³")
 
@@ -94,7 +86,7 @@ class WorkAreaAirDust(AtmosphericAirDust):
         super().__init__()
 
     def set_title_names(self):
-        return constants.WORK_AREA_CALC_DUST_TITLE_NAMES
+        return WORK_AREA_CALC_DUST_TITLE_NAMES
 
     def calculate(self):
         locale.setlocale(locale.LC_ALL, "ru")
@@ -115,28 +107,25 @@ class WorkAreaAirDust(AtmosphericAirDust):
         #concentrate = round(concentrate, 2)
 
         if concentrate < 1.0:
-            self.result = constants.WORK_AREA_CALC_DUST_RESULT_NAMES[1]
+            self.result = WORK_AREA_CALC_DUST_RESULT_NAMES[1]
 
         elif concentrate > 250.0:
-            self.result = constants.WORK_AREA_CALC_DUST_RESULT_NAMES[2]
+            self.result = WORK_AREA_CALC_DUST_RESULT_NAMES[2]
 
         else:
             delta = 0.24 * concentrate
             #delta = round(delta, 2)
 
-            self.result = (f"{constants.WORK_AREA_CALC_DUST_RESULT_NAMES[0]} "
+            self.result = (f"{WORK_AREA_CALC_DUST_RESULT_NAMES[0]} "
                            f"{locale.format_string("%0.2f", concentrate)} ± {locale.format_string("%0.2f", delta)} "
                            f"мг/м³")
 
 
-class VentilationEfficiency(QtWidgets.QWidget):
-    def __init__(self):
+class VentilationEfficiency(AbstractEntryArea):
+    def __init__(self, hole_square = None, result = None):
         super().__init__()
-        self.setFixedSize(constants.SIZE_VENTILATION_CALC_OBJECT)
-        self.box = QtWidgets.QGridLayout(self)
-        self.box.setVerticalSpacing(5)
-        self.box.setHorizontalSpacing(40)
-        self.box.setContentsMargins(constants.CONTENTS_MARGINS_CALC_OBJECTS)
+        self.setFixedSize(SIZE_VENTILATION_CALC_OBJECT)
+        self.box.setHorizontalSpacing(20)
 
         self.room_square = EntryValueField(self)
         self.room_height = EntryValueField(self)
@@ -148,35 +137,16 @@ class VentilationEfficiency(QtWidgets.QWidget):
         self.entry_objects = (self.room_square, self.room_height, self.flow_speed, self.diameter, self.width,
                               self.height)
 
-        self.hole_square = None
-        self.result = None
+        self.hole_square = hole_square
+        self.result = result
 
-        self.create_components()
-        self.set_checking_value()
+        self.create_title_objects(VENTILATION_CALC_TITLE_NAMES)
+        self.create_entry_objects(self.entry_objects, row_count=0, column_count=1)
+        self.set_size_entry_objects(self.entry_objects[0:3], SIZE_OTHERS_ENTRY_OBJECTS)
+        self.set_size_entry_objects(self.entry_objects[3:6], SIZE_VENTILATION_HOLE_ENTRY_OBJECTS)
+        self.set_max_length(self.entry_objects, max_len=7)
+        self.set_checking_value(self.entry_objects)
         self.set_hole_type()
-
-    def create_components(self):
-        i = 0
-        for title_object in range(len(constants.VENTILATION_CALC_TITLE_NAMES)):
-            title_object = QtWidgets.QLabel(constants.VENTILATION_CALC_TITLE_NAMES[i], self)
-            self.box.addWidget(title_object, i, 0, constants.ALIGNMENT_LEFT_CENTER)
-            i += 1
-
-        i = 0
-        for main_entry_object in self.entry_objects[0:3]:
-            main_entry_object.setFixedSize(constants.SIZE_OTHERS_ENTRY_OBJECTS)
-            self.box.addWidget(main_entry_object, i, 1, constants.ALIGNMENT_LEFT_CENTER)
-            i += 1
-
-        for holy_type_entry_object in self.entry_objects[3:6]:
-            holy_type_entry_object.setFixedSize(constants.SIZE_VENTILATION_HOLE_ENTRY_OBJECTS)
-            self.box.addWidget(holy_type_entry_object, i, 1, constants.ALIGNMENT_CENTER_CENTER)
-            i += 1
-
-    def set_checking_value(self):
-        for check in self.entry_objects:
-            check.setMaxLength(7)
-            check.check_entry_value()
 
     @QtCore.pyqtSlot()
     def lock_rectangle_entry_objects(self):
@@ -214,22 +184,22 @@ class VentilationEfficiency(QtWidgets.QWidget):
         #perfomance = round(perfomance, 1)
         #per_in_hour = round(per_in_hour, 1)
 
-        self.result = (f"{constants.VENTILATION_CALC_RESULT_NAMES[0]} {locale.format_string("%0.1f", perfomance)} "
-                       f"м³/ч\n\n {constants.VENTILATION_CALC_RESULT_NAMES[1]} "
+        self.result = (f"{VENTILATION_CALC_RESULT_NAMES[0]} {locale.format_string("%0.1f", perfomance)} "
+                       f"м³/ч\n\n {VENTILATION_CALC_RESULT_NAMES[1]} "
                        f"{locale.format_string("%0.1f", per_in_hour)} раз/ч")
 
     def get_result_text(self):
         return self.result
 
 
-class NoiseLevelsWithBackground(QtWidgets.QWidget):
-    def __init__(self):
+class NoiseLevelsWithBackground(AbstractEntryArea):
+    def __init__(self, delta_result = None, correct_result = None):
         super().__init__()
-        self.setFixedSize(constants.SIZE_NOISE_CALC_OBJECT)
-        self.box = QtWidgets.QGridLayout(self)
-        self.box.setVerticalSpacing(5)
+        self.setFixedSize(SIZE_NOISE_CALC_OBJECT)
         self.box.setHorizontalSpacing(5)
-        self.box.setContentsMargins(constants.CONTENTS_MARGINS_CALC_OBJECTS)
+
+        self.title_source = QtWidgets.QLabel(NOISE_CALC_RESULT_NAMES[0], self)
+        self.title_background = QtWidgets.QLabel(NOISE_CALC_RESULT_NAMES[1], self)
 
         self.band_31_source = EntryValueField(self)
         self.band_63_source = EntryValueField(self)
@@ -253,60 +223,52 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
         self.band_8k_background = EntryValueField(self)
         self.band_l_as_background = EntryValueField(self)
 
-        self.entry_objects_source = (self.band_31_source, self.band_63_source, self.band_125_source,
-                                     self.band_250_source, self.band_500_source, self.band_1k_source,
-                                     self.band_2k_source, self.band_4k_source, self.band_8k_source,
-                                     self.band_l_as_source)
+        self.entry_objects_source_with_title = (self.title_source, self.band_31_source, self.band_63_source,
+                                                self.band_125_source, self.band_250_source, self.band_500_source,
+                                                self.band_1k_source, self.band_2k_source, self.band_4k_source,
+                                                self.band_8k_source, self.band_l_as_source)
 
-        self.entry_objects_background = (self.band_31_background, self.band_63_background, self.band_125_background,
-                                         self.band_250_background, self.band_500_background, self.band_1k_background,
-                                         self.band_2k_background, self.band_4k_background, self.band_8k_background,
-                                         self.band_l_as_background)
+        self.entry_objects_background_with_title = (self.title_background, self.band_31_background,
+                                                    self.band_63_background, self.band_125_background,
+                                                    self.band_250_background, self.band_500_background,
+                                                    self.band_1k_background, self.band_2k_background,
+                                                    self.band_4k_background, self.band_8k_background,
+                                                    self.band_l_as_background)
 
+        self.entry_objects_source = self.entry_objects_source_with_title[1:]
+        self.entry_objects_background = self.entry_objects_background_with_title[1:]
         self.entry_objects = self.entry_objects_source + self.entry_objects_background
 
-        self.delta_result = None
-        self.correct_result = None
+        self.delta_result = delta_result
+        self.correct_result = correct_result
         self.delta_result_massive = []
         self.correct_result_massive = []
 
-        self.create_and_check_components()
+        self.create_title_objects(NOISE_CALC_BANDLINE_NAMES)
+        self.create_entry_objects(self.entry_objects_source_with_title, row_count=1, column_count=0)
+        self.create_entry_objects(self.entry_objects_background_with_title, row_count=2, column_count=0)
+        self.set_size_entry_objects(self.entry_objects, SIZE_NOISE_CALC_ENTRY_OBJECTS)
+        self.set_max_length(self.entry_objects, max_len=5)
+        self.set_checking_value(self.entry_objects)
 
-    def create_and_check_components(self):
-        title_source = QtWidgets.QLabel(constants.NOISE_CALC_RESULT_NAMES[0], self)
-        self.box.addWidget(title_source, 1, 0, constants.ALIGNMENT_LEFT_CENTER)
-
-        title_background = QtWidgets.QLabel(constants.NOISE_CALC_RESULT_NAMES[1], self)
-        self.box.addWidget(title_background, 2, 0, constants.ALIGNMENT_LEFT_CENTER)
-
+    def create_title_objects(self, title_objects):
         i = 0
         j = 1
-        for title_object in range(len(constants.NOISE_CALC_BANDLINE_NAMES)):
-            title_object = QtWidgets.QLabel(constants.NOISE_CALC_BANDLINE_NAMES[i], self)
-            self.box.addWidget(title_object, 0, j, constants.ALIGNMENT_CENTER_CENTER)
+        for title_object in range(len(title_objects)):
+            title_object = QtWidgets.QLabel(title_objects[i], self)
+            self.box.addWidget(title_object, 0, j)
             i += 1
             j += 1
 
-        i = 1
-        for entry_object_source in self.entry_objects_source:
-            entry_object_source.setFixedSize(constants.SIZE_NOISE_CALC_ENTRY_OBJECTS)
-            entry_object_source.setMaxLength(5)
-            entry_object_source.check_entry_value()
-            self.box.addWidget(entry_object_source, 1, i, constants.ALIGNMENT_CENTER_CENTER)
-            i += 1
-
-        i = 1
-        for entry_object_background in self.entry_objects_background:
-            entry_object_background.setFixedSize(constants.SIZE_NOISE_CALC_ENTRY_OBJECTS)
-            entry_object_background.setMaxLength(5)
-            entry_object_background.check_entry_value()
-            self.box.addWidget(entry_object_background, 2, i, constants.ALIGNMENT_CENTER_CENTER)
-            i += 1
+    def create_entry_objects(self, entry_objects_list, row_count, column_count):
+        for entry_object in entry_objects_list:
+            self.box.addWidget(entry_object, row_count, column_count, ALIGNMENT_CENTER_CENTER)
+            column_count += 1
 
     def calculate(self):
         locale.setlocale(locale.LC_ALL, "ru")
 
-        i = 0
+        i = 1
         while i < 10:
             self.delta_result = (self.entry_objects_source[i].get_entry_value() -
                                  self.entry_objects_background[i].get_entry_value())
@@ -339,5 +301,5 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
             i += 1
 
     def get_result_text(self):
-        return (f"{constants.NOISE_CALC_RESULT_NAMES[2]} {"|".join(self.delta_result_massive)}\n\n"
-                f"{constants.NOISE_CALC_RESULT_NAMES[3]} {"|".join(self.correct_result_massive)}")
+        return (f"{NOISE_CALC_RESULT_NAMES[2]} {"|".join(self.delta_result_massive)}\n\n"
+                f"{NOISE_CALC_RESULT_NAMES[3]} {"|".join(self.correct_result_massive)}")

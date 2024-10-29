@@ -1,7 +1,6 @@
-import sys
-from PyQt6 import QtWidgets, QtCore, QtGui
+from PyQt6 import QtWidgets, QtCore
 import application_components
-import constants
+from constants import ALIGNMENT_TOP_LEFT
 
 
 class ApplicationType(QtWidgets.QWidget):
@@ -23,7 +22,7 @@ class ApplicationType(QtWidgets.QWidget):
         self.box.setContentsMargins(0, 0, 0, 0)
 
         self.box.addWidget(self.main_menu_area, QtCore.Qt.AlignmentFlag.AlignTop)
-        self.box.addWidget(self.app_object, constants.ALIGNMENT_TOP_LEFT)
+        self.box.addWidget(self.app_object, ALIGNMENT_TOP_LEFT)
 
         self.setStyleSheet("font: 13px arial, sans-serif")
 
@@ -42,12 +41,12 @@ class LabSystemObject(QtWidgets.QWidget):
         self.control_area = application_components.MainControlField(self)
 
         for area in (self.selector_area, self.main_work_area, self.control_area):
-            self.box.addWidget(area, alignment=constants.ALIGNMENT_TOP_LEFT)
+            self.box.addWidget(area, alignment=ALIGNMENT_TOP_LEFT)
 
-        self.control_area.button_save.clicked.connect(self.main_work_area.select_register_insert_slot)
-        #self.control_area.button_ok.clicked.connect(self.main_work_area.select_calculate_slot)
-        #self.control_area.button_clear.clicked.connect(self.main_work_area.select_clear_calc_object)
-
+        self.control_area.button_save.clicked.connect(self.main_work_area.save_physical_protocol)
+        #self.control_area.button_ok.clicked.connect(self.main_work_area.select_calculate_object)
+        #self.control_area.button_clear.clicked.connect(self.main_work_area.select_clear_object)
+        self.control_area.button_clear.clicked.connect(self.main_work_area.clear_registers_values)
 
 
 
