@@ -25,7 +25,7 @@ LIGHT_COLORS = ("#fcfcee;", "#18171c;", "#f5f5f5;", "#f0f8ff;", "#140f0b;", "#af
 
 MAIN_MENU_TITLE_NAMES = ("Файл", "Правка", "Вид", "Помощь", "Выход", "Темы", "Темная", "Светлая")
 
-SELECTOR_PANEL_TITLE_NAMES = ("Калькуляторы", "Журналы")
+SELECTOR_PANEL_TITLE_NAMES = ("Журналы", "Калькуляторы")
 
 
 # Значения объектов калькуляторов ######################################################################################
@@ -113,6 +113,8 @@ ALIGNMENT_TOP_LEFT = QtCore.Qt.AlignmentFlag.AlignTop | QtCore.Qt.AlignmentFlag.
 
 ALIGNMENT_LEFT_BOTTOM = QtCore.Qt.AlignmentFlag.AlignBottom | QtCore.Qt.AlignmentFlag.AlignLeft
 
+ALIGNMENT_TOP_RIGHT = QtCore.Qt.AlignmentFlag.AlignTop | QtCore.Qt.AlignmentFlag.AlignRight
+
 SIZE_AIR_CALC_OBJECT = QtCore.QSize(500, 250)
 
 SIZE_VENTILATION_CALC_OBJECT = QtCore.QSize(500, 300)
@@ -132,3 +134,5 @@ SIZE_OPTIONS_AREA_ENTRY_OBJECTS = QtCore.QSize(55, 25)
 SIZE_BASE_REGISTER_OBJECT_DATA = QtCore.QSize(200, 30)
 
 CONTENTS_MARGINS_ALL_OBJECTS = QtCore.QMargins(5, 5, 5, 5)
+
+CONTENTS_MARGINS_NULLS = QtCore.QMargins(0, 0, 0, 0)

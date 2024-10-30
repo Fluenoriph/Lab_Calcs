@@ -1,11 +1,12 @@
 from PyQt6 import QtWidgets, QtCore
+from PyQt6.QtWidgets import QLabel
 
 from constants import (SIZE_AIR_CALC_OBJECT, SIZE_OTHERS_ENTRY_OBJECTS, SIZE_VENTILATION_CALC_OBJECT,
                        SIZE_VENTILATION_HOLE_ENTRY_OBJECTS, SIZE_NOISE_CALC_OBJECT, SIZE_NOISE_CALC_ENTRY_OBJECTS,
                        ATMOSPHERIC_CALC_DUST_TITLE_NAMES, ATMOSPHERIC_CALC_DUST_RESULT_NAMES,
                        WORK_AREA_CALC_DUST_TITLE_NAMES, WORK_AREA_CALC_DUST_RESULT_NAMES, VENTILATION_CALC_TITLE_NAMES,
                        VENTILATION_CALC_RESULT_NAMES, NOISE_CALC_RESULT_NAMES, NOISE_CALC_BANDLINE_NAMES,
-                       ALIGNMENT_CENTER_CENTER)
+                       ALIGNMENT_CENTER_CENTER, ALIGNMENT_LEFT_CENTER)
 
 from application_classes import EntryValueField, AbstractEntryArea
 import math
@@ -256,13 +257,16 @@ class NoiseLevelsWithBackground(AbstractEntryArea):
         j = 1
         for title_object in range(len(title_objects)):
             title_object = QtWidgets.QLabel(title_objects[i], self)
-            self.box.addWidget(title_object, 0, j)
+            self.box.addWidget(title_object, 0, j, ALIGNMENT_CENTER_CENTER)
             i += 1
             j += 1
 
     def create_entry_objects(self, entry_objects_list, row_count, column_count):
         for entry_object in entry_objects_list:
-            self.box.addWidget(entry_object, row_count, column_count, ALIGNMENT_CENTER_CENTER)
+            if type(entry_object) == QLabel:
+                self.box.addWidget(entry_object, row_count, column_count, ALIGNMENT_LEFT_CENTER)
+            else:
+                self.box.addWidget(entry_object, row_count, column_count, ALIGNMENT_CENTER_CENTER)
             column_count += 1
 
     def calculate(self):
