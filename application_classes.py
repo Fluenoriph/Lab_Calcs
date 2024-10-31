@@ -44,8 +44,8 @@ class AbstractEntryArea(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.box = QtWidgets.QGridLayout(self)
-        self.box.setVerticalSpacing(5)
-        self.box.setHorizontalSpacing(40)
+        #self.box.setVerticalSpacing(5)
+        #self.box.setHorizontalSpacing(40)
         self.box.setContentsMargins(CONTENTS_MARGINS_ALL_OBJECTS)
 
     def create_title_objects(self, title_list):

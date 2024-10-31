@@ -1,6 +1,6 @@
 from PyQt6 import QtWidgets, QtCore, QtSql
 
-from constants import (BASE_REGISTER_TITLE_NAMES, SIZE_OTHERS_ENTRY_OBJECTS, SIZE_BASE_REGISTER_OBJECT_DATA,
+from constants import (BASE_REGISTER_TITLE_NAMES, SIZE_BASE_REGISTER_PROTOCOL_INFO, SIZE_BASE_REGISTER_OBJECT_DATA,
                        WORK_TYPE_AUTO_NAMES, EMPLOYEE_AUTO_NAMES, DATABASE_NAME, BASE_REGISTER_COMMANDS_INSERT,
                        PHYSICAL_FACTORS_TITLE_NAMES, SIZE_OPTIONS_AREA_ENTRY_OBJECTS, RADIATION_CONTROL_TITLE_NAMES,
                        PHYSICAL_REGISTER_COMMANDS_INSERT, RADIATION_REGISTER_COMMANDS_INSERT)
@@ -11,6 +11,9 @@ from application_classes import AbstractEntryArea
 class BaseRegister(AbstractEntryArea):
     def __init__(self):
         super().__init__()
+        self.box.setVerticalSpacing(15)
+        self.box.setHorizontalSpacing(30)
+
         self.visual_date = QtCore.QDate(2025, 1, 1)
 
         self.protocol_number = QtWidgets.QLineEdit(self)
@@ -26,11 +29,10 @@ class BaseRegister(AbstractEntryArea):
 
         self.create_title_objects(BASE_REGISTER_TITLE_NAMES)
         self.create_entry_objects(self.entry_objects, row_count=0, column_count=1)
-        self.set_size_entry_objects(self.entry_objects[:4], SIZE_OTHERS_ENTRY_OBJECTS)
+        self.set_size_entry_objects(self.entry_objects[:4], SIZE_BASE_REGISTER_PROTOCOL_INFO)
         self.set_size_entry_objects(self.entry_objects[4:6], SIZE_BASE_REGISTER_OBJECT_DATA)
-        self.entry_objects[6].setFixedSize(100, 30)
-
-        self.entry_objects[0].setMaxLength(10)     # add fields on len !!!!
+        self.entry_objects[6].setFixedSize(120, 30)
+        self.entry_objects[0].setMaxLength(10)
 
         self.work_type_completer = QtWidgets.QCompleter(WORK_TYPE_AUTO_NAMES, self)
         self.entry_objects[3].setCompleter(self.work_type_completer)
@@ -71,6 +73,10 @@ class BaseRegister(AbstractEntryArea):
 class PhysicalFactorsOptions(AbstractEntryArea):
     def __init__(self):
         super().__init__()
+        #self.setFixedSize(300, 400)
+        self.box.setHorizontalSpacing(10)
+        self.box.setVerticalSpacing(10)
+
         self.ok_standart_microclimate = QtWidgets.QSpinBox(self)
         self.ok_standart_light = QtWidgets.QSpinBox(self)
         self.ok_standart_noise = QtWidgets.QSpinBox(self)
@@ -159,6 +165,9 @@ class PhysicalFactorsOptions(AbstractEntryArea):
 class RadiationControlOptions(AbstractEntryArea):
     def __init__(self):
         super().__init__()
+        self.box.setHorizontalSpacing(20)
+        self.box.setVerticalSpacing(5)
+
         self.ok_standart_gamma_radiation = QtWidgets.QSpinBox(self)
         self.ok_standart_radon_volume_activity = QtWidgets.QSpinBox(self)
         self.ok_standart_radon_equivalent_equilibrium_volumetric_activity = QtWidgets.QSpinBox(self)
@@ -190,28 +199,28 @@ class RadiationControlOptions(AbstractEntryArea):
 
     def ready_insert_to_gamma_radiation_table(self):
         query = QtSql.QSqlQuery()
-        query.prepare(PHYSICAL_REGISTER_COMMANDS_INSERT[0])
+        query.prepare(RADIATION_REGISTER_COMMANDS_INSERT[0])
         query.bindValue(':ok_standart', self.ok_standart_gamma_radiation.text())
         query.bindValue(':no_standart', self.no_standart_gamma_radiation.text())
         return query
 
     def ready_insert_to_radon_volume_activity_table(self):
         query = QtSql.QSqlQuery()
-        query.prepare(PHYSICAL_REGISTER_COMMANDS_INSERT[1])
+        query.prepare(RADIATION_REGISTER_COMMANDS_INSERT[1])
         query.bindValue(':ok_standart', self.ok_standart_radon_volume_activity.text())
         query.bindValue(':no_standart', self.no_standart_radon_volume_activity.text())
         return query
 
     def ready_insert_to_eeva_table(self):
         query = QtSql.QSqlQuery()
-        query.prepare(PHYSICAL_REGISTER_COMMANDS_INSERT[2])
+        query.prepare(RADIATION_REGISTER_COMMANDS_INSERT[2])
         query.bindValue(':ok_standart', self.ok_standart_radon_equivalent_equilibrium_volumetric_activity.text())
         query.bindValue(':no_standart', self.no_standart_radon_equivalent_equilibrium_volumetric_activity.text())
         return query
 
     def ready_insert_to_radon_flux_density_table(self):
         query = QtSql.QSqlQuery()
-        query.prepare(PHYSICAL_REGISTER_COMMANDS_INSERT[1])
+        query.prepare(RADIATION_REGISTER_COMMANDS_INSERT[3])
         query.bindValue(':ok_standart', self.ok_standart_radon_flux_density.text())
         query.bindValue(':no_standart', self.no_standart_radon_flux_density.text())
         return query

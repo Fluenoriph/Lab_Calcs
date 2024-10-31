@@ -30,8 +30,7 @@ SELECTOR_PANEL_TITLE_NAMES = ("Журналы", "Калькуляторы")
 
 # Значения объектов калькуляторов ######################################################################################
 
-CALCULATORS_NAMES = ("Пыль в атмосферном воздухе", "Пыль в воздухе рабочей зоны", "Эффективность вентиляции",
-                     "Учет влияния фонового шума")
+CALCULATORS_NAMES = ("Пыль в атмосф. возд.", "Пыль в возд. раб. зоны", "Эффект. вентил.", "Учет влияния фон. шума")
 
 ATMOSPHERIC_CALC_DUST_TITLE_NAMES = ("Объем взятого на анализ атмосферного воздуха, л",
                                      "Температура воздуха, прошедшего через ротаметр, ℃",
@@ -125,13 +124,15 @@ SIZE_OTHERS_ENTRY_OBJECTS = QtCore.QSize(80, 30)
 
 SIZE_VENTILATION_HOLE_ENTRY_OBJECTS = QtCore.QSize(60, 30)
 
-SIZE_NOISE_CALC_ENTRY_OBJECTS = QtCore.QSize(40, 25)
+SIZE_NOISE_CALC_ENTRY_OBJECTS = QtCore.QSize(40, 30)
 
-SIZE_SELECTOR_AREA = QtCore.QSize(150, 200)
+SIZE_SELECTOR_AREA = QtCore.QSize(150, 500)
 
-SIZE_OPTIONS_AREA_ENTRY_OBJECTS = QtCore.QSize(55, 25)
+SIZE_OPTIONS_AREA_ENTRY_OBJECTS = QtCore.QSize(55, 30)
 
 SIZE_BASE_REGISTER_OBJECT_DATA = QtCore.QSize(200, 30)
+
+SIZE_BASE_REGISTER_PROTOCOL_INFO = QtCore.QSize(100, 30)
 
 CONTENTS_MARGINS_ALL_OBJECTS = QtCore.QMargins(5, 5, 5, 5)
 

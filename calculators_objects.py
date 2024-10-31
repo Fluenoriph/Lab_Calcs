@@ -16,7 +16,9 @@ import locale
 class AtmosphericAirDust(AbstractEntryArea):
     def __init__(self, result=None):
         super().__init__()
-        self.setFixedSize(SIZE_AIR_CALC_OBJECT)
+        #self.setFixedSize(SIZE_AIR_CALC_OBJECT)
+        self.box.setVerticalSpacing(5)
+        self.box.setHorizontalSpacing(30)
 
         self.title_names = self.set_title_names()
 
@@ -125,8 +127,9 @@ class WorkAreaAirDust(AtmosphericAirDust):
 class VentilationEfficiency(AbstractEntryArea):
     def __init__(self, hole_square = None, result = None):
         super().__init__()
-        self.setFixedSize(SIZE_VENTILATION_CALC_OBJECT)
-        self.box.setHorizontalSpacing(20)
+        #self.setFixedSize(SIZE_VENTILATION_CALC_OBJECT)
+        self.box.setHorizontalSpacing(30)
+        self.box.setVerticalSpacing(15)
 
         self.room_square = EntryValueField(self)
         self.room_height = EntryValueField(self)
@@ -196,8 +199,9 @@ class VentilationEfficiency(AbstractEntryArea):
 class NoiseLevelsWithBackground(AbstractEntryArea):
     def __init__(self, delta_result = None, correct_result = None):
         super().__init__()
-        self.setFixedSize(SIZE_NOISE_CALC_OBJECT)
-        self.box.setHorizontalSpacing(5)
+        #self.setFixedSize(SIZE_NOISE_CALC_OBJECT)
+        self.box.setHorizontalSpacing(1)
+        self.box.setContentsMargins(5, 50, 5, 0)
 
         self.title_source = QtWidgets.QLabel(NOISE_CALC_RESULT_NAMES[0], self)
         self.title_background = QtWidgets.QLabel(NOISE_CALC_RESULT_NAMES[1], self)

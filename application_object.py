@@ -67,8 +67,7 @@ class MainMenu(QtWidgets.QMenuBar):
 class SelectorPanel(QtWidgets.QListView):
     def __init__(self, parent):
         super().__init__(parent)
-        #self.setFixedSize(SIZE_SELECTOR_AREA)
-        self.setFixedWidth(150)
+        self.setFixedSize(SIZE_SELECTOR_AREA)
         self.setSpacing(10)
         self.setFrameStyle(QtWidgets.QFrame.Shape.NoFrame)
 
@@ -76,7 +75,7 @@ class SelectorPanel(QtWidgets.QListView):
 
         self.model_type = QtCore.QStringListModel(self.names)
         self.setModel(self.model_type)
-        self.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.NoSelection)
         self.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
         self.setTabKeyNavigation(True)
@@ -103,6 +102,7 @@ class MainControlField(QtWidgets.QWidget):
 
         self.button_ok = QtWidgets.QPushButton(self)
         self.button_ok.setIcon(self.icon_ok)
+        self.button_ok.setEnabled(False)
 
         self.button_clear = QtWidgets.QPushButton(self)
         self.button_clear.setIcon(self.icon_clear)
@@ -128,13 +128,10 @@ class MainControlField(QtWidgets.QWidget):
             button.setAutoDefault(True)
             self.box.addWidget(button, alignment=QtCore.Qt.AlignmentFlag.AlignTop)
 
-        for lock in (self.button_ok, self.button_clear, self.button_save, self.button_copy):
-            lock.setEnabled(False)
-
 
 class CalculatorObjectsController(QtWidgets.QWidget):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         #self.setFixedSize(900, 400)
         self.tab_area = QtWidgets.QTabWidget(self)
         self.tab_area.setCurrentIndex(0)
@@ -203,13 +200,13 @@ class CalculatorObjectsController(QtWidgets.QWidget):
         QtWidgets.QMessageBox.warning(self, "Ошибка", "Введите значения !",
                                       defaultButton=QtWidgets.QMessageBox.StandardButton.Ok)
 
-
 class RegisterObjectsController(QtWidgets.QWidget):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         #self.setFixedSize()
         self.box = QtWidgets.QHBoxLayout(self)
         self.box.setContentsMargins(CONTENTS_MARGINS_ALL_OBJECTS)
+        self.box.setSpacing(40)
 
         self.base_register_area = registers_objects.BaseRegister()
         self.options_area = QtWidgets.QTabWidget(self)
@@ -318,56 +315,55 @@ class LaboratorySystem(QtWidgets.QWidget):
         super().__init__(parent)
         #self.resize(900, 600)
         self.box = QtWidgets.QGridLayout(self)
-        self.box.setSpacing(10)
+        self.box.setHorizontalSpacing(10)
         self.box.setContentsMargins(CONTENTS_MARGINS_NULLS)
 
         self.main_menu_area = MainMenu(self)
         self.selector_area = SelectorPanel(self)
-        self.main_work_area = QtWidgets.QWidget(self)
-        self.main_work_area.show()
         self.control_area = MainControlField(self)
 
-        '''self.registers_set = RegisterObjectsController(self)
+        self.registers_set = RegisterObjectsController(self)
         self.calculators_set = CalculatorObjectsController(self)
-        self.registers_set.close()
-        self.calculators_set.close()'''
+        self.calculators_set.close()
 
         self.box.addWidget(self.main_menu_area, 0, 0, 1, 5)
         self.box.addWidget(self.selector_area, 1, 1, 1, 1, ALIGNMENT_TOP_LEFT)
-        self.box.addWidget(self.control_area, 1, 3, 1, 1, ALIGNMENT_TOP_RIGHT)
+        self.box.addWidget(self.registers_set, 1, 2, 1, 1, ALIGNMENT_TOP_LEFT)
+        self.box.addWidget(self.control_area, 1, 4, 1, 1, ALIGNMENT_TOP_RIGHT)
         self.box.setColumnMinimumWidth(0, 1)
-        self.box.setColumnMinimumWidth(4, 40)
+        self.box.setColumnMinimumWidth(3, 40)
+        self.box.setColumnMinimumWidth(5, 40)
+
+        self.control_area.button_save.clicked.connect(self.registers_set.select_insert_command)
+        self.control_area.button_clear.clicked.connect(self.registers_set.clear_registers_values)
 
         self.selector_area.clicked.connect(self.click_on_string)
+        self.selector_area.clicked.connect(self.set_a_buttons_activity)
+
+    @QtCore.pyqtSlot()
+    def set_a_buttons_activity(self):
+        if self.selector_area.currentIndex() == self.selector_area.calculators_index:
+            self.control_area.button_clear.disconnect()
+            self.control_area.button_save.setEnabled(False)
+            self.control_area.button_ok.setEnabled(True)
+            self.control_area.button_ok.clicked.connect(self.calculators_set.select_calculate_object)
+            self.control_area.button_clear.clicked.connect(self.calculators_set.select_clear_object)
+        else:
+            self.control_area.button_clear.disconnect()
+            self.control_area.button_ok.setEnabled(False)
+            self.control_area.button_save.setEnabled(True)
+            self.control_area.button_clear.clicked.connect(self.registers_set.clear_registers_values)
 
     @QtCore.pyqtSlot()
     def click_on_string(self):
-        if self.selector_area.currentIndex() == self.selector_area.registers_index:
-            RegisterObjectsController()
-            #self.box.removeWidget(self.calculators_set)
-            self.box.addWidget(RegisterObjectsController(), 1, 2, 1, 1, ALIGNMENT_TOP_LEFT)
-            RegisterObjectsController().show()
-        '''else:
+        if self.selector_area.currentIndex() == self.selector_area.calculators_index:
             self.registers_set.close()
-            self.box.removeWidget(self.registers_set)
-            self.box.addWidget(self.calculators_set, 1, 2, 1, 1, ALIGNMENT_TOP_LEFT)
+            self.box.replaceWidget(self.registers_set, self.calculators_set)
             self.calculators_set.show()
-
-            self.control_area.button_ok.setEnabled(False)
-            self.control_area.button_save.setEnabled(True)
-            self.control_area.button_clear.setEnabled(True)
-            #self.control_area.button_clear.disconnect(self.calculators_set.select_clear_object)
-            self.control_area.button_save.clicked.connect(self.registers_set.select_insert_command)
-            self.control_area.button_clear.clicked.connect(self.registers_set.clear_registers_values)
-
-
-
-            self.control_area.button_save.setEnabled(False)
-            self.control_area.button_ok.setEnabled(True)
-            self.control_area.button_clear.setEnabled(True)
-            self.control_area.button_ok.clicked.connect(self.calculators_set.select_calculate_object)
-            self.control_area.button_clear.clicked.connect(self.calculators_set.select_clear_object)'''
-
+        else:
+            self.calculators_set.close()
+            self.box.replaceWidget(self.calculators_set, self.registers_set)
+            self.registers_set.show()
 
 
 class ApplicationType(QtWidgets.QWidget):
@@ -386,8 +382,7 @@ class ApplicationType(QtWidgets.QWidget):
 
         self.box = QtWidgets.QVBoxLayout(self)
         self.box.setContentsMargins(CONTENTS_MARGINS_NULLS)
-        self.box.addWidget(self.application_area)
-        #self.application_area.move(1, 20)
+        self.box.addWidget(self.application_area, alignment=ALIGNMENT_TOP_LEFT)
 
         self.setStyleSheet("font: 13px arial, sans-serif")
 
