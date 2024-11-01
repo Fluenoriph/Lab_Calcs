@@ -58,6 +58,7 @@ class AbstractEntryArea(QtWidgets.QWidget):
     def create_entry_objects(self, entry_objects_list, row_count, column_count):
         for entry_object in entry_objects_list:
             self.box.addWidget(entry_object, row_count, column_count, ALIGNMENT_LEFT_CENTER)
+            entry_object.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
             row_count += 1
 
     def set_size_entry_objects(self, entry_objects_list, size):

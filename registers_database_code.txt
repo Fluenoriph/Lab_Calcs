@@ -1,5 +1,5 @@
 CREATE TABLE protocols (
-   	number TEXT PRIMARY KEY UNIQUE NOT NULL,
+   	number TEXT PRIMARY KEY UNIQUE NOT NULL CHECK (number != ''),
 	protocol_date TEXT NULL,
 	work_type TEXT NULL,
 	employee TEXT NULL DEFAULT 'Люлькова'

@@ -246,7 +246,7 @@ class RegisterObjectsController(QtWidgets.QWidget):
                 print('Bad!')
 
         self.base_register_area.connection_with_database.close()
-     #  Проверка сохранения пустых значений !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
     def save_radiation_protocol(self):
         self.base_register_area.connection_with_database.open()
 
