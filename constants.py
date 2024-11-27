@@ -1,4 +1,18 @@
 from PyQt6 import QtCore
+from winpath import get_desktop
+
+
+# Файлы сохранения результатов
+
+USER_DESKTOP_PATH = get_desktop() + '\\'
+
+ATMOSPHERIC_CALC_RESULT_FILE = USER_DESKTOP_PATH + 'air_calc_result_log.txt'
+
+WORK_AREA_CALC_RESULT_FILE = USER_DESKTOP_PATH + 'work_zone_calc_result_log.txt'
+
+VENTILATION_CALC_RESULT_FILE = USER_DESKTOP_PATH + 'ventilation_calc_result_log.txt'
+
+NOISE_CALC_RESULT_FILE = USER_DESKTOP_PATH + 'noise_calc_result_log.txt'
 
 
 # Постоянные значения главного интерфейса и меню #######################################################################

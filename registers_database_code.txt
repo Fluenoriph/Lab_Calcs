@@ -2,27 +2,31 @@ CREATE TABLE protocols (
    	number TEXT PRIMARY KEY UNIQUE NOT NULL CHECK (number != ''),
 	protocol_date TEXT NULL,
 	work_type TEXT NULL,
-	employee TEXT NULL DEFAULT 'Люлькова'
+	employee TEXT NULL,
 	);
 
+PRAGMA foreign_keys = ON;
 CREATE TABLE dates_of_research (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	current_date TEXT NULL,
 	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
 	);
 
+PRAGMA foreign_keys = ON;
 CREATE TABLE objects_names (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	name TEXT NOT NULL CHECK (name != ''),
 	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
 	);
 
+PRAGMA foreign_keys = ON;
 CREATE TABLE objects_addresses (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	address TEXT NOT NULL CHECK (address != ''),
 	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
 	);
 
+PRAGMA foreign_keys = ON;
 CREATE TABLE microclimate (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	ok_standart INTEGER NULL,
@@ -30,6 +34,7 @@ CREATE TABLE microclimate (
 	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
 	);
 
+PRAGMA foreign_keys = ON;
 CREATE TABLE light (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	ok_standart INTEGER NULL,
@@ -37,6 +42,7 @@ CREATE TABLE light (
 	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
 	);
 
+PRAGMA foreign_keys = ON;
 CREATE TABLE noise (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	ok_standart INTEGER NULL,
@@ -44,6 +50,7 @@ CREATE TABLE noise (
 	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
 	);
 
+PRAGMA foreign_keys = ON;
 CREATE TABLE vibration (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	ok_standart INTEGER NULL,
@@ -51,6 +58,7 @@ CREATE TABLE vibration (
 	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
 	);
 
+PRAGMA foreign_keys = ON;
 CREATE TABLE emf (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	ok_standart INTEGER NULL,
@@ -58,6 +66,7 @@ CREATE TABLE emf (
 	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
 	);
 
+PRAGMA foreign_keys = ON;
 CREATE TABLE aeroionics (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	ok_standart INTEGER NULL,
@@ -65,13 +74,15 @@ CREATE TABLE aeroionics (
 	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
 	);
 
+PRAGMA foreign_keys = ON;
 CREATE TABLE ventilation (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	ok_standart INTEGER NULL,
 	no_standart INTEGER NULL,
 	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
 	);
-	
+
+PRAGMA foreign_keys = ON;	
 CREATE TABLE gamma_radiation (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	ok_standart INTEGER NULL,
@@ -79,6 +90,7 @@ CREATE TABLE gamma_radiation (
 	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
 	);
 
+PRAGMA foreign_keys = ON;
 CREATE TABLE radon_volume_activity (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	ok_standart INTEGER NULL,
@@ -86,6 +98,7 @@ CREATE TABLE radon_volume_activity (
 	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
 	);
 
+PRAGMA foreign_keys = ON;
 CREATE TABLE eeva (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	ok_standart INTEGER NULL,
@@ -93,6 +106,7 @@ CREATE TABLE eeva (
 	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
 	);
 
+PRAGMA foreign_keys = ON;
 CREATE TABLE radon_flux_density (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	ok_standart INTEGER NULL,

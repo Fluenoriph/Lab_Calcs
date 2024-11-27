@@ -30,7 +30,7 @@ class EntryValueField(QtWidgets.QLineEdit):
             self.value = self.text()
             self.value = self.value.replace(",", ".")
             try:
-                self.value = float(self.value)  # ok button activate factor
+                self.value = float(self.value)
             except ValueError:
                 self.clear()
         else:
