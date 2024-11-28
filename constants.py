@@ -6,13 +6,16 @@ from winpath import get_desktop
 
 USER_DESKTOP_PATH = get_desktop() + '\\'
 
-ATMOSPHERIC_CALC_RESULT_FILE = USER_DESKTOP_PATH + 'air_calc_result_log.txt'
+CALCS_RESULT_FILES = ('air_calc_result_log.txt', 'work_zone_calc_result_log.txt', 'ventilation_calc_result_log.txt',
+                      'noise_calc_result_log.txt')
 
-WORK_AREA_CALC_RESULT_FILE = USER_DESKTOP_PATH + 'work_zone_calc_result_log.txt'
+ATMOSPHERIC_CALC_RESULT_PATH = USER_DESKTOP_PATH + CALCS_RESULT_FILES[0]
 
-VENTILATION_CALC_RESULT_FILE = USER_DESKTOP_PATH + 'ventilation_calc_result_log.txt'
+WORK_AREA_CALC_RESULT_PATH = USER_DESKTOP_PATH + CALCS_RESULT_FILES[1]
 
-NOISE_CALC_RESULT_FILE = USER_DESKTOP_PATH + 'noise_calc_result_log.txt'
+VENTILATION_CALC_RESULT_PATH = USER_DESKTOP_PATH + CALCS_RESULT_FILES[2]
+
+NOISE_CALC_RESULT_PATH = USER_DESKTOP_PATH + CALCS_RESULT_FILES[3]
 
 
 # Постоянные значения главного интерфейса и меню #######################################################################
@@ -73,7 +76,7 @@ VENTILATION_CALC_RESULT_NAMES = ("Производительность вент�
 
 NOISE_CALC_BANDLINE_NAMES = ("31.5", "63", "125", "250", "500", "1K", "2K", "4K", "8K", "L(AS)")
 
-NOISE_CALC_RESULT_NAMES = ("Общий уровень", "Фоновый уровень", "Разность с фоном >", "С поправкой на фон >")
+NOISE_CALC_RESULT_NAMES = ("Общий уровень", "Фоновый уровень", "Разность с фоном:   ", "С поправкой на фон: ")
 
 
 # Значения журналов ####################################################################################################

@@ -11,10 +11,12 @@ from constants import (SIZE_AIR_CALC_OBJECT, SIZE_OTHERS_ENTRY_OBJECTS, SIZE_VEN
 from application_classes import EntryValueField, AbstractEntryArea
 import math
 import locale
+from decimal import Decimal, ROUND_HALF_UP
+locale.setlocale(locale.LC_ALL, "ru")
 
 
 class AtmosphericAirDust(AbstractEntryArea):
-    def __init__(self, result=None):
+    def __init__(self, result_string=None):
         super().__init__()
         #self.setFixedSize(SIZE_AIR_CALC_OBJECT)
         self.box.setVerticalSpacing(5)
@@ -30,13 +32,17 @@ class AtmosphericAirDust(AbstractEntryArea):
 
         self.entry_objects = (self.volume, self.temperature, self.pressure, self.mass_before, self.mass_after)
 
-        self.result = result
+        self.result_string = result_string
 
         self.create_title_objects(self.title_names)
         self.create_entry_objects(self.entry_objects, row_count=0, column_count=1)
         self.set_size_entry_objects(self.entry_objects, SIZE_OTHERS_ENTRY_OBJECTS)
         self.set_max_length(self.entry_objects, max_len=10)
         self.set_checking_value(self.entry_objects)
+
+        row = self.box.rowCount()
+        row += 1
+        self.result_area = self.create_result_field(row)
 
     def set_title_names(self):
         return ATMOSPHERIC_CALC_DUST_TITLE_NAMES
@@ -49,8 +55,6 @@ class AtmosphericAirDust(AbstractEntryArea):
         entry_objects_list[4].check_entry_value()
 
     def calculate(self):
-        locale.setlocale(locale.LC_ALL, "ru")
-
         volume = self.volume.get_entry_value() / 1000
         temperature = self.temperature.get_entry_value()
 
@@ -64,24 +68,24 @@ class AtmosphericAirDust(AbstractEntryArea):
 
         normal_volume = (volume * 273 * pressure) / ((273 + temperature) * 760)
         concentrate = (mass_after - mass_before) / normal_volume
-        #concentrate = round(concentrate, 2)
+        result = Decimal(concentrate).quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
 
         if concentrate < 0.15:
-            self.result = ATMOSPHERIC_CALC_DUST_RESULT_NAMES[1]
+            self.result_string = ATMOSPHERIC_CALC_DUST_RESULT_NAMES[1]
 
         elif concentrate > 10.0:
-            self.result = ATMOSPHERIC_CALC_DUST_RESULT_NAMES[2]
+            self.result_string = ATMOSPHERIC_CALC_DUST_RESULT_NAMES[2]
 
         else:
             delta = 0.110 * concentrate
-            #delta = round(delta, 2)
+            result_delta = Decimal(delta).quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
 
-            self.result = (f"{ATMOSPHERIC_CALC_DUST_RESULT_NAMES[0]} "
-                           f"{locale.format_string("%0.2f", concentrate)} ± {locale.format_string("%0.2f", delta)} "
+            self.result_string = (f"{ATMOSPHERIC_CALC_DUST_RESULT_NAMES[0]} "
+                           f"{locale.format_string("%0.2f", result)} ± {locale.format_string("%0.2f", result_delta)} "
                            f"мг/м³")
 
-    def get_result_text(self):
-        return self.result
+    def get_result(self):
+        return self.result_string
 
 
 class WorkAreaAirDust(AtmosphericAirDust):
@@ -92,8 +96,6 @@ class WorkAreaAirDust(AtmosphericAirDust):
         return WORK_AREA_CALC_DUST_TITLE_NAMES
 
     def calculate(self):
-        locale.setlocale(locale.LC_ALL, "ru")
-
         volume = self.volume.get_entry_value()
         temperature = self.temperature.get_entry_value()
 
@@ -107,25 +109,25 @@ class WorkAreaAirDust(AtmosphericAirDust):
 
         normal_volume = (volume * 293 * pressure) / ((273 + temperature) * 760)
         concentrate = (mass_after - mass_before) * 1000 / normal_volume
-        #concentrate = round(concentrate, 2)
+        result = Decimal(concentrate).quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
 
         if concentrate < 1.0:
-            self.result = WORK_AREA_CALC_DUST_RESULT_NAMES[1]
+            self.result_string = WORK_AREA_CALC_DUST_RESULT_NAMES[1]
 
         elif concentrate > 250.0:
-            self.result = WORK_AREA_CALC_DUST_RESULT_NAMES[2]
+            self.result_string = WORK_AREA_CALC_DUST_RESULT_NAMES[2]
 
         else:
             delta = 0.24 * concentrate
-            #delta = round(delta, 2)
+            result_delta = Decimal(delta).quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
 
-            self.result = (f"{WORK_AREA_CALC_DUST_RESULT_NAMES[0]} "
-                           f"{locale.format_string("%0.2f", concentrate)} ± {locale.format_string("%0.2f", delta)} "
+            self.result_string = (f"{WORK_AREA_CALC_DUST_RESULT_NAMES[0]} "
+                           f"{locale.format_string("%0.2f", result)} ± {locale.format_string("%0.2f", result_delta)} "
                            f"мг/м³")
 
 
 class VentilationEfficiency(AbstractEntryArea):
-    def __init__(self, hole_square = None, result = None):
+    def __init__(self, hole_square = None, result_string = None):
         super().__init__()
         #self.setFixedSize(SIZE_VENTILATION_CALC_OBJECT)
         self.box.setHorizontalSpacing(30)
@@ -142,7 +144,7 @@ class VentilationEfficiency(AbstractEntryArea):
                               self.height)
 
         self.hole_square = hole_square
-        self.result = result
+        self.result_string = result_string
 
         self.create_title_objects(VENTILATION_CALC_TITLE_NAMES)
         self.create_entry_objects(self.entry_objects, row_count=0, column_count=1)
@@ -152,14 +154,9 @@ class VentilationEfficiency(AbstractEntryArea):
         self.set_checking_value(self.entry_objects)
         self.set_hole_type()
 
-    @QtCore.pyqtSlot()
-    def lock_rectangle_entry_objects(self):
-        self.width.clear()
-        self.height.clear()
-
-    @QtCore.pyqtSlot()
-    def lock_circle_entry_object(self):
-        self.diameter.clear()
+        row = self.box.rowCount()
+        row += 1
+        self.result_area = self.create_result_field(row)
 
     def set_hole_type(self):
         self.diameter.textEdited.connect(self.lock_rectangle_entry_objects)
@@ -167,8 +164,6 @@ class VentilationEfficiency(AbstractEntryArea):
         self.height.textEdited.connect(self.lock_circle_entry_object)
 
     def calculate(self):
-        locale.setlocale(locale.LC_ALL, "ru")
-
         room_square = self.room_square.get_entry_value()
         room_height = self.room_height.get_entry_value()
         flow_speed = self.flow_speed.get_entry_value()
@@ -185,15 +180,24 @@ class VentilationEfficiency(AbstractEntryArea):
         room_volume = room_square * room_height
         perfomance = flow_speed * self.hole_square * 3600
         per_in_hour = perfomance / room_volume
-        #perfomance = round(perfomance, 1)
-        #per_in_hour = round(per_in_hour, 1)
+        perfomance_result = Decimal(perfomance).quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
+        per_in_hour_result = Decimal(per_in_hour).quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
 
-        self.result = (f"{VENTILATION_CALC_RESULT_NAMES[0]} {locale.format_string("%0.1f", perfomance)} "
-                       f"м³/ч\n\n {VENTILATION_CALC_RESULT_NAMES[1]} "
-                       f"{locale.format_string("%0.1f", per_in_hour)} раз/ч")
+        self.result_string = (f"{VENTILATION_CALC_RESULT_NAMES[0]} {locale.format_string("%0.1f", perfomance_result)} "
+                       f"м³/ч\n\n{VENTILATION_CALC_RESULT_NAMES[1]} "
+                       f"{locale.format_string("%0.1f", per_in_hour_result)} раз/ч")
 
-    def get_result_text(self):
-        return self.result
+    def get_result(self):
+        return self.result_string
+
+    @QtCore.pyqtSlot()
+    def lock_rectangle_entry_objects(self):
+        self.width.clear()
+        self.height.clear()
+
+    @QtCore.pyqtSlot()
+    def lock_circle_entry_object(self):
+        self.diameter.clear()
 
 
 class NoiseLevelsWithBackground(AbstractEntryArea):
@@ -274,9 +278,7 @@ class NoiseLevelsWithBackground(AbstractEntryArea):
             column_count += 1
 
     def calculate(self):
-        locale.setlocale(locale.LC_ALL, "ru")
-
-        i = 1
+        i = 0
         while i < 10:
             self.delta_result = (self.entry_objects_source[i].get_entry_value() -
                                  self.entry_objects_background[i].get_entry_value())
@@ -307,7 +309,8 @@ class NoiseLevelsWithBackground(AbstractEntryArea):
             self.delta_result_massive.append(locale.format_string("%0.1f", self.delta_result))
             self.correct_result_massive.append(locale.format_string("%0.1f", self.correct_result))
             i += 1
+  # Возможно переделать списки
 
-    def get_result_text(self):
-        return (f"{NOISE_CALC_RESULT_NAMES[2]} {"|".join(self.delta_result_massive)}\n\n"
-                f"{NOISE_CALC_RESULT_NAMES[3]} {"|".join(self.correct_result_massive)}")
+    def get_result(self):
+        return (f"{NOISE_CALC_RESULT_NAMES[2]} {"  ".join(self.delta_result_massive)}\n\n"
+                f"{NOISE_CALC_RESULT_NAMES[3]} {"  ".join(self.correct_result_massive)}")

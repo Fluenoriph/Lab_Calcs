@@ -1,6 +1,6 @@
 from PyQt6 import QtWidgets, QtCore, QtGui
 from functools import partial
-from constants import CONTENTS_MARGINS_ALL_OBJECTS, ALIGNMENT_LEFT_CENTER, TYPE_STANDART_NAMES
+from constants import (CONTENTS_MARGINS_ALL_OBJECTS, ALIGNMENT_LEFT_CENTER, TYPE_STANDART_NAMES, ALIGNMENT_TOP_LEFT)
 
 
 class EntryValueField(QtWidgets.QLineEdit):
@@ -61,6 +61,15 @@ class AbstractEntryArea(QtWidgets.QWidget):
             entry_object.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
             row_count += 1
 
+    def create_result_field(self, row_count):
+        result_field = QtWidgets.QLabel(self)
+        result_field.setFixedSize(500, 90)
+        result_field.setFrameShape(QtWidgets.QFrame.Shape.Box)
+        result_field.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByKeyboard |
+                                     QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.box.addWidget(result_field, row_count, 0, 1, 2, ALIGNMENT_TOP_LEFT)
+        return result_field
+
     def set_size_entry_objects(self, entry_objects_list, size):
         i = 0
         for entry_object in entry_objects_list:
@@ -86,12 +95,3 @@ class AbstractEntryArea(QtWidgets.QWidget):
 
     def create_no_standart_title(self):
         return QtWidgets.QLabel(TYPE_STANDART_NAMES[1], self)
-
-
-class ResultField(QtWidgets.QLabel):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.setFixedSize(500, 90)
-        self.setFrameShape(QtWidgets.QFrame.Shape.Box)
-        self.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByKeyboard |
-                                     QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
