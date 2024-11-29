@@ -6,7 +6,7 @@ from constants import (MAIN_MENU_TITLE_NAMES, SELECTOR_PANEL_TITLE_NAMES, HELP_I
                        REGISTERS_NAMES, ALIGNMENT_TOP_RIGHT, CONTENTS_MARGINS_NULLS, CALCS_RESULT_FILES,
                        ATMOSPHERIC_CALC_RESULT_PATH, WORK_AREA_CALC_RESULT_PATH, VENTILATION_CALC_RESULT_PATH,
                        NOISE_CALC_RESULT_PATH, ATMOSPHERIC_CALC_DUST_TITLE_NAMES, WORK_AREA_CALC_DUST_TITLE_NAMES,
-                       VENTILATION_CALC_TITLE_NAMES, NOISE_CALC_BANDLINE_NAMES)
+                       VENTILATION_CALC_TITLE_NAMES, NOISE_CALC_BANDLINE_NAMES, SEPARATOR)
 
 import calculators_objects
 import registers_objects
@@ -91,7 +91,7 @@ class MainControlField(QtWidgets.QWidget):
         #self.setFixedSize(80, 300)
         self.icon_size = QtCore.QSize(35, 35)
 
-        self.icon_change_style = QtGui.QIcon('images/style.ico')     #  Круглые углы !!!
+        self.icon_change_style = QtGui.QIcon('images/style.ico')
         self.icon_ok = QtGui.QIcon('images/ok.ico')
         self.icon_clear = QtGui.QIcon('images/clear.ico')
         self.icon_save = QtGui.QIcon('images/save.ico')
@@ -151,7 +151,7 @@ class CalculatorObjectsController(QtWidgets.QWidget):
             clear.clear()
             clear.value = None
 
-    def create_data_to_save(self, title_names, entry_fields, result_string):
+    def create_data_to_save(self, title_names, entry_fields, result):
         data = []
 
         i = 0
@@ -159,7 +159,48 @@ class CalculatorObjectsController(QtWidgets.QWidget):
             string = title_names[i] + ': ' + str(entry_fields[i].get_entry_value()) + '\n'
             data.append(string)
             i += 1
-        data.append(result_string + "\n----------------------------------------------------------------------\n")
+
+        data.append(result.text() + SEPARATOR)
+        return data
+
+    def create_noise_calc_data_to_save(self, bands, source, background, delta, correct):
+        data = []
+
+        i = 0
+        while i < 10:
+            band_str = (bands[i] + '   |   ')
+            data.append(band_str)
+            i += 1
+        data.append('\n')
+
+        i = 0
+        while i < 10:
+            source_str = (str(source[i].get_entry_value()) + '      ')
+            data.append(source_str)
+            i += 1
+        data.append('\n')
+
+        i = 0
+        while i < 10:
+            background_str = (str(background[i].get_entry_value()) + '      ')
+            data.append(background_str)
+            i += 1
+        data.append('\n')
+
+        i = 0
+        while i < 10:
+            delta_str = (delta[i].text() + '      ')
+            data.append(delta_str)
+            i += 1
+        data.append('\n')
+
+        i = 0
+        while i < 10:
+            correct_str = (correct[i].text() + '      ')
+            data.append(correct_str)
+            i += 1
+        data.append(SEPARATOR)
+
         return data
 
     def save_to_desktop(self, file_path, data):
@@ -176,7 +217,7 @@ class CalculatorObjectsController(QtWidgets.QWidget):
 
     @QtCore.pyqtSlot()
     def calculating(self):
-        #try:
+        try:
             match self.tab_area.currentIndex():
                 case 0:
                     self.air_calc.calculate()
@@ -186,8 +227,8 @@ class CalculatorObjectsController(QtWidgets.QWidget):
                     self.flow_calc.calculate()
                 case 3:
                     self.noise_calc.calculate()
-        #except TypeError:
-            #self.show_error_message()
+        except TypeError:
+            self.show_error_message()
 
     @QtCore.pyqtSlot()
     def clear_calculator(self):
@@ -203,7 +244,8 @@ class CalculatorObjectsController(QtWidgets.QWidget):
                 self.flow_calc.result_area.clear()
             case 3:
                 self.clear_entry_fields(self.noise_calc.entry_objects)
-                #self.noise_calc.
+                for result_object in self.noise_calc.result_area:
+                    result_object.clear()
 
     @QtCore.pyqtSlot()
     def saving(self):
@@ -211,22 +253,25 @@ class CalculatorObjectsController(QtWidgets.QWidget):
             case 0:
                 self.show_saving_message(CALCS_RESULT_FILES[0])
                 air_calc_data = self.create_data_to_save(ATMOSPHERIC_CALC_DUST_TITLE_NAMES, self.air_calc.entry_objects,
-                                self.air_calc.result_area.text())
+                                self.air_calc.result_area)
                 self.save_to_desktop(ATMOSPHERIC_CALC_RESULT_PATH, air_calc_data)
             case 1:
                 self.show_saving_message(CALCS_RESULT_FILES[1])
                 work_area_calc_data = self.create_data_to_save(WORK_AREA_CALC_DUST_TITLE_NAMES,
-                                      self.work_area_calc.entry_objects, self.work_area_calc.result_area.text())
+                                      self.work_area_calc.entry_objects, self.work_area_calc.result_area)
                 self.save_to_desktop(WORK_AREA_CALC_RESULT_PATH, work_area_calc_data)
             case 2:
                 self.show_saving_message(CALCS_RESULT_FILES[2])
                 flow_calc_data = self.create_data_to_save(VENTILATION_CALC_TITLE_NAMES, self.flow_calc.entry_objects,
-                                 self.flow_calc.result_area.text())
+                                 self.flow_calc.result_area)
                 self.save_to_desktop(VENTILATION_CALC_RESULT_PATH, flow_calc_data)
             case 3:
                 self.show_saving_message(CALCS_RESULT_FILES[3])
 
-                self.clear_entry_fields(self.noise_calc.entry_objects) # !!!!!!!!!!!
+                noise_calc_data = self.create_noise_calc_data_to_save(NOISE_CALC_BANDLINE_NAMES,
+                                  self.noise_calc.entry_objects_source, self.noise_calc.entry_objects_background,
+                                  self.noise_calc.delta_result_area, self.noise_calc.correct_result_area)
+                self.save_to_desktop(NOISE_CALC_RESULT_PATH, noise_calc_data)
 
 
 class RegisterObjectsController(QtWidgets.QWidget):
@@ -241,7 +286,7 @@ class RegisterObjectsController(QtWidgets.QWidget):
         self.options_area = QtWidgets.QTabWidget(self)
         self.options_area.setDocumentMode(True)
         self.options_area.setCurrentIndex(0)
-        self.options_area.currentChanged.connect(self.clear_protocol_number_entry_field)
+        #self.options_area.currentChanged.connect(self.clear_protocol_number_entry_field)
 
         self.physical_register_options = registers_objects.PhysicalFactorsOptions()
         self.radiation_control_register_options = registers_objects.RadiationControlOptions()
@@ -305,9 +350,9 @@ class RegisterObjectsController(QtWidgets.QWidget):
             case 1:
                 self.save_radiation_protocol()
 
-    @QtCore.pyqtSlot()
-    def clear_protocol_number_entry_field(self):
-        self.base_register_area.protocol_number.clear()
+    #@QtCore.pyqtSlot()
+    #def clear_protocol_number_entry_field(self):
+        #self.base_register_area(
 
     @QtCore.pyqtSlot()
     def clear_registers_values(self):

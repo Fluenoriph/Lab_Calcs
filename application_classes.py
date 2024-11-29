@@ -1,7 +1,6 @@
 from PyQt6 import QtWidgets, QtCore, QtGui
 from functools import partial
-from constants import (CONTENTS_MARGINS_ALL_OBJECTS, ALIGNMENT_LEFT_CENTER, TYPE_STANDART_NAMES, ALIGNMENT_TOP_LEFT,
-                       SIZE_RESULT_FIELD)
+from constants import (CONTENTS_MARGINS_ALL_OBJECTS, ALIGNMENT_LEFT_CENTER, ALIGNMENT_TOP_LEFT, SIZE_RESULT_FIELD)
 
 
 class EntryValueField(QtWidgets.QLineEdit):
@@ -56,11 +55,11 @@ class AbstractEntryArea(QtWidgets.QWidget):
             self.box.addWidget(title_object, i, 0, ALIGNMENT_LEFT_CENTER)
             i += 1
 
-    def create_entry_objects(self, entry_objects_list, row_count, column_count):
+    def create_entry_objects(self, entry_type, entry_objects_list, row_count, column_count):
         entry_objects = []
 
         for _ in entry_objects_list:
-            entry_object = EntryValueField(self)
+            entry_object = entry_type(self)
             entry_objects.append(entry_object)
             self.box.addWidget(entry_object, row_count, column_count, ALIGNMENT_LEFT_CENTER)
             row_count += 1
@@ -99,9 +98,3 @@ class AbstractEntryArea(QtWidgets.QWidget):
     def set_range_value(self, entry_objects_list):
         for entry_object in entry_objects_list:
             entry_object.setRange(0, 9999)
-
-    def create_ok_standart_title(self):
-        return QtWidgets.QLabel(TYPE_STANDART_NAMES[0], self)
-
-    def create_no_standart_title(self):
-        return QtWidgets.QLabel(TYPE_STANDART_NAMES[1], self)

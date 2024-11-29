@@ -3,36 +3,29 @@ from PyQt6 import QtWidgets, QtCore, QtSql
 from constants import (BASE_REGISTER_TITLE_NAMES, SIZE_BASE_REGISTER_PROTOCOL_INFO, SIZE_BASE_REGISTER_OBJECT_DATA,
                        WORK_TYPE_AUTO_NAMES, EMPLOYEE_AUTO_NAMES, DATABASE_NAME, BASE_REGISTER_COMMANDS_INSERT,
                        PHYSICAL_FACTORS_TITLE_NAMES, SIZE_OPTIONS_AREA_ENTRY_OBJECTS, RADIATION_CONTROL_TITLE_NAMES,
-                       PHYSICAL_REGISTER_COMMANDS_INSERT, RADIATION_REGISTER_COMMANDS_INSERT)
+                       PHYSICAL_REGISTER_COMMANDS_INSERT, RADIATION_REGISTER_COMMANDS_INSERT, ALIGNMENT_LEFT_CENTER)
 
 from application_classes import AbstractEntryArea
 
 
 class BaseRegister(AbstractEntryArea):
-    def __init__(self):
+    def __init__(self, date_of_research=None, protocol_date=None, protocol_number=None, work_type=None,
+                 object_name=None, object_address=None, administrator=None):
         super().__init__()
         self.box.setVerticalSpacing(15)
         self.box.setHorizontalSpacing(30)
-
         self.visual_date = QtCore.QDate(2025, 1, 1)
 
-        self.protocol_number = QtWidgets.QLineEdit(self)
-        self.date_of_research = QtWidgets.QDateEdit(self.visual_date, self)
-        self.protocol_date = QtWidgets.QDateEdit(self.visual_date, self)
-        self.work_type = QtWidgets.QLineEdit(self)
-        self.object_name = QtWidgets.QLineEdit(self)
-        self.object_address = QtWidgets.QLineEdit(self)
-        self.administrator = QtWidgets.QLineEdit(self)
-
-        self.entry_objects = (self.protocol_number, self.date_of_research, self.protocol_date, self.work_type,
-                              self.object_name, self.object_address, self.administrator)
+        self.parameters = (date_of_research, protocol_date, protocol_number, work_type, object_name, object_address,
+                           administrator)
 
         self.create_title_objects(BASE_REGISTER_TITLE_NAMES)
-        self.create_entry_objects(self.entry_objects, row_count=0, column_count=1)
+
+        self.entry_objects = self.create_entry_objects(QtWidgets.QLineEdit, self.parameters, row_count=0, column_count=1)
         self.set_size_entry_objects(self.entry_objects[:4], SIZE_BASE_REGISTER_PROTOCOL_INFO)
         self.set_size_entry_objects(self.entry_objects[4:6], SIZE_BASE_REGISTER_OBJECT_DATA)
         self.entry_objects[6].setFixedSize(120, 30)
-        self.entry_objects[0].setMaxLength(10)
+        self.entry_objects[2].setMaxLength(10)
 
         self.work_type_completer = QtWidgets.QCompleter(WORK_TYPE_AUTO_NAMES, self)
         self.entry_objects[3].setCompleter(self.work_type_completer)
@@ -41,6 +34,23 @@ class BaseRegister(AbstractEntryArea):
 
         self.connection_with_database = QtSql.QSqlDatabase.addDatabase('QSQLITE')
         self.connection_with_database.setDatabaseName(DATABASE_NAME)
+
+    def create_entry_objects(self, entry_type, entry_objects_list, row_count, column_count):
+        entry_objects = []
+
+        for _ in entry_objects_list[0:2]:
+            date_object = QtWidgets.QDateEdit(self.visual_date, self)
+            entry_objects.append(date_object)
+            self.box.addWidget(date_object, row_count, column_count, ALIGNMENT_LEFT_CENTER)
+            row_count += 1
+
+        for _ in entry_objects_list[2:7]:
+            entry_object = entry_type(self)
+            entry_objects.append(entry_object)
+            self.box.addWidget(entry_object, row_count, column_count, ALIGNMENT_LEFT_CENTER)
+            row_count += 1
+
+        return tuple(entry_objects)
 
     def ready_insert_to_protocol_table(self):
         query = QtSql.QSqlQuery()
@@ -71,44 +81,20 @@ class BaseRegister(AbstractEntryArea):
 
 
 class PhysicalFactorsOptions(AbstractEntryArea):
-    def __init__(self):
+    def __init__(self, microclimate=None, light=None, noise=None, vibration=None, emf=None, aeroionics=None,
+                 ventilation=None):
         super().__init__()
         #self.setFixedSize(300, 400)
         self.box.setHorizontalSpacing(10)
         self.box.setVerticalSpacing(10)
 
-        self.ok_standart_microclimate = QtWidgets.QSpinBox(self)
-        self.ok_standart_light = QtWidgets.QSpinBox(self)
-        self.ok_standart_noise = QtWidgets.QSpinBox(self)
-        self.ok_standart_vibration = QtWidgets.QSpinBox(self)
-        self.ok_standart_emf = QtWidgets.QSpinBox(self)
-        self.ok_standart_aeroionics = QtWidgets.QSpinBox(self)
-        self.ok_standart_ventilation = QtWidgets.QSpinBox(self)
-
-        self.no_standart_microclimate = QtWidgets.QSpinBox(self)
-        self.no_standart_light = QtWidgets.QSpinBox(self)
-        self.no_standart_noise = QtWidgets.QSpinBox(self)
-        self.no_standart_vibration = QtWidgets.QSpinBox(self)
-        self.no_standart_emf = QtWidgets.QSpinBox(self)
-        self.no_standart_aeroionics = QtWidgets.QSpinBox(self)
-        self.no_standart_ventilation = QtWidgets.QSpinBox(self)
-
-        self.entry_objects_ok_standart_with_title = (self.create_ok_standart_title(), self.ok_standart_microclimate,
-                                                     self.ok_standart_light, self.ok_standart_noise,
-                                                     self.ok_standart_vibration, self.ok_standart_emf,
-                                                     self.ok_standart_aeroionics, self.ok_standart_ventilation)
-
-        self.entry_objects_no_standart_with_title = (self.create_no_standart_title(), self.no_standart_microclimate,
-                                                     self.no_standart_light, self.no_standart_noise,
-                                                     self.no_standart_vibration, self.no_standart_emf,
-                                                     self.no_standart_aeroionics, self.no_standart_ventilation)
-
-        self.entry_objects = self.entry_objects_ok_standart_with_title[1:] + self.entry_objects_no_standart_with_title[
-                                                                             1:]
+        self.parameters = (microclimate, light, noise, vibration, emf, aeroionics, ventilation)
 
         self.create_title_objects(PHYSICAL_FACTORS_TITLE_NAMES)
-        self.create_entry_objects(self.entry_objects_ok_standart_with_title, row_count=0, column_count=1)
-        self.create_entry_objects(self.entry_objects_no_standart_with_title, row_count=0, column_count=2)
+        self.entry_objects_ok_standart = self.create_entry_objects(QtWidgets.QSpinBox, self.parameters, row_count=1, column_count=1)
+        self.entry_objects_no_standart = self.create_entry_objects(QtWidgets.QSpinBox, self.parameters, row_count=1, column_count=2)
+
+        self.entry_objects = self.entry_objects_ok_standart + self.entry_objects_no_standart
         self.set_size_entry_objects(self.entry_objects, SIZE_OPTIONS_AREA_ENTRY_OBJECTS)
         self.set_range_value(self.entry_objects)
 
@@ -163,37 +149,21 @@ class PhysicalFactorsOptions(AbstractEntryArea):
 
 
 class RadiationControlOptions(AbstractEntryArea):
-    def __init__(self):
+    def __init__(self, gamma_radiation=None, radon_volume_activity=None,
+                 radon_equivalent_equilibrium_volumetric_activity=None, radon_flux_density=None):
         super().__init__()
         self.box.setHorizontalSpacing(20)
         self.box.setVerticalSpacing(5)
 
-        self.ok_standart_gamma_radiation = QtWidgets.QSpinBox(self)
-        self.ok_standart_radon_volume_activity = QtWidgets.QSpinBox(self)
-        self.ok_standart_radon_equivalent_equilibrium_volumetric_activity = QtWidgets.QSpinBox(self)
-        self.ok_standart_radon_flux_density = QtWidgets.QSpinBox(self)
-
-        self.no_standart_gamma_radiation = QtWidgets.QSpinBox(self)
-        self.no_standart_radon_volume_activity = QtWidgets.QSpinBox(self)
-        self.no_standart_radon_equivalent_equilibrium_volumetric_activity = QtWidgets.QSpinBox(self)
-        self.no_standart_radon_flux_density = QtWidgets.QSpinBox(self)
-
-        self.entry_objects_ok_standart_with_title = (self.create_ok_standart_title(), self.ok_standart_gamma_radiation,
-                                                     self.ok_standart_radon_volume_activity,
-                                                     self.ok_standart_radon_equivalent_equilibrium_volumetric_activity,
-                                                     self.ok_standart_radon_flux_density)
-
-        self.entry_objects_no_standart_with_title = (self.create_no_standart_title(), self.no_standart_gamma_radiation,
-                                                     self.no_standart_radon_volume_activity,
-                                                     self.no_standart_radon_equivalent_equilibrium_volumetric_activity,
-                                                     self.no_standart_radon_flux_density)
-
-        self.entry_objects = self.entry_objects_ok_standart_with_title[1:] + self.entry_objects_no_standart_with_title[
-                                                                             1:]
+        self.parameters = (gamma_radiation, radon_volume_activity, radon_equivalent_equilibrium_volumetric_activity,
+                           radon_flux_density)
 
         self.create_title_objects(RADIATION_CONTROL_TITLE_NAMES)
-        self.create_entry_objects(self.entry_objects_ok_standart_with_title, row_count=0, column_count=1)
-        self.create_entry_objects(self.entry_objects_no_standart_with_title, row_count=0, column_count=2)
+
+        self.entry_objects_ok_standart = self.create_entry_objects(QtWidgets.QSpinBox, self.parameters, row_count=1, column_count=1)
+        self.entry_objects_no_standart = self.create_entry_objects(QtWidgets.QSpinBox, self.parameters, row_count=1, column_count=2)
+
+        self.entry_objects = self.entry_objects_ok_standart + self.entry_objects_no_standart
         self.set_size_entry_objects(self.entry_objects, SIZE_OPTIONS_AREA_ENTRY_OBJECTS)
         self.set_range_value(self.entry_objects)
 

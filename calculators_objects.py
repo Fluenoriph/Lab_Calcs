@@ -1,5 +1,4 @@
 from PyQt6 import QtWidgets, QtCore
-from PyQt6.QtWidgets import QLabel
 
 from constants import (SIZE_AIR_CALC_OBJECT, SIZE_OTHERS_ENTRY_OBJECTS, SIZE_VENTILATION_CALC_OBJECT,
                        SIZE_VENTILATION_HOLE_ENTRY_OBJECTS, SIZE_NOISE_CALC_OBJECT, SIZE_NOISE_CALC_ENTRY_OBJECTS,
@@ -12,6 +11,7 @@ from application_classes import EntryValueField, AbstractEntryArea
 import math
 import locale
 from decimal import Decimal, ROUND_HALF_UP
+
 locale.setlocale(locale.LC_ALL, "ru")
 
 
@@ -29,7 +29,7 @@ class AtmosphericAirDust(AbstractEntryArea):
         self.titles = self.set_title_names()
         self.create_title_objects(self.titles)
 
-        self.entry_objects = self.create_entry_objects(self.parameters, row_count=0, column_count=1)
+        self.entry_objects = self.create_entry_objects(EntryValueField, self.parameters, row_count=0, column_count=1)
         self.set_size_entry_objects(self.entry_objects, SIZE_OTHERS_ENTRY_OBJECTS)
         self.set_max_length(self.entry_objects, max_len=10)
         self.set_checking_value(self.entry_objects)
@@ -132,7 +132,7 @@ class VentilationEfficiency(AbstractEntryArea):
         self.result_string = result_string
 
         self.create_title_objects(VENTILATION_CALC_TITLE_NAMES)
-        self.entry_objects = self.create_entry_objects(self.parameters, row_count=0, column_count=1)
+        self.entry_objects = self.create_entry_objects(EntryValueField, self.parameters, row_count=0, column_count=1)
         self.set_size_entry_objects(self.entry_objects[0:3], SIZE_OTHERS_ENTRY_OBJECTS)
         self.set_size_entry_objects(self.entry_objects[3:6], SIZE_VENTILATION_HOLE_ENTRY_OBJECTS)
         self.set_max_length(self.entry_objects, max_len=7)
