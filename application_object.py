@@ -132,7 +132,6 @@ class CalculatorObjectsController(QtWidgets.QWidget):
         self.tab_area = QtWidgets.QTabWidget(self)
         self.tab_area.setCurrentIndex(0)
         self.tab_area.setDocumentMode(True)
-        #self.tab_area.currentChanged.connect(self.clear_result_area)
 
         self.air_calc = calculators_objects.AtmosphericAirDust()
         self.work_area_calc = calculators_objects.WorkAreaAirDust()
@@ -151,18 +150,16 @@ class CalculatorObjectsController(QtWidgets.QWidget):
         for clear in entry_objects:
             clear.clear()
             clear.value = None
-        #self.result_area.clear()
 
     def create_data_to_save(self, title_names, entry_fields, result_string):
-        data = ["\n----------------------------------------------------------------------\n"]
+        data = []
 
         i = 0
         for string in range(len(title_names)):
             string = title_names[i] + ': ' + str(entry_fields[i].get_entry_value()) + '\n'
             data.append(string)
             i += 1
-        data.append(result_string)
-
+        data.append(result_string + "\n----------------------------------------------------------------------\n")
         return data
 
     def save_to_desktop(self, file_path, data):
@@ -179,60 +176,52 @@ class CalculatorObjectsController(QtWidgets.QWidget):
 
     @QtCore.pyqtSlot()
     def calculating(self):
-        try:
+        #try:
             match self.tab_area.currentIndex():
                 case 0:
                     self.air_calc.calculate()
-                    #self.result_area.setText(self.air_calc.get_result())
                 case 1:
                     self.work_area_calc.calculate()
-                    #self.result_area.setText(self.work_area_calc.get_result())
                 case 2:
                     self.flow_calc.calculate()
-                    #self.result_area.setText(self.flow_calc.get_result())
                 case 3:
                     self.noise_calc.calculate()
-                    #self.result_area.setText(self.noise_calc.get_result())
-        except TypeError:
-            self.show_error_message()
+        #except TypeError:
+            #self.show_error_message()
 
     @QtCore.pyqtSlot()
     def clear_calculator(self):
         match self.tab_area.currentIndex():
             case 0:
                 self.clear_entry_fields(self.air_calc.entry_objects)
+                self.air_calc.result_area.clear()
             case 1:
                 self.clear_entry_fields(self.work_area_calc.entry_objects)
+                self.work_area_calc.result_area.clear()
             case 2:
                 self.clear_entry_fields(self.flow_calc.entry_objects)
+                self.flow_calc.result_area.clear()
             case 3:
                 self.clear_entry_fields(self.noise_calc.entry_objects)
-
-    '''@QtCore.pyqtSlot()
-    def clear_result_area(self):
-        if self.result_area.text():
-            self.result_area.clear()'''
+                #self.noise_calc.
 
     @QtCore.pyqtSlot()
     def saving(self):
         match self.tab_area.currentIndex():
             case 0:
                 self.show_saving_message(CALCS_RESULT_FILES[0])
-
                 air_calc_data = self.create_data_to_save(ATMOSPHERIC_CALC_DUST_TITLE_NAMES, self.air_calc.entry_objects,
-                                self.air_calc.get_result())
+                                self.air_calc.result_area.text())
                 self.save_to_desktop(ATMOSPHERIC_CALC_RESULT_PATH, air_calc_data)
             case 1:
                 self.show_saving_message(CALCS_RESULT_FILES[1])
-
                 work_area_calc_data = self.create_data_to_save(WORK_AREA_CALC_DUST_TITLE_NAMES,
-                                      self.work_area_calc.entry_objects, self.work_area_calc.get_result())
+                                      self.work_area_calc.entry_objects, self.work_area_calc.result_area.text())
                 self.save_to_desktop(WORK_AREA_CALC_RESULT_PATH, work_area_calc_data)
             case 2:
                 self.show_saving_message(CALCS_RESULT_FILES[2])
-
                 flow_calc_data = self.create_data_to_save(VENTILATION_CALC_TITLE_NAMES, self.flow_calc.entry_objects,
-                                 self.flow_calc.get_result())
+                                 self.flow_calc.result_area.text())
                 self.save_to_desktop(VENTILATION_CALC_RESULT_PATH, flow_calc_data)
             case 3:
                 self.show_saving_message(CALCS_RESULT_FILES[3])

@@ -76,7 +76,7 @@ VENTILATION_CALC_RESULT_NAMES = ("Производительность вент�
 
 NOISE_CALC_BANDLINE_NAMES = ("31.5", "63", "125", "250", "500", "1K", "2K", "4K", "8K", "L(AS)")
 
-NOISE_CALC_RESULT_NAMES = ("Общий уровень", "Фоновый уровень", "Разность с фоном:   ", "С поправкой на фон: ")
+NOISE_CALC_RESULT_NAMES = ("Общий уровень", "Фоновый уровень", "Разность с фоном", "С поправкой на фон")
 
 
 # Значения журналов ####################################################################################################
@@ -142,6 +142,8 @@ SIZE_OTHERS_ENTRY_OBJECTS = QtCore.QSize(80, 30)
 SIZE_VENTILATION_HOLE_ENTRY_OBJECTS = QtCore.QSize(60, 30)
 
 SIZE_NOISE_CALC_ENTRY_OBJECTS = QtCore.QSize(40, 30)
+
+SIZE_RESULT_FIELD = QtCore.QSize(500, 90)
 
 SIZE_SELECTOR_AREA = QtCore.QSize(150, 500)
 

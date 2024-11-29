@@ -1,6 +1,7 @@
 from PyQt6 import QtWidgets, QtCore, QtGui
 from functools import partial
-from constants import (CONTENTS_MARGINS_ALL_OBJECTS, ALIGNMENT_LEFT_CENTER, TYPE_STANDART_NAMES, ALIGNMENT_TOP_LEFT)
+from constants import (CONTENTS_MARGINS_ALL_OBJECTS, ALIGNMENT_LEFT_CENTER, TYPE_STANDART_NAMES, ALIGNMENT_TOP_LEFT,
+                       SIZE_RESULT_FIELD)
 
 
 class EntryValueField(QtWidgets.QLineEdit):
@@ -56,18 +57,27 @@ class AbstractEntryArea(QtWidgets.QWidget):
             i += 1
 
     def create_entry_objects(self, entry_objects_list, row_count, column_count):
-        for entry_object in entry_objects_list:
+        entry_objects = []
+
+        for _ in entry_objects_list:
+            entry_object = EntryValueField(self)
+            entry_objects.append(entry_object)
             self.box.addWidget(entry_object, row_count, column_count, ALIGNMENT_LEFT_CENTER)
-            entry_object.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
             row_count += 1
 
-    def create_result_field(self, row_count):
+        return tuple(entry_objects)
+
+    def create_result_field(self):
         result_field = QtWidgets.QLabel(self)
-        result_field.setFixedSize(500, 90)
+        result_field.setFixedSize(SIZE_RESULT_FIELD)
         result_field.setFrameShape(QtWidgets.QFrame.Shape.Box)
         result_field.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByKeyboard |
                                      QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
+
+        row_count = self.box.rowCount()
+        row_count += 1
         self.box.addWidget(result_field, row_count, 0, 1, 2, ALIGNMENT_TOP_LEFT)
+
         return result_field
 
     def set_size_entry_objects(self, entry_objects_list, size):
