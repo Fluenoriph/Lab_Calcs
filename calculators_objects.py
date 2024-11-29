@@ -194,8 +194,6 @@ class NoiseLevelsWithBackground(AbstractEntryArea):
         self.parameters = (octave_band_31_5, octave_band_63, octave_band_125, octave_band_250, octave_band_500,
                            octave_band_1k, octave_band_2k, octave_band_4k, octave_band_8k, octave_band_l_as)
 
-        #self.fon = self.parameters
-
         self.delta_result = delta_result
         self.correct_result = correct_result
 
