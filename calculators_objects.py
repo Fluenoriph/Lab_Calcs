@@ -10,7 +10,7 @@ locale.setlocale(locale.LC_ALL, "ru")
 
 class EntryValueField(QtWidgets.QLineEdit):
     ALL_VALUES_CHECK_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,]+"))
-    TEMPERATURE_CHECK_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,-]+"))
+    TEMPERATURE_CHECK_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,\\-]+"))
 
     def __init__(self, parent, value=None):
         super().__init__(parent)
@@ -436,28 +436,28 @@ class BaseRegister(AbstractEntryArea):
     def ready_insert_to_protocol_table(self):
         query = QtSql.QSqlQuery()
         query.prepare(constants.BASE_REGISTER_COMMANDS_INSERT[0])
-        query.bindValue(':number', self.protocol_number.text())
-        query.bindValue(':protocol_date', self.protocol_date.text())
-        query.bindValue(':work_type', self.work_type.text())
-        query.bindValue(':employee', self.administrator.text())
+        query.bindValue(':number', self.entry_objects[2].text())
+        query.bindValue(':protocol_date', self.entry_objects[1].text())
+        query.bindValue(':work_type', self.entry_objects[3].text())
+        query.bindValue(':employee', self.entry_objects[6].text())
         return query
 
     def ready_insert_to_dates_of_research_table(self):
         query = QtSql.QSqlQuery()
         query.prepare(constants.BASE_REGISTER_COMMANDS_INSERT[1])
-        query.bindValue(':current_date', self.date_of_research.text())
+        query.bindValue(':current_date', self.entry_objects[0].text())
         return query
 
     def ready_insert_to_objects_names_table(self):
         query = QtSql.QSqlQuery()
         query.prepare(constants.BASE_REGISTER_COMMANDS_INSERT[2])
-        query.bindValue(':name', self.object_name.text())
+        query.bindValue(':name', self.entry_objects[4].text())
         return query
 
     def ready_insert_to_objects_addresses_table(self):
         query = QtSql.QSqlQuery()
         query.prepare(constants.BASE_REGISTER_COMMANDS_INSERT[3])
-        query.bindValue(':address', self.object_address.text())
+        query.bindValue(':address', self.entry_objects[5].text())
         return query
 
 
@@ -482,50 +482,50 @@ class PhysicalFactorsOptions(AbstractEntryArea):
     def ready_insert_to_microclimate_table(self):
         query = QtSql.QSqlQuery()
         query.prepare(constants.PHYSICAL_REGISTER_COMMANDS_INSERT[0])
-        query.bindValue(':ok_standart', self.ok_standart_microclimate.text())
-        query.bindValue(':no_standart', self.no_standart_microclimate.text())
+        query.bindValue(':ok_standart', self.entry_objects_ok_standart[0].text())
+        query.bindValue(':no_standart', self.entry_objects_no_standart[0].text())
         return query
 
     def ready_insert_to_light_table(self):
         query = QtSql.QSqlQuery()
         query.prepare(constants.PHYSICAL_REGISTER_COMMANDS_INSERT[1])
-        query.bindValue(':ok_standart', self.ok_standart_light.text())
-        query.bindValue(':no_standart', self.no_standart_light.text())
+        query.bindValue(':ok_standart', self.entry_objects_ok_standart[1].text())
+        query.bindValue(':no_standart', self.entry_objects_no_standart[1].text())
         return query
 
     def ready_insert_to_noise_table(self):
         query = QtSql.QSqlQuery()
         query.prepare(constants.PHYSICAL_REGISTER_COMMANDS_INSERT[2])
-        query.bindValue(':ok_standart', self.ok_standart_noise.text())
-        query.bindValue(':no_standart', self.no_standart_noise.text())
+        query.bindValue(':ok_standart', self.entry_objects_ok_standart[2].text())
+        query.bindValue(':no_standart', self.entry_objects_no_standart[2].text())
         return query
 
     def ready_insert_to_vibration_table(self):
         query = QtSql.QSqlQuery()
         query.prepare(constants.PHYSICAL_REGISTER_COMMANDS_INSERT[3])
-        query.bindValue(':ok_standart', self.ok_standart_vibration.text())
-        query.bindValue(':no_standart', self.no_standart_vibration.text())
+        query.bindValue(':ok_standart', self.entry_objects_ok_standart[3].text())
+        query.bindValue(':no_standart', self.entry_objects_no_standart[3].text())
         return query
 
     def ready_insert_to_emf_table(self):
         query = QtSql.QSqlQuery()
         query.prepare(constants.PHYSICAL_REGISTER_COMMANDS_INSERT[4])
-        query.bindValue(':ok_standart', self.ok_standart_emf.text())
-        query.bindValue(':no_standart', self.no_standart_emf.text())
+        query.bindValue(':ok_standart', self.entry_objects_ok_standart[4].text())
+        query.bindValue(':no_standart', self.entry_objects_no_standart[4].text())
         return query
 
     def ready_insert_to_aeroionics_table(self):
         query = QtSql.QSqlQuery()
         query.prepare(constants.PHYSICAL_REGISTER_COMMANDS_INSERT[5])
-        query.bindValue(':ok_standart', self.ok_standart_aeroionics.text())
-        query.bindValue(':no_standart', self.no_standart_aeroionics.text())
+        query.bindValue(':ok_standart', self.entry_objects_ok_standart[5].text())
+        query.bindValue(':no_standart', self.entry_objects_no_standart[5].text())
         return query
 
     def ready_insert_to_ventilation_table(self):
         query = QtSql.QSqlQuery()
         query.prepare(constants.PHYSICAL_REGISTER_COMMANDS_INSERT[6])
-        query.bindValue(':ok_standart', self.ok_standart_ventilation.text())
-        query.bindValue(':no_standart', self.no_standart_ventilation.text())
+        query.bindValue(':ok_standart', self.entry_objects_ok_standart[6].text())
+        query.bindValue(':no_standart', self.entry_objects_no_standart[6].text())
         return query
 
 
@@ -551,27 +551,27 @@ class RadiationControlOptions(AbstractEntryArea):
     def ready_insert_to_gamma_radiation_table(self):
         query = QtSql.QSqlQuery()
         query.prepare(constants.RADIATION_REGISTER_COMMANDS_INSERT[0])
-        query.bindValue(':ok_standart', self.ok_standart_gamma_radiation.text())
-        query.bindValue(':no_standart', self.no_standart_gamma_radiation.text())
+        query.bindValue(':ok_standart', self.entry_objects_ok_standart[0].text())
+        query.bindValue(':no_standart', self.entry_objects_no_standart[0].text())
         return query
 
     def ready_insert_to_radon_volume_activity_table(self):
         query = QtSql.QSqlQuery()
         query.prepare(constants.RADIATION_REGISTER_COMMANDS_INSERT[1])
-        query.bindValue(':ok_standart', self.ok_standart_radon_volume_activity.text())
-        query.bindValue(':no_standart', self.no_standart_radon_volume_activity.text())
+        query.bindValue(':ok_standart', self.entry_objects_ok_standart[1].text())
+        query.bindValue(':no_standart', self.entry_objects_no_standart[1].text())
         return query
 
     def ready_insert_to_eeva_table(self):
         query = QtSql.QSqlQuery()
         query.prepare(constants.RADIATION_REGISTER_COMMANDS_INSERT[2])
-        query.bindValue(':ok_standart', self.ok_standart_radon_equivalent_equilibrium_volumetric_activity.text())
-        query.bindValue(':no_standart', self.no_standart_radon_equivalent_equilibrium_volumetric_activity.text())
+        query.bindValue(':ok_standart', self.entry_objects_ok_standart[2].text())
+        query.bindValue(':no_standart', self.entry_objects_no_standart[2].text())
         return query
 
     def ready_insert_to_radon_flux_density_table(self):
         query = QtSql.QSqlQuery()
         query.prepare(constants.RADIATION_REGISTER_COMMANDS_INSERT[3])
-        query.bindValue(':ok_standart', self.ok_standart_radon_flux_density.text())
-        query.bindValue(':no_standart', self.no_standart_radon_flux_density.text())
+        query.bindValue(':ok_standart', self.entry_objects_ok_standart[3].text())
+        query.bindValue(':no_standart', self.entry_objects_no_standart[3].text())
         return query

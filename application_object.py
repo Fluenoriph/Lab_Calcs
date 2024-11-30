@@ -202,10 +202,10 @@ class CalculatorObjectsController(QtWidgets.QWidget):
 
     def show_saving_message(self, file_name):
         message = "Данные рассчета будут сохранены\nна рабочий стол в файл " + file_name
-        QtWidgets.QMessageBox.information(self, "Сохранение", message)
+        QtWidgets.QMessageBox.information(self, " ", message)
 
     def show_error_message(self):
-        QtWidgets.QMessageBox.warning(self, "Ошибка", "Введите значения !",
+        QtWidgets.QMessageBox.warning(self, " ", "Ошибка. Введите значения !",
                                       defaultButton=QtWidgets.QMessageBox.StandardButton.Ok)
 
     @QtCore.pyqtSlot()
@@ -279,7 +279,7 @@ class RegisterObjectsController(QtWidgets.QWidget):
         self.options_area = QtWidgets.QTabWidget(self)
         self.options_area.setDocumentMode(True)
         self.options_area.setCurrentIndex(0)
-        #self.options_area.currentChanged.connect(self.clear_protocol_number_entry_field)
+        self.options_area.currentChanged.connect(self.clear_protocol_number_entry_field)
 
         self.physical_register_options = PhysicalFactorsOptions()
         self.radiation_control_register_options = RadiationControlOptions()
@@ -305,13 +305,7 @@ class RegisterObjectsController(QtWidgets.QWidget):
                         self.physical_register_options.ready_insert_to_aeroionics_table(),
                         self.physical_register_options.ready_insert_to_ventilation_table())
 
-        for query in queries_list:
-            check = query.exec()
-            if check:
-                print('Ok!')
-            else:
-                print('Bad!')
-
+        self.check_read_to_database(queries_list)
         self.base_register_area.connection_with_database.close()
 
     def save_radiation_protocol(self):
@@ -326,14 +320,18 @@ class RegisterObjectsController(QtWidgets.QWidget):
                         self.radiation_control_register_options.ready_insert_to_eeva_table(),
                         self.radiation_control_register_options.ready_insert_to_radon_flux_density_table())
 
-        for query in queries_list:
-            check = query.exec()
-            if check:
-                print('Ok!')
-            else:
-                print('Bad!')
-
+        self.check_read_to_database(queries_list)
         self.base_register_area.connection_with_database.close()
+
+    def check_read_to_database(self, queries):
+        for query in queries:
+            check = query.exec()
+            if not check:
+                self.show_database_error()
+
+    def show_database_error(self):
+        QtWidgets.QMessageBox.critical(self, " ", "Ошибка записи в базу данных."
+                                                  "\nНекоторые данные могли не сохраниться !")
 
     @QtCore.pyqtSlot()
     def select_insert_command(self):
@@ -343,9 +341,9 @@ class RegisterObjectsController(QtWidgets.QWidget):
             case 1:
                 self.save_radiation_protocol()
 
-    #@QtCore.pyqtSlot()
-    #def clear_protocol_number_entry_field(self):
-        #self.base_register_area(
+    @QtCore.pyqtSlot()
+    def clear_protocol_number_entry_field(self):
+        self.base_register_area.entry_objects[2].clear()
 
     @QtCore.pyqtSlot()
     def clear_registers_values(self):
@@ -387,20 +385,17 @@ class LaboratorySystem(QtWidgets.QWidget):
 
         self.registers_set = RegisterObjectsController(self)
         self.calculators_set = CalculatorObjectsController(self)
-        self.calculators_set.close()
+        self.calculators_set.close()                                  # Если сохранять настройки ???
 
         self.main_menu_area = MainMenu(self)
-        self.main_menu_area.set_calculators_act.triggered.connect(self.calculators_set_menu_slot)
-        self.main_menu_area.set_registers_act.triggered.connect(self.registers_set_menu_slot)
+        self.main_menu_area.set_calculators_act.triggered.connect(self.calculators_show_menu_action)
+        self.main_menu_area.set_registers_act.triggered.connect(self.registers_show_menu_action)
 
         self.selector_area = SelectorPanel(self)
-        self.selector_area.clicked.connect(self.click_on_string)
+        self.selector_area.clicked.connect(self.click_on_selector_panel)
         self.selector_area.clicked.connect(self.set_a_control_buttons_activity)
 
         self.control_area = MainControlField(self)
-        #self.control_area.button_save.clicked.connect(self.registers_set.select_insert_command)
-        self.control_area.button_save.clicked.connect(self.calculators_set.saving)
-        self.control_area.button_clear.clicked.connect(self.registers_set.clear_registers_values)
 
         self.box.addWidget(self.main_menu_area, 0, 0, 1, 5)
         self.box.addWidget(self.selector_area, 1, 1, 1, 1, constants.ALIGNMENT_TOP_LEFT)
@@ -410,52 +405,56 @@ class LaboratorySystem(QtWidgets.QWidget):
         self.box.setColumnMinimumWidth(3, 40)
         self.box.setColumnMinimumWidth(5, 40)
 
-    def calculators_set_show_fixed(self):
+    def calculators_show_fixed(self):
         self.registers_set.close()
         self.box.replaceWidget(self.registers_set, self.calculators_set)
         self.calculators_set.show()
 
-    def registers_set_show_fixed(self):
+    def registers_show_fixed(self):
         self.calculators_set.close()
         self.box.replaceWidget(self.calculators_set, self.registers_set)
         self.registers_set.show()
 
-    def calculators_set_control_buttons_fixed(self):
+    def calculators_control_buttons_fixed(self):
+        self.control_area.button_ok.disconnect()
         self.control_area.button_clear.disconnect()
-        self.control_area.button_save.setEnabled(True)     # !!!!!!
+        self.control_area.button_save.disconnect()
         self.control_area.button_ok.setEnabled(True)
         self.control_area.button_ok.clicked.connect(self.calculators_set.calculating)
         self.control_area.button_clear.clicked.connect(self.calculators_set.clear_calculator)
+        self.control_area.button_save.clicked.connect(self.calculators_set.saving)
 
-    def registers_set_control_buttons_fixed(self):
+    def registers_control_buttons_fixed(self):
+        self.control_area.button_ok.disconnect()
         self.control_area.button_clear.disconnect()
+        self.control_area.button_save.disconnect()
         self.control_area.button_ok.setEnabled(False)
-        self.control_area.button_save.setEnabled(True)
         self.control_area.button_clear.clicked.connect(self.registers_set.clear_registers_values)
+        self.control_area.button_save.clicked.connect(self.registers_set.select_insert_command)
 
     @QtCore.pyqtSlot()
     def set_a_control_buttons_activity(self):
         if self.selector_area.currentIndex() == self.selector_area.calculators_index:
-            self.calculators_set_control_buttons_fixed()
+            self.calculators_control_buttons_fixed()
         else:
-            self.registers_set_control_buttons_fixed()
+            self.registers_control_buttons_fixed()
 
     @QtCore.pyqtSlot()
-    def click_on_string(self):          # New name !!
+    def click_on_selector_panel(self):
         if self.selector_area.currentIndex() == self.selector_area.calculators_index:
-            self.calculators_set_show_fixed()
+            self.calculators_show_fixed()
         else:
-            self.registers_set_show_fixed()
+            self.registers_show_fixed()
 
     @QtCore.pyqtSlot()
-    def calculators_set_menu_slot(self):
-        self.calculators_set_control_buttons_fixed()
-        self.calculators_set_show_fixed()
+    def calculators_show_menu_action(self):
+        self.calculators_control_buttons_fixed()
+        self.calculators_show_fixed()
 
     @QtCore.pyqtSlot()
-    def registers_set_menu_slot(self):
-        self.registers_set_control_buttons_fixed()
-        self.registers_set_show_fixed()
+    def registers_show_menu_action(self):
+        self.registers_control_buttons_fixed()
+        self.registers_show_fixed()
 
 
 class ApplicationType(QtWidgets.QWidget):
