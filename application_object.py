@@ -1,35 +1,28 @@
 from PyQt6 import QtWidgets, QtCore, QtGui
 import sys
-
-from constants import (MAIN_MENU_TITLE_NAMES, SELECTOR_PANEL_TITLE_NAMES, HELP_INFO_MESSAGE, ABOUT_INFO_MESSAGE,
-                       SIZE_SELECTOR_AREA, CALCULATORS_NAMES, ALIGNMENT_TOP_LEFT, CONTENTS_MARGINS_ALL_OBJECTS,
-                       REGISTERS_NAMES, ALIGNMENT_TOP_RIGHT, CONTENTS_MARGINS_NULLS, CALCS_RESULT_FILES,
-                       ATMOSPHERIC_CALC_RESULT_PATH, WORK_AREA_CALC_RESULT_PATH, VENTILATION_CALC_RESULT_PATH,
-                       NOISE_CALC_RESULT_PATH, ATMOSPHERIC_CALC_DUST_TITLE_NAMES, WORK_AREA_CALC_DUST_TITLE_NAMES,
-                       VENTILATION_CALC_TITLE_NAMES, NOISE_CALC_BANDLINE_NAMES, SEPARATOR)
-
-import calculators_objects
-import registers_objects
+import constants
+from calculators_objects import (AtmosphericAirDust, WorkAreaAirDust, VentilationEfficiency, NoiseLevelsWithBackground,
+                                 BaseRegister, PhysicalFactorsOptions, RadiationControlOptions)
 
 
 class MainMenu(QtWidgets.QMenuBar):
     def __init__(self, parent):
         super().__init__(parent)
         self.setFixedHeight(20)
-        self.submenu_file = QtWidgets.QMenu(MAIN_MENU_TITLE_NAMES[0], self)
-        self.submenu_edit = QtWidgets.QMenu(MAIN_MENU_TITLE_NAMES[1], self)
-        self.submenu_view = QtWidgets.QMenu(MAIN_MENU_TITLE_NAMES[2], self)
-        self.submenu_help = QtWidgets.QMenu(MAIN_MENU_TITLE_NAMES[3], self)
+        self.submenu_file = QtWidgets.QMenu(constants.MAIN_MENU_TITLE_NAMES[0], self)
+        self.submenu_edit = QtWidgets.QMenu(constants.MAIN_MENU_TITLE_NAMES[1], self)
+        self.submenu_view = QtWidgets.QMenu(constants.MAIN_MENU_TITLE_NAMES[2], self)
+        self.submenu_help = QtWidgets.QMenu(constants.MAIN_MENU_TITLE_NAMES[3], self)
 
         self.addMenu(self.submenu_file)
         self.addMenu(self.submenu_edit)
         self.addMenu(self.submenu_view)
         self.addMenu(self.submenu_help)
 
-        self.set_registers_act = QtGui.QAction(SELECTOR_PANEL_TITLE_NAMES[0], self.submenu_file)
-        self.set_calculators_act = QtGui.QAction(SELECTOR_PANEL_TITLE_NAMES[1], self.submenu_file)
+        self.set_registers_act = QtGui.QAction(constants.SELECTOR_PANEL_TITLE_NAMES[0], self.submenu_file)
+        self.set_calculators_act = QtGui.QAction(constants.SELECTOR_PANEL_TITLE_NAMES[1], self.submenu_file)
 
-        self.exit_act = QtGui.QAction(MAIN_MENU_TITLE_NAMES[4], self.submenu_file)
+        self.exit_act = QtGui.QAction(constants.MAIN_MENU_TITLE_NAMES[4], self.submenu_file)
         self.exit_act.triggered.connect(sys.exit)
 
         self.submenu_file.addAction(self.set_registers_act)
@@ -37,19 +30,19 @@ class MainMenu(QtWidgets.QMenuBar):
         self.submenu_file.addSeparator()
         self.submenu_file.addAction(self.exit_act)
 
-        self.themes = self.submenu_view.addMenu(MAIN_MENU_TITLE_NAMES[5])
-        self.dark = QtGui.QAction(MAIN_MENU_TITLE_NAMES[6], self.themes)
+        self.themes = self.submenu_view.addMenu(constants.MAIN_MENU_TITLE_NAMES[5])
+        self.dark = QtGui.QAction(constants.MAIN_MENU_TITLE_NAMES[6], self.themes)
         #dark_style.triggered.connect(partial(self.set_app_style, ApplicationWindow.DARK_COLORS))
-        self.light = QtGui.QAction(MAIN_MENU_TITLE_NAMES[7], self.themes)
+        self.light = QtGui.QAction(constants.MAIN_MENU_TITLE_NAMES[7], self.themes)
         #light_style.triggered.connect(partial(self.set_app_style, ApplicationWindow.LIGHT_COLORS))
         self.themes.addAction(self.dark)
         self.themes.addSeparator()
         self.themes.addAction(self.light)
 
-        self.help_link = QtGui.QAction(HELP_INFO_MESSAGE[0], self.submenu_help)
+        self.help_link = QtGui.QAction(constants.HELP_INFO_MESSAGE[0], self.submenu_help)
         self.help_link.triggered.connect(self.open_help_message)
 
-        self.about = QtGui.QAction(ABOUT_INFO_MESSAGE[0], self.submenu_help)
+        self.about = QtGui.QAction(constants.ABOUT_INFO_MESSAGE[0], self.submenu_help)
         self.about.triggered.connect(self.open_about_app_message)
 
         self.submenu_help.addAction(self.help_link)
@@ -58,21 +51,21 @@ class MainMenu(QtWidgets.QMenuBar):
 
     @QtCore.pyqtSlot()
     def open_about_app_message(self):
-        QtWidgets.QMessageBox.about(self, ABOUT_INFO_MESSAGE[0], ABOUT_INFO_MESSAGE[1])
+        QtWidgets.QMessageBox.about(self, constants.ABOUT_INFO_MESSAGE[0], constants.ABOUT_INFO_MESSAGE[1])
 
     @QtCore.pyqtSlot()
     def open_help_message(self):
-        QtWidgets.QMessageBox.information(self, HELP_INFO_MESSAGE[0], HELP_INFO_MESSAGE[1])
+        QtWidgets.QMessageBox.information(self, constants.HELP_INFO_MESSAGE[0], constants.HELP_INFO_MESSAGE[1])
 
 
 class SelectorPanel(QtWidgets.QListView):
     def __init__(self, parent):
         super().__init__(parent)
-        self.setFixedSize(SIZE_SELECTOR_AREA)
+        self.setFixedSize(constants.SIZE_SELECTOR_AREA)
         self.setSpacing(10)
         self.setFrameStyle(QtWidgets.QFrame.Shape.NoFrame)
 
-        self.names = (SELECTOR_PANEL_TITLE_NAMES[0], SELECTOR_PANEL_TITLE_NAMES[1])
+        self.names = (constants.SELECTOR_PANEL_TITLE_NAMES[0], constants.SELECTOR_PANEL_TITLE_NAMES[1])
 
         self.model_type = QtCore.QStringListModel(self.names)
         self.setModel(self.model_type)
@@ -116,7 +109,7 @@ class MainControlField(QtWidgets.QWidget):
 
         self.box = QtWidgets.QVBoxLayout(self)
         self.box.setSpacing(5)
-        self.box.setContentsMargins(CONTENTS_MARGINS_NULLS)
+        self.box.setContentsMargins(constants.CONTENTS_MARGINS_NULLS)
 
         for button in (self.button_change_style, self.button_ok, self.button_clear, self.button_save, self.button_exit):
             button.setIconSize(self.icon_size)
@@ -133,18 +126,18 @@ class CalculatorObjectsController(QtWidgets.QWidget):
         self.tab_area.setCurrentIndex(0)
         self.tab_area.setDocumentMode(True)
 
-        self.air_calc = calculators_objects.AtmosphericAirDust()
-        self.work_area_calc = calculators_objects.WorkAreaAirDust()
-        self.flow_calc = calculators_objects.VentilationEfficiency()
-        self.noise_calc = calculators_objects.NoiseLevelsWithBackground()
+        self.air_calc = AtmosphericAirDust()
+        self.work_area_calc = WorkAreaAirDust()
+        self.flow_calc = VentilationEfficiency()
+        self.noise_calc = NoiseLevelsWithBackground()
 
-        self.tab_area.addTab(self.air_calc, CALCULATORS_NAMES[0])
-        self.tab_area.addTab(self.work_area_calc, CALCULATORS_NAMES[1])
-        self.tab_area.addTab(self.flow_calc, CALCULATORS_NAMES[2])
-        self.tab_area.addTab(self.noise_calc, CALCULATORS_NAMES[3])
+        self.tab_area.addTab(self.air_calc, constants.CALCULATORS_NAMES[0])
+        self.tab_area.addTab(self.work_area_calc, constants.CALCULATORS_NAMES[1])
+        self.tab_area.addTab(self.flow_calc, constants.CALCULATORS_NAMES[2])
+        self.tab_area.addTab(self.noise_calc, constants.CALCULATORS_NAMES[3])
 
         self.box = QtWidgets.QVBoxLayout(self)
-        self.box.addWidget(self.tab_area, alignment=ALIGNMENT_TOP_LEFT)
+        self.box.addWidget(self.tab_area, alignment=constants.ALIGNMENT_TOP_LEFT)
 
     def clear_entry_fields(self, entry_objects):
         for clear in entry_objects:
@@ -160,7 +153,7 @@ class CalculatorObjectsController(QtWidgets.QWidget):
             data.append(string)
             i += 1
 
-        data.append(result.text() + SEPARATOR)
+        data.append(result.text() + constants.SEPARATOR)
         return data
 
     def create_noise_calc_data_to_save(self, bands, source, background, delta, correct):
@@ -199,7 +192,7 @@ class CalculatorObjectsController(QtWidgets.QWidget):
             correct_str = (correct[i].text() + '      ')
             data.append(correct_str)
             i += 1
-        data.append(SEPARATOR)
+        data.append(constants.SEPARATOR)
 
         return data
 
@@ -251,27 +244,27 @@ class CalculatorObjectsController(QtWidgets.QWidget):
     def saving(self):
         match self.tab_area.currentIndex():
             case 0:
-                self.show_saving_message(CALCS_RESULT_FILES[0])
-                air_calc_data = self.create_data_to_save(ATMOSPHERIC_CALC_DUST_TITLE_NAMES, self.air_calc.entry_objects,
-                                self.air_calc.result_area)
-                self.save_to_desktop(ATMOSPHERIC_CALC_RESULT_PATH, air_calc_data)
+                self.show_saving_message(constants.CALCS_RESULT_FILES[0])
+                air_calc_data = self.create_data_to_save(constants.ATMOSPHERIC_CALC_DUST_TITLE_NAMES,
+                                self.air_calc.entry_objects, self.air_calc.result_area)
+                self.save_to_desktop(constants.ATMOSPHERIC_CALC_RESULT_PATH, air_calc_data)
             case 1:
-                self.show_saving_message(CALCS_RESULT_FILES[1])
-                work_area_calc_data = self.create_data_to_save(WORK_AREA_CALC_DUST_TITLE_NAMES,
+                self.show_saving_message(constants.CALCS_RESULT_FILES[1])
+                work_area_calc_data = self.create_data_to_save(constants.WORK_AREA_CALC_DUST_TITLE_NAMES,
                                       self.work_area_calc.entry_objects, self.work_area_calc.result_area)
-                self.save_to_desktop(WORK_AREA_CALC_RESULT_PATH, work_area_calc_data)
+                self.save_to_desktop(constants.WORK_AREA_CALC_RESULT_PATH, work_area_calc_data)
             case 2:
-                self.show_saving_message(CALCS_RESULT_FILES[2])
-                flow_calc_data = self.create_data_to_save(VENTILATION_CALC_TITLE_NAMES, self.flow_calc.entry_objects,
-                                 self.flow_calc.result_area)
-                self.save_to_desktop(VENTILATION_CALC_RESULT_PATH, flow_calc_data)
+                self.show_saving_message(constants.CALCS_RESULT_FILES[2])
+                flow_calc_data = self.create_data_to_save(constants.VENTILATION_CALC_TITLE_NAMES,
+                                 self.flow_calc.entry_objects, self.flow_calc.result_area)
+                self.save_to_desktop(constants.VENTILATION_CALC_RESULT_PATH, flow_calc_data)
             case 3:
-                self.show_saving_message(CALCS_RESULT_FILES[3])
+                self.show_saving_message(constants.CALCS_RESULT_FILES[3])
 
-                noise_calc_data = self.create_noise_calc_data_to_save(NOISE_CALC_BANDLINE_NAMES,
+                noise_calc_data = self.create_noise_calc_data_to_save(constants.NOISE_CALC_BANDLINE_NAMES,
                                   self.noise_calc.entry_objects_source, self.noise_calc.entry_objects_background,
                                   self.noise_calc.delta_result_area, self.noise_calc.correct_result_area)
-                self.save_to_desktop(NOISE_CALC_RESULT_PATH, noise_calc_data)
+                self.save_to_desktop(constants.NOISE_CALC_RESULT_PATH, noise_calc_data)
 
 
 class RegisterObjectsController(QtWidgets.QWidget):
@@ -279,23 +272,23 @@ class RegisterObjectsController(QtWidgets.QWidget):
         super().__init__(parent)
         #self.setFixedSize()
         self.box = QtWidgets.QHBoxLayout(self)
-        self.box.setContentsMargins(CONTENTS_MARGINS_ALL_OBJECTS)
+        self.box.setContentsMargins(constants.CONTENTS_MARGINS_ALL_OBJECTS)
         self.box.setSpacing(40)
 
-        self.base_register_area = registers_objects.BaseRegister()
+        self.base_register_area = BaseRegister()
         self.options_area = QtWidgets.QTabWidget(self)
         self.options_area.setDocumentMode(True)
         self.options_area.setCurrentIndex(0)
         #self.options_area.currentChanged.connect(self.clear_protocol_number_entry_field)
 
-        self.physical_register_options = registers_objects.PhysicalFactorsOptions()
-        self.radiation_control_register_options = registers_objects.RadiationControlOptions()
+        self.physical_register_options = PhysicalFactorsOptions()
+        self.radiation_control_register_options = RadiationControlOptions()
 
-        self.options_area.addTab(self.physical_register_options, REGISTERS_NAMES[0])
-        self.options_area.addTab(self.radiation_control_register_options, REGISTERS_NAMES[1])
+        self.options_area.addTab(self.physical_register_options, constants.REGISTERS_NAMES[0])
+        self.options_area.addTab(self.radiation_control_register_options, constants.REGISTERS_NAMES[1])
 
-        self.box.addWidget(self.base_register_area, alignment=ALIGNMENT_TOP_LEFT)
-        self.box.addWidget(self.options_area, alignment=ALIGNMENT_TOP_LEFT)
+        self.box.addWidget(self.base_register_area, alignment=constants.ALIGNMENT_TOP_LEFT)
+        self.box.addWidget(self.options_area, alignment=constants.ALIGNMENT_TOP_LEFT)
 
     def save_physical_protocol(self):
         self.base_register_area.connection_with_database.open()
@@ -390,7 +383,7 @@ class LaboratorySystem(QtWidgets.QWidget):
         #self.resize(900, 600)
         self.box = QtWidgets.QGridLayout(self)
         self.box.setHorizontalSpacing(10)
-        self.box.setContentsMargins(CONTENTS_MARGINS_NULLS)
+        self.box.setContentsMargins(constants.CONTENTS_MARGINS_NULLS)
 
         self.registers_set = RegisterObjectsController(self)
         self.calculators_set = CalculatorObjectsController(self)
@@ -410,9 +403,9 @@ class LaboratorySystem(QtWidgets.QWidget):
         self.control_area.button_clear.clicked.connect(self.registers_set.clear_registers_values)
 
         self.box.addWidget(self.main_menu_area, 0, 0, 1, 5)
-        self.box.addWidget(self.selector_area, 1, 1, 1, 1, ALIGNMENT_TOP_LEFT)
-        self.box.addWidget(self.registers_set, 1, 2, 1, 1, ALIGNMENT_TOP_LEFT)
-        self.box.addWidget(self.control_area, 1, 4, 1, 1, ALIGNMENT_TOP_RIGHT)
+        self.box.addWidget(self.selector_area, 1, 1, 1, 1, constants.ALIGNMENT_TOP_LEFT)
+        self.box.addWidget(self.registers_set, 1, 2, 1, 1, constants.ALIGNMENT_TOP_LEFT)
+        self.box.addWidget(self.control_area, 1, 4, 1, 1, constants.ALIGNMENT_TOP_RIGHT)
         self.box.setColumnMinimumWidth(0, 1)
         self.box.setColumnMinimumWidth(3, 40)
         self.box.setColumnMinimumWidth(5, 40)
@@ -480,8 +473,8 @@ class ApplicationType(QtWidgets.QWidget):
         self.application_area = LaboratorySystem(self)
 
         self.box = QtWidgets.QVBoxLayout(self)
-        self.box.setContentsMargins(CONTENTS_MARGINS_NULLS)
-        self.box.addWidget(self.application_area, alignment=ALIGNMENT_TOP_LEFT)
+        self.box.setContentsMargins(constants.CONTENTS_MARGINS_NULLS)
+        self.box.addWidget(self.application_area, alignment=constants.ALIGNMENT_TOP_LEFT)
 
         self.setStyleSheet("font: 13px arial, sans-serif")
 
