@@ -122,6 +122,7 @@ class CalculatorObjectsController(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         #self.setFixedSize(900, 400)
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, True)
         self.tab_area = QtWidgets.QTabWidget(self)
         self.tab_area.setCurrentIndex(0)
         self.tab_area.setDocumentMode(True)
@@ -139,12 +140,14 @@ class CalculatorObjectsController(QtWidgets.QWidget):
         self.box = QtWidgets.QVBoxLayout(self)
         self.box.addWidget(self.tab_area, alignment=constants.ALIGNMENT_TOP_LEFT)
 
-    def clear_entry_fields(self, entry_objects):
+    @staticmethod
+    def clear_entry_fields(entry_objects):
         for clear in entry_objects:
             clear.clear()
             clear.value = None
 
-    def create_data_to_save(self, title_names, entry_fields, result):
+    @staticmethod
+    def create_data_to_save(title_names, entry_fields, result):
         data = []
 
         i = 0
@@ -156,7 +159,8 @@ class CalculatorObjectsController(QtWidgets.QWidget):
         data.append(result.text() + constants.SEPARATOR)
         return data
 
-    def create_noise_calc_data_to_save(self, bands, source, background, delta, correct):
+    @staticmethod
+    def create_noise_calc_data_to_save(bands, source, background, delta, correct):
         data = []
 
         i = 0
@@ -196,7 +200,8 @@ class CalculatorObjectsController(QtWidgets.QWidget):
 
         return data
 
-    def save_to_desktop(self, file_path, data):
+    @staticmethod
+    def save_to_desktop(file_path, data):
         with open (file_path, "a", encoding="utf-8") as txt:
             txt.writelines(data)
 
@@ -271,6 +276,7 @@ class RegisterObjectsController(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         #self.setFixedSize()
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, True)
         self.box = QtWidgets.QHBoxLayout(self)
         self.box.setContentsMargins(constants.CONTENTS_MARGINS_ALL_OBJECTS)
         self.box.setSpacing(40)
@@ -342,10 +348,6 @@ class RegisterObjectsController(QtWidgets.QWidget):
                 self.save_radiation_protocol()
 
     @QtCore.pyqtSlot()
-    def clear_protocol_number_entry_field(self):
-        self.base_register_area.entry_objects[2].clear()
-
-    @QtCore.pyqtSlot()
     def clear_registers_values(self):
         for base_entry_object in self.base_register_area.entry_objects:
             base_entry_object.clear()
@@ -356,6 +358,9 @@ class RegisterObjectsController(QtWidgets.QWidget):
         for radiation_entry_object in self.radiation_control_register_options.entry_objects:
             radiation_entry_object.clear()
 
+    @QtCore.pyqtSlot()
+    def clear_protocol_number_entry_field(self):
+        self.base_register_area.entry_objects[2].clear()
 
 '''@QtCore.pyqtSlot()
     def set_app_style(self, colors_list):
@@ -397,6 +402,13 @@ class LaboratorySystem(QtWidgets.QWidget):
 
         self.control_area = MainControlField(self)
 
+
+        #self.control_area.button_clear.clicked.connect(self.registers_set.clear_registers_values)
+        #self.control_area.button_clear.clicked.connect(self.calculators_set.clear_calculator)
+        #self.control_area.button_save.clicked.connect(self.calculators_set.saving)
+
+        #self.control_area.button_save.clicked.connect(self.registers_set.select_insert_command)
+
         self.box.addWidget(self.main_menu_area, 0, 0, 1, 5)
         self.box.addWidget(self.selector_area, 1, 1, 1, 1, constants.ALIGNMENT_TOP_LEFT)
         self.box.addWidget(self.registers_set, 1, 2, 1, 1, constants.ALIGNMENT_TOP_LEFT)
@@ -405,33 +417,51 @@ class LaboratorySystem(QtWidgets.QWidget):
         self.box.setColumnMinimumWidth(3, 40)
         self.box.setColumnMinimumWidth(5, 40)
 
+    '''@QtCore.pyqtSlot()
+    def calculating_slot(self):
+        return self.calculators_set.calculating
+
+    @QtCore.pyqtSlot()
+    def clear_calculator_slot(self):
+        return self.calculators_set.clear_calculator
+
+    @QtCore.pyqtSlot()
+    def saving_calcs_data_slot(self):
+        return self.calculators_set.saving
+
+    @QtCore.pyqtSlot()
+    def clear_registers_slot(self):
+        return self.registers_set.clear_registers_values
+
+    @QtCore.pyqtSlot()
+    def select_insert_command_slot(self):
+        return self.registers_set.select_insert_command'''
+
     def calculators_show_fixed(self):
         self.registers_set.close()
-        self.box.replaceWidget(self.registers_set, self.calculators_set)
+        #self.box.replaceWidget(self.registers_set, self.calculators_set)
         self.calculators_set.show()
 
     def registers_show_fixed(self):
         self.calculators_set.close()
-        self.box.replaceWidget(self.calculators_set, self.registers_set)
+        #self.box.replaceWidget(self.calculators_set, self.registers_set)
         self.registers_set.show()
 
     def calculators_control_buttons_fixed(self):
-        self.control_area.button_ok.disconnect()
-        self.control_area.button_clear.disconnect()
-        self.control_area.button_save.disconnect()
-        self.control_area.button_ok.setEnabled(True)
-        self.control_area.button_ok.clicked.connect(self.calculators_set.calculating)
+        #self.control_area.button_ok.disconnect()
+
         self.control_area.button_clear.clicked.connect(self.calculators_set.clear_calculator)
-        self.control_area.button_save.clicked.connect(self.calculators_set.saving)
+        #self.control_area.button_clear.clicked.disconnect()
+        #self.control_area.button_save.disconnect(self.select_insert_command_slot)
+        self.control_area.button_ok.setEnabled(True)
 
     def registers_control_buttons_fixed(self):
-        self.control_area.button_ok.disconnect()
-        self.control_area.button_clear.disconnect()
-        self.control_area.button_save.disconnect()
-        self.control_area.button_ok.setEnabled(False)
+        #self.control_area.button_ok.disconnect()
+        #self.control_area.button_clear.clicked.disconnect(self.calculators_set.clear_calculator)
         self.control_area.button_clear.clicked.connect(self.registers_set.clear_registers_values)
-        self.control_area.button_save.clicked.connect(self.registers_set.select_insert_command)
-
+        #self.control_area.button_save.disconnect(self.saving_calcs_data_slot)
+        self.control_area.button_ok.setEnabled(False)
+    # Переделать всю логику
     @QtCore.pyqtSlot()
     def set_a_control_buttons_activity(self):
         if self.selector_area.currentIndex() == self.selector_area.calculators_index:

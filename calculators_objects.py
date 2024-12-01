@@ -84,23 +84,27 @@ class AbstractEntryArea(QtWidgets.QWidget):
 
         return result_field
 
-    def set_size_entry_objects(self, entry_objects_list, size):
+    @staticmethod
+    def set_size_entry_objects(entry_objects_list, size):
         i = 0
         for entry_object in entry_objects_list:
             entry_object.setFixedSize(size)
             i += 1
 
-    def set_max_length(self, entry_objects_list, max_len):
+    @staticmethod
+    def set_max_length(entry_objects_list, max_len):
         i = 0
         for entry_object in entry_objects_list:
             entry_object.setMaxLength(max_len)
             i += 1
 
-    def set_checking_value(self, entry_objects_list):
+    @staticmethod
+    def set_checking_value(entry_objects_list):
         for check in entry_objects_list:
             check.check_entry_value()
 
-    def set_range_value(self, entry_objects_list):
+    @staticmethod
+    def set_range_value(entry_objects_list):
         for entry_object in entry_objects_list:
             entry_object.setRange(0, 9999)
 
@@ -126,10 +130,12 @@ class AtmosphericAirDust(AbstractEntryArea):
 
         self.result_area = self.create_result_field()
 
-    def set_title_names(self):
+    @staticmethod
+    def set_title_names():
         return constants.ATMOSPHERIC_CALC_DUST_TITLE_NAMES
 
-    def set_checking_value(self, entry_objects_list):
+    @staticmethod
+    def set_checking_value(entry_objects_list):
         for entry_object in entry_objects_list:
             if entry_objects_list.index(entry_object) == 1:
                 entry_object.check_temperature_entry_value()
@@ -173,7 +179,8 @@ class WorkAreaAirDust(AtmosphericAirDust):
     def __init__(self):
         super().__init__()
 
-    def set_title_names(self):
+    @staticmethod
+    def set_title_names():
         return constants.WORK_AREA_CALC_DUST_TITLE_NAMES
 
     def calculate(self):
@@ -349,7 +356,8 @@ class NoiseLevelsWithBackground(AbstractEntryArea):
 
         return tuple(result_objects)
 
-    def set_result_field_properties(self, result_objects):
+    @staticmethod
+    def set_result_field_properties(result_objects):
         for result_object in result_objects:
             result_object.setFixedSize(constants.SIZE_NOISE_CALC_ENTRY_OBJECTS)
             result_object.setAlignment(constants.ALIGNMENT_CENTER_CENTER)
