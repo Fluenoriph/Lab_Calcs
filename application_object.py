@@ -10,19 +10,17 @@ class MainMenu(QtWidgets.QMenuBar):
         super().__init__(parent)
         self.setFixedHeight(20)
         self.submenu_file = QtWidgets.QMenu(constants.MAIN_MENU_TITLE_NAMES[0], self)
-        self.submenu_edit = QtWidgets.QMenu(constants.MAIN_MENU_TITLE_NAMES[1], self)
-        self.submenu_view = QtWidgets.QMenu(constants.MAIN_MENU_TITLE_NAMES[2], self)
-        self.submenu_help = QtWidgets.QMenu(constants.MAIN_MENU_TITLE_NAMES[3], self)
+        self.submenu_view = QtWidgets.QMenu(constants.MAIN_MENU_TITLE_NAMES[1], self)
+        self.submenu_help = QtWidgets.QMenu(constants.MAIN_MENU_TITLE_NAMES[2], self)
 
         self.addMenu(self.submenu_file)
-        self.addMenu(self.submenu_edit)
         self.addMenu(self.submenu_view)
         self.addMenu(self.submenu_help)
 
-        self.set_registers_act = QtGui.QAction(constants.SELECTOR_PANEL_TITLE_NAMES[0], self.submenu_file)
-        self.set_calculators_act = QtGui.QAction(constants.SELECTOR_PANEL_TITLE_NAMES[1], self.submenu_file)
+        self.set_registers_act = QtGui.QAction(constants.SELECTOR_PANEL_TITLE_NAMES[1], self.submenu_file)
+        self.set_calculators_act = QtGui.QAction(constants.SELECTOR_PANEL_TITLE_NAMES[0], self.submenu_file)
 
-        self.exit_act = QtGui.QAction(constants.MAIN_MENU_TITLE_NAMES[4], self.submenu_file)
+        self.exit_act = QtGui.QAction(constants.MAIN_MENU_TITLE_NAMES[3], self.submenu_file)
         self.exit_act.triggered.connect(sys.exit)
 
         self.submenu_file.addAction(self.set_registers_act)
@@ -30,10 +28,10 @@ class MainMenu(QtWidgets.QMenuBar):
         self.submenu_file.addSeparator()
         self.submenu_file.addAction(self.exit_act)
 
-        self.themes = self.submenu_view.addMenu(constants.MAIN_MENU_TITLE_NAMES[5])
-        self.dark = QtGui.QAction(constants.MAIN_MENU_TITLE_NAMES[6], self.themes)
+        self.themes = self.submenu_view.addMenu(constants.MAIN_MENU_TITLE_NAMES[4])
+        self.dark = QtGui.QAction(constants.MAIN_MENU_TITLE_NAMES[5], self.themes)
         #dark_style.triggered.connect(partial(self.set_app_style, ApplicationWindow.DARK_COLORS))
-        self.light = QtGui.QAction(constants.MAIN_MENU_TITLE_NAMES[7], self.themes)
+        self.light = QtGui.QAction(constants.MAIN_MENU_TITLE_NAMES[6], self.themes)
         #light_style.triggered.connect(partial(self.set_app_style, ApplicationWindow.LIGHT_COLORS))
         self.themes.addAction(self.dark)
         self.themes.addSeparator()
@@ -74,71 +72,65 @@ class SelectorPanel(QtWidgets.QListView):
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
         self.setTabKeyNavigation(True)
 
-        self.registers_index = self.model_type.index(0, 0)
-        self.calculators_index = self.model_type.index(1, 0)
-
-
-class MainControlField(QtWidgets.QWidget):
-    def __init__(self, parent):
-        super().__init__(parent)
-        #self.setFixedSize(80, 300)
-        self.icon_size = QtCore.QSize(35, 35)
-
-        self.icon_change_style = QtGui.QIcon('images/style.ico')
-        self.icon_ok = QtGui.QIcon('images/ok.ico')
-        self.icon_clear = QtGui.QIcon('images/clear.ico')
-        self.icon_save = QtGui.QIcon('images/save.ico')
-        self.icon_exit = QtGui.QIcon('images/exit.ico')
-
-        self.button_change_style = QtWidgets.QPushButton(self)
-        self.button_change_style.setIcon(self.icon_change_style)
-
-        self.button_ok = QtWidgets.QPushButton(self)
-        self.button_ok.setIcon(self.icon_ok)
-        self.button_ok.setEnabled(False)
-
-        self.button_clear = QtWidgets.QPushButton(self)
-        self.button_clear.setIcon(self.icon_clear)
-
-        self.button_save = QtWidgets.QPushButton(self)
-        self.button_save.setIcon(self.icon_save)
-
-        self.button_exit = QtWidgets.QPushButton(self)
-        self.button_exit.setIcon(self.icon_exit)
-        self.button_exit.clicked.connect(sys.exit)
-
-        self.box = QtWidgets.QVBoxLayout(self)
-        self.box.setSpacing(5)
-        self.box.setContentsMargins(constants.CONTENTS_MARGINS_NULLS)
-
-        for button in (self.button_change_style, self.button_ok, self.button_clear, self.button_save, self.button_exit):
-            button.setIconSize(self.icon_size)
-            button.setFlat(True)
-            button.setAutoDefault(True)
-            self.box.addWidget(button, alignment=QtCore.Qt.AlignmentFlag.AlignTop)
+        self.calculators_index = self.model_type.index(0, 0)
+        self.registers_index = self.model_type.index(1, 0)
 
 
 class CalculatorObjectsController(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         #self.setFixedSize(900, 400)
-        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, True)
-        self.tab_area = QtWidgets.QTabWidget(self)
-        self.tab_area.setCurrentIndex(0)
-        self.tab_area.setDocumentMode(True)
+
+        self.box = QtWidgets.QGridLayout(self)
+        self.box.setSpacing(15)
+        self.box.setContentsMargins(constants.CONTENTS_MARGINS_ALL_OBJECTS)
+
+        self.icon_size = QtCore.QSize(40, 40)
+        self.icon_ok = QtGui.QIcon('images/ok.ico')
+        self.icon_clear = QtGui.QIcon('images/clear.ico')
+        self.icon_save = QtGui.QIcon('images/save.ico')       # Сделать круглые
+
+        self.calcs_area = QtWidgets.QTabWidget(self)
+        self.calcs_area.setCurrentIndex(0)
+        self.calcs_area.setDocumentMode(True)
+        self.calcs_area.setUsesScrollButtons(False)
 
         self.air_calc = AtmosphericAirDust()
         self.work_area_calc = WorkAreaAirDust()
         self.flow_calc = VentilationEfficiency()
         self.noise_calc = NoiseLevelsWithBackground()
 
-        self.tab_area.addTab(self.air_calc, constants.CALCULATORS_NAMES[0])
-        self.tab_area.addTab(self.work_area_calc, constants.CALCULATORS_NAMES[1])
-        self.tab_area.addTab(self.flow_calc, constants.CALCULATORS_NAMES[2])
-        self.tab_area.addTab(self.noise_calc, constants.CALCULATORS_NAMES[3])
+        self.calculate = QtWidgets.QPushButton(self)
+        self.calculate.clicked.connect(self.calculating)
+        self.calculate.setIcon(self.icon_ok)
+        self.calculate.setToolTip("Вычислить")
+        self.calculate.setToolTipDuration(3000)
 
-        self.box = QtWidgets.QVBoxLayout(self)
-        self.box.addWidget(self.tab_area, alignment=constants.ALIGNMENT_TOP_LEFT)
+        self.clear = QtWidgets.QPushButton(self)
+        self.clear.clicked.connect(self.clear_calculator)
+        self.clear.setIcon(self.icon_clear)
+        self.clear.setToolTip("Очистить всё")
+        self.clear.setToolTipDuration(3000)
+
+        self.save = QtWidgets.QPushButton(self)
+        self.save.clicked.connect(self.saving)
+        self.save.setIcon(self.icon_save)
+        self.save.setToolTip("Сохранить в файл")
+        self.save.setToolTipDuration(3000)
+
+        i = 1
+        for button in (self.calculate, self.clear, self.save):
+            button.setIconSize(self.icon_size)
+            button.setFlat(True)
+            button.setAutoDefault(True)
+            self.box.addWidget(button, i, 1, alignment=constants.ALIGNMENT_LEFT_CENTER)
+            i += 1
+
+        self.calcs_area.addTab(self.air_calc, constants.CALCULATORS_NAMES[0])
+        self.calcs_area.addTab(self.work_area_calc, constants.CALCULATORS_NAMES[1])
+        self.calcs_area.addTab(self.flow_calc, constants.CALCULATORS_NAMES[2])
+        self.calcs_area.addTab(self.noise_calc, constants.CALCULATORS_NAMES[3])
+        self.box.addWidget(self.calcs_area, 0, 0, 6, 1, alignment=constants.ALIGNMENT_TOP_LEFT)
 
     @staticmethod
     def clear_entry_fields(entry_objects):
@@ -216,7 +208,7 @@ class CalculatorObjectsController(QtWidgets.QWidget):
     @QtCore.pyqtSlot()
     def calculating(self):
         try:
-            match self.tab_area.currentIndex():
+            match self.calcs_area.currentIndex():
                 case 0:
                     self.air_calc.calculate()
                 case 1:
@@ -230,7 +222,7 @@ class CalculatorObjectsController(QtWidgets.QWidget):
 
     @QtCore.pyqtSlot()
     def clear_calculator(self):
-        match self.tab_area.currentIndex():
+        match self.calcs_area.currentIndex():
             case 0:
                 self.clear_entry_fields(self.air_calc.entry_objects)
                 self.air_calc.result_area.clear()
@@ -247,7 +239,7 @@ class CalculatorObjectsController(QtWidgets.QWidget):
 
     @QtCore.pyqtSlot()
     def saving(self):
-        match self.tab_area.currentIndex():
+        match self.calcs_area.currentIndex():
             case 0:
                 self.show_saving_message(constants.CALCS_RESULT_FILES[0])
                 air_calc_data = self.create_data_to_save(constants.ATMOSPHERIC_CALC_DUST_TITLE_NAMES,
@@ -276,15 +268,21 @@ class RegisterObjectsController(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         #self.setFixedSize()
-        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, True)
-        self.box = QtWidgets.QHBoxLayout(self)
+
+        self.box = QtWidgets.QGridLayout(self)
         self.box.setContentsMargins(constants.CONTENTS_MARGINS_ALL_OBJECTS)
         self.box.setSpacing(40)
+
+        self.icon_size = QtCore.QSize(40, 40)
+        self.icon_ok = QtGui.QIcon('images/ok.ico')
+        self.icon_clear = QtGui.QIcon('images/clear.ico')
+        self.icon_save = QtGui.QIcon('images/save.ico')
 
         self.base_register_area = BaseRegister()
         self.options_area = QtWidgets.QTabWidget(self)
         self.options_area.setDocumentMode(True)
         self.options_area.setCurrentIndex(0)
+        self.options_area.setUsesScrollButtons(False)
         self.options_area.currentChanged.connect(self.clear_protocol_number_entry_field)
 
         self.physical_register_options = PhysicalFactorsOptions()
@@ -293,8 +291,28 @@ class RegisterObjectsController(QtWidgets.QWidget):
         self.options_area.addTab(self.physical_register_options, constants.REGISTERS_NAMES[0])
         self.options_area.addTab(self.radiation_control_register_options, constants.REGISTERS_NAMES[1])
 
-        self.box.addWidget(self.base_register_area, alignment=constants.ALIGNMENT_TOP_LEFT)
-        self.box.addWidget(self.options_area, alignment=constants.ALIGNMENT_TOP_LEFT)
+        self.save = QtWidgets.QPushButton(self)
+        self.save.clicked.connect(self.select_insert_command)
+        self.save.setIcon(self.icon_save)
+        self.save.setToolTip("Сохранить протокол")
+        self.save.setToolTipDuration(3000)
+
+        self.clear = QtWidgets.QPushButton(self)
+        self.clear.clicked.connect(self.clear_registers_values)
+        self.clear.setIcon(self.icon_clear)
+        self.clear.setToolTip("Очистить все журналы")
+        self.clear.setToolTipDuration(3000)
+
+        i = 0
+        for button in (self.save, self.clear):
+            button.setIconSize(self.icon_size)
+            button.setFlat(True)
+            button.setAutoDefault(True)
+            self.box.addWidget(button, i, 2, alignment=constants.ALIGNMENT_LEFT_CENTER)
+            i += 1
+
+        self.box.addWidget(self.base_register_area, 0, 0, 5, 1, alignment=constants.ALIGNMENT_TOP_LEFT)
+        self.box.addWidget(self.options_area, 0, 1, 5, 1, alignment=constants.ALIGNMENT_TOP_LEFT)
 
     def save_physical_protocol(self):
         self.base_register_area.connection_with_database.open()
@@ -390,84 +408,33 @@ class LaboratorySystem(QtWidgets.QWidget):
 
         self.registers_set = RegisterObjectsController(self)
         self.calculators_set = CalculatorObjectsController(self)
-        self.calculators_set.close()                                  # Если сохранять настройки ???
+        self.registers_set.close()
 
         self.main_menu_area = MainMenu(self)
-        self.main_menu_area.set_calculators_act.triggered.connect(self.calculators_show_menu_action)
-        self.main_menu_area.set_registers_act.triggered.connect(self.registers_show_menu_action)
+        self.main_menu_area.set_calculators_act.triggered.connect(self.calculators_show_fixed)
+        self.main_menu_area.set_registers_act.triggered.connect(self.registers_show_fixed)
 
         self.selector_area = SelectorPanel(self)
         self.selector_area.clicked.connect(self.click_on_selector_panel)
-        self.selector_area.clicked.connect(self.set_a_control_buttons_activity)
-
-        self.control_area = MainControlField(self)
-
-
-        #self.control_area.button_clear.clicked.connect(self.registers_set.clear_registers_values)
-        #self.control_area.button_clear.clicked.connect(self.calculators_set.clear_calculator)
-        #self.control_area.button_save.clicked.connect(self.calculators_set.saving)
-
-        #self.control_area.button_save.clicked.connect(self.registers_set.select_insert_command)
 
         self.box.addWidget(self.main_menu_area, 0, 0, 1, 5)
         self.box.addWidget(self.selector_area, 1, 1, 1, 1, constants.ALIGNMENT_TOP_LEFT)
-        self.box.addWidget(self.registers_set, 1, 2, 1, 1, constants.ALIGNMENT_TOP_LEFT)
-        self.box.addWidget(self.control_area, 1, 4, 1, 1, constants.ALIGNMENT_TOP_RIGHT)
+        self.box.addWidget(self.calculators_set, 1, 2, 1, 1, constants.ALIGNMENT_TOP_LEFT)
         self.box.setColumnMinimumWidth(0, 1)
         self.box.setColumnMinimumWidth(3, 40)
         self.box.setColumnMinimumWidth(5, 40)
 
-    '''@QtCore.pyqtSlot()
-    def calculating_slot(self):
-        return self.calculators_set.calculating
-
     @QtCore.pyqtSlot()
-    def clear_calculator_slot(self):
-        return self.calculators_set.clear_calculator
-
-    @QtCore.pyqtSlot()
-    def saving_calcs_data_slot(self):
-        return self.calculators_set.saving
-
-    @QtCore.pyqtSlot()
-    def clear_registers_slot(self):
-        return self.registers_set.clear_registers_values
-
-    @QtCore.pyqtSlot()
-    def select_insert_command_slot(self):
-        return self.registers_set.select_insert_command'''
-
     def calculators_show_fixed(self):
         self.registers_set.close()
-        #self.box.replaceWidget(self.registers_set, self.calculators_set)
+        self.box.replaceWidget(self.registers_set, self.calculators_set)
         self.calculators_set.show()
 
+    @QtCore.pyqtSlot()
     def registers_show_fixed(self):
         self.calculators_set.close()
-        #self.box.replaceWidget(self.calculators_set, self.registers_set)
+        self.box.replaceWidget(self.calculators_set, self.registers_set)
         self.registers_set.show()
-
-    def calculators_control_buttons_fixed(self):
-        #self.control_area.button_ok.disconnect()
-
-        self.control_area.button_clear.clicked.connect(self.calculators_set.clear_calculator)
-        #self.control_area.button_clear.clicked.disconnect()
-        #self.control_area.button_save.disconnect(self.select_insert_command_slot)
-        self.control_area.button_ok.setEnabled(True)
-
-    def registers_control_buttons_fixed(self):
-        #self.control_area.button_ok.disconnect()
-        #self.control_area.button_clear.clicked.disconnect(self.calculators_set.clear_calculator)
-        self.control_area.button_clear.clicked.connect(self.registers_set.clear_registers_values)
-        #self.control_area.button_save.disconnect(self.saving_calcs_data_slot)
-        self.control_area.button_ok.setEnabled(False)
-    # Переделать всю логику
-    @QtCore.pyqtSlot()
-    def set_a_control_buttons_activity(self):
-        if self.selector_area.currentIndex() == self.selector_area.calculators_index:
-            self.calculators_control_buttons_fixed()
-        else:
-            self.registers_control_buttons_fixed()
 
     @QtCore.pyqtSlot()
     def click_on_selector_panel(self):
@@ -475,16 +442,6 @@ class LaboratorySystem(QtWidgets.QWidget):
             self.calculators_show_fixed()
         else:
             self.registers_show_fixed()
-
-    @QtCore.pyqtSlot()
-    def calculators_show_menu_action(self):
-        self.calculators_control_buttons_fixed()
-        self.calculators_show_fixed()
-
-    @QtCore.pyqtSlot()
-    def registers_show_menu_action(self):
-        self.registers_control_buttons_fixed()
-        self.registers_show_fixed()
 
 
 class ApplicationType(QtWidgets.QWidget):
