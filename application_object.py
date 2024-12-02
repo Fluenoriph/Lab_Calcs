@@ -88,7 +88,7 @@ class CalculatorObjectsController(QtWidgets.QWidget):
         self.icon_size = QtCore.QSize(40, 40)
         self.icon_ok = QtGui.QIcon('images/ok.ico')
         self.icon_clear = QtGui.QIcon('images/clear.ico')
-        self.icon_save = QtGui.QIcon('images/save.ico')       # Сделать круглые
+        self.icon_save = QtGui.QIcon('images/save.ico')
 
         self.calcs_area = QtWidgets.QTabWidget(self)
         self.calcs_area.setCurrentIndex(0)
@@ -201,10 +201,6 @@ class CalculatorObjectsController(QtWidgets.QWidget):
         message = "Данные рассчета будут сохранены\nна рабочий стол в файл " + file_name
         QtWidgets.QMessageBox.information(self, " ", message)
 
-    def show_error_message(self):
-        QtWidgets.QMessageBox.warning(self, " ", "Ошибка. Введите значения !",
-                                      defaultButton=QtWidgets.QMessageBox.StandardButton.Ok)
-
     @QtCore.pyqtSlot()
     def calculating(self):
         try:
@@ -218,7 +214,7 @@ class CalculatorObjectsController(QtWidgets.QWidget):
                 case 3:
                     self.noise_calc.calculate()
         except TypeError:
-            self.show_error_message()
+            pass
 
     @QtCore.pyqtSlot()
     def clear_calculator(self):
@@ -241,27 +237,34 @@ class CalculatorObjectsController(QtWidgets.QWidget):
     def saving(self):
         match self.calcs_area.currentIndex():
             case 0:
-                self.show_saving_message(constants.CALCS_RESULT_FILES[0])
-                air_calc_data = self.create_data_to_save(constants.ATMOSPHERIC_CALC_DUST_TITLE_NAMES,
-                                self.air_calc.entry_objects, self.air_calc.result_area)
-                self.save_to_desktop(constants.ATMOSPHERIC_CALC_RESULT_PATH, air_calc_data)
+                if self.air_calc.result_area.text() != "":
+                    self.show_saving_message(constants.CALCS_RESULT_FILES[0])
+                    air_calc_data = self.create_data_to_save(constants.ATMOSPHERIC_CALC_DUST_TITLE_NAMES,
+                                    self.air_calc.entry_objects, self.air_calc.result_area)
+                    self.save_to_desktop(constants.ATMOSPHERIC_CALC_RESULT_PATH, air_calc_data)
+                else: pass
             case 1:
-                self.show_saving_message(constants.CALCS_RESULT_FILES[1])
-                work_area_calc_data = self.create_data_to_save(constants.WORK_AREA_CALC_DUST_TITLE_NAMES,
-                                      self.work_area_calc.entry_objects, self.work_area_calc.result_area)
-                self.save_to_desktop(constants.WORK_AREA_CALC_RESULT_PATH, work_area_calc_data)
+                if self.work_area_calc.result_area.text() != "":
+                    self.show_saving_message(constants.CALCS_RESULT_FILES[1])
+                    work_area_calc_data = self.create_data_to_save(constants.WORK_AREA_CALC_DUST_TITLE_NAMES,
+                                          self.work_area_calc.entry_objects, self.work_area_calc.result_area)
+                    self.save_to_desktop(constants.WORK_AREA_CALC_RESULT_PATH, work_area_calc_data)
+                else: pass
             case 2:
-                self.show_saving_message(constants.CALCS_RESULT_FILES[2])
-                flow_calc_data = self.create_data_to_save(constants.VENTILATION_CALC_TITLE_NAMES,
-                                 self.flow_calc.entry_objects, self.flow_calc.result_area)
-                self.save_to_desktop(constants.VENTILATION_CALC_RESULT_PATH, flow_calc_data)
+                if self.flow_calc.result_area.text() != "":
+                    self.show_saving_message(constants.CALCS_RESULT_FILES[2])
+                    flow_calc_data = self.create_data_to_save(constants.VENTILATION_CALC_TITLE_NAMES,
+                                     self.flow_calc.entry_objects, self.flow_calc.result_area)
+                    self.save_to_desktop(constants.VENTILATION_CALC_RESULT_PATH, flow_calc_data)
+                else: pass
             case 3:
-                self.show_saving_message(constants.CALCS_RESULT_FILES[3])
-
-                noise_calc_data = self.create_noise_calc_data_to_save(constants.NOISE_CALC_BANDLINE_NAMES,
-                                  self.noise_calc.entry_objects_source, self.noise_calc.entry_objects_background,
-                                  self.noise_calc.delta_result_area, self.noise_calc.correct_result_area)
-                self.save_to_desktop(constants.NOISE_CALC_RESULT_PATH, noise_calc_data)
+                if self.noise_calc.delta_result_area[0].text() != "":
+                    self.show_saving_message(constants.CALCS_RESULT_FILES[3])
+                    noise_calc_data = self.create_noise_calc_data_to_save(constants.NOISE_CALC_BANDLINE_NAMES,
+                                      self.noise_calc.entry_objects_source, self.noise_calc.entry_objects_background,
+                                      self.noise_calc.delta_result_area, self.noise_calc.correct_result_area)
+                    self.save_to_desktop(constants.NOISE_CALC_RESULT_PATH, noise_calc_data)
+                else: pass
 
 
 class RegisterObjectsController(QtWidgets.QWidget):
@@ -462,7 +465,8 @@ class ApplicationType(QtWidgets.QWidget):
         self.box.setContentsMargins(constants.CONTENTS_MARGINS_NULLS)
         self.box.addWidget(self.application_area, alignment=constants.ALIGNMENT_TOP_LEFT)
 
-        self.setStyleSheet("font: 13px arial, sans-serif")
+        self.setStyleSheet("*{font: 13px arial, sans-serif; border-style: hidden; border-radius: 5px;} "
+                           "QPushButton {border-style: hidden; border-radius: 10px; padding: 5px; background-color: red;}")
 
         self.show()
 
