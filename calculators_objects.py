@@ -18,6 +18,7 @@ class EntryValueField(QtWidgets.QLineEdit):
         self.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.setFrame(True)
         self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
+        self.setStyleSheet(constants.BORDER_STYLE)
 
     def check_entry_value(self):
         return self.textEdited.connect(partial(self.validate_entry_text,
@@ -74,12 +75,14 @@ class AbstractEntryArea(QtWidgets.QWidget):
     def create_result_field(self):
         result_field = QtWidgets.QLabel(self)
         result_field.setFixedSize(constants.SIZE_RESULT_FIELD)
+        result_field.setIndent(20)
         result_field.setFrameShape(QtWidgets.QFrame.Shape.Box)
         result_field.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByKeyboard |
                                      QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
 
         row_count = self.box.rowCount()
-        row_count += 1
+        self.box.setRowMinimumHeight(row_count, 40)
+        row_count += 2
         self.box.addWidget(result_field, row_count, 0, 1, 2, constants.ALIGNMENT_TOP_LEFT)
 
         return result_field
@@ -113,9 +116,10 @@ class AtmosphericAirDust(AbstractEntryArea):
     def __init__(self, volume=None, temperature=None, pressure=None, mass_before=None,
                  mass_after=None, result_string=None, ):
         super().__init__()
-        # self.setFixedSize(SIZE_AIR_CALC_OBJECT)
-        self.box.setVerticalSpacing(5)
-        self.box.setHorizontalSpacing(30)
+        self.setFixedSize(constants.SIZE_AIR_CALC)
+        self.box.setVerticalSpacing(20)
+        self.box.setHorizontalSpacing(50)
+        self.box.setContentsMargins(constants.CONTENTS_MARGINS_CALCS)
 
         self.parameters = (volume, temperature, pressure, mass_before, mass_after)
         self.result_string = result_string
@@ -129,6 +133,8 @@ class AtmosphericAirDust(AbstractEntryArea):
         self.set_checking_value(self.entry_objects)
 
         self.result_area = self.create_result_field()
+        self.result_area.setObjectName("res_air")
+        self.setStyleSheet("#res_air {border-radius: 10px; background-color: blue;}")
 
     @staticmethod
     def set_title_names():
@@ -220,9 +226,10 @@ class VentilationEfficiency(AbstractEntryArea):
     def __init__(self, room_square=None, room_height=None, flow_speed=None, diameter=None, width=None, height=None,
                  hole_square = None, result_string = None):
         super().__init__()
-        # self.setFixedSize(SIZE_VENTILATION_CALC_OBJECT)
-        self.box.setHorizontalSpacing(30)
-        self.box.setVerticalSpacing(15)
+        self.setFixedSize(constants.SIZE_VENTILATION_CALC)
+        self.box.setVerticalSpacing(20)
+        self.box.setHorizontalSpacing(50)
+        self.box.setContentsMargins(constants.CONTENTS_MARGINS_CALCS)
 
         self.parameters = (room_square, room_height, flow_speed, diameter, width, height)
         self.hole_square = hole_square
@@ -284,9 +291,10 @@ class NoiseLevelsWithBackground(AbstractEntryArea):
                  octave_band_500=None, octave_band_1k=None, octave_band_2k=None, octave_band_4k=None,
                  octave_band_8k=None, octave_band_l_as=None, delta_result = None, correct_result = None):
         super().__init__()
-        # self.setFixedSize(SIZE_NOISE_CALC_OBJECT)
-        self.box.setHorizontalSpacing(1)
-        self.box.setContentsMargins(5, 50, 5, 0)
+        self.setFixedSize(constants.SIZE_NOISE_CALC)
+        #self.box.setHorizontalSpacing(15)
+        #self.box.setVerticalSpacing(5)
+        self.box.setContentsMargins(constants.CONTENTS_MARGINS_CALCS)
 
         self.parameters = (octave_band_31_5, octave_band_63, octave_band_125, octave_band_250, octave_band_500,
                            octave_band_1k, octave_band_2k, octave_band_4k, octave_band_8k, octave_band_l_as)
@@ -315,7 +323,7 @@ class NoiseLevelsWithBackground(AbstractEntryArea):
         j = 1
         for _ in title_objects[0:10]:
             title_band = QtWidgets.QLabel(title_objects[i], self)
-            self.box.addWidget(title_band, 0, j, constants.ALIGNMENT_CENTER_CENTER)
+            self.box.addWidget(title_band, 0, j, constants.ALIGNMENT_BOTTOM_CENTER)
             i += 1
             j += 1
 

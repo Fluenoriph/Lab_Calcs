@@ -62,6 +62,7 @@ class SelectorPanel(QtWidgets.QListView):
         self.setFixedSize(constants.SIZE_SELECTOR_AREA)
         self.setSpacing(10)
         self.setFrameStyle(QtWidgets.QFrame.Shape.NoFrame)
+        self.setStyleSheet("* {background-color: blue; border-radius: 5px;}")
 
         self.names = (constants.SELECTOR_PANEL_TITLE_NAMES[0], constants.SELECTOR_PANEL_TITLE_NAMES[1])
 
@@ -80,6 +81,7 @@ class CalculatorObjectsController(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         #self.setFixedSize(900, 400)
+        #self.setStyleSheet("QLabel {background-color: green;}")
 
         self.box = QtWidgets.QGridLayout(self)
         self.box.setSpacing(15)
@@ -465,8 +467,8 @@ class ApplicationType(QtWidgets.QWidget):
         self.box.setContentsMargins(constants.CONTENTS_MARGINS_NULLS)
         self.box.addWidget(self.application_area, alignment=constants.ALIGNMENT_TOP_LEFT)
 
-        self.setStyleSheet("*{font: 13px arial, sans-serif; border-style: hidden; border-radius: 5px;} "
-                           "QPushButton {border-style: hidden; border-radius: 10px; padding: 5px; background-color: red;}")
+        self.setStyleSheet("*{font: 13px arial, sans-serif;} "
+                           "QPushButton {border-radius: 10px; padding: 5px; background-color: red;}")
 
         self.show()
 

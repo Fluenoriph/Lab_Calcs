@@ -132,11 +132,13 @@ ALIGNMENT_LEFT_BOTTOM = QtCore.Qt.AlignmentFlag.AlignBottom | QtCore.Qt.Alignmen
 
 ALIGNMENT_TOP_RIGHT = QtCore.Qt.AlignmentFlag.AlignTop | QtCore.Qt.AlignmentFlag.AlignRight
 
-SIZE_AIR_CALC_OBJECT = QtCore.QSize(500, 250)
+ALIGNMENT_BOTTOM_CENTER = QtCore.Qt.AlignmentFlag.AlignBottom | QtCore.Qt.AlignmentFlag.AlignCenter
 
-SIZE_VENTILATION_CALC_OBJECT = QtCore.QSize(500, 300)
+SIZE_AIR_CALC = QtCore.QSize(600, 470)
 
-SIZE_NOISE_CALC_OBJECT = QtCore.QSize(650, 100)
+SIZE_VENTILATION_CALC = QtCore.QSize(600, 470)    # Одинаковое !!!
+
+SIZE_NOISE_CALC = QtCore.QSize(700, 300)
 
 SIZE_OTHERS_ENTRY_OBJECTS = QtCore.QSize(80, 30)
 
@@ -144,7 +146,7 @@ SIZE_VENTILATION_HOLE_ENTRY_OBJECTS = QtCore.QSize(60, 30)
 
 SIZE_NOISE_CALC_ENTRY_OBJECTS = QtCore.QSize(40, 30)
 
-SIZE_RESULT_FIELD = QtCore.QSize(500, 90)
+SIZE_RESULT_FIELD = QtCore.QSize(550, 70)
 
 SIZE_SELECTOR_AREA = QtCore.QSize(150, 500)
 
@@ -157,3 +159,8 @@ SIZE_BASE_REGISTER_PROTOCOL_INFO = QtCore.QSize(100, 30)
 CONTENTS_MARGINS_ALL_OBJECTS = QtCore.QMargins(5, 5, 5, 5)
 
 CONTENTS_MARGINS_NULLS = QtCore.QMargins(0, 0, 0, 0)
+
+CONTENTS_MARGINS_CALCS = QtCore.QMargins(10, 30, 10, 10)
+
+BORDER_STYLE = "* {border-style: hidden; border-radius: 5px;}"
+
