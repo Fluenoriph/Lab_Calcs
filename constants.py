@@ -138,7 +138,7 @@ SIZE_AIR_CALC = QtCore.QSize(600, 470)
 
 SIZE_VENTILATION_CALC = QtCore.QSize(600, 470)    # Одинаковое !!!
 
-SIZE_NOISE_CALC = QtCore.QSize(700, 300)
+SIZE_NOISE_CALC = QtCore.QSize(700, 250)
 
 SIZE_OTHERS_ENTRY_OBJECTS = QtCore.QSize(80, 30)
 
@@ -162,5 +162,7 @@ CONTENTS_MARGINS_NULLS = QtCore.QMargins(0, 0, 0, 0)
 
 CONTENTS_MARGINS_CALCS = QtCore.QMargins(10, 30, 10, 10)
 
-BORDER_STYLE = "* {border-style: hidden; border-radius: 5px;}"
+FIELDS_BORDER_STYLE = "border-style: hidden; border-radius: 5px;"
+
+BORDER_STYLE = "border-style: hidden; border-radius: 9px;"
 

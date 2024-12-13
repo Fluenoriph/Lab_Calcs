@@ -18,7 +18,7 @@ class EntryValueField(QtWidgets.QLineEdit):
         self.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.setFrame(True)
         self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
-        self.setStyleSheet(constants.BORDER_STYLE)
+        self.setStyleSheet(constants.FIELDS_BORDER_STYLE)
 
     def check_entry_value(self):
         return self.textEdited.connect(partial(self.validate_entry_text,
@@ -76,7 +76,6 @@ class AbstractEntryArea(QtWidgets.QWidget):
         result_field = QtWidgets.QLabel(self)
         result_field.setFixedSize(constants.SIZE_RESULT_FIELD)
         result_field.setIndent(20)
-        result_field.setFrameShape(QtWidgets.QFrame.Shape.Box)
         result_field.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByKeyboard |
                                      QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
 
@@ -133,8 +132,10 @@ class AtmosphericAirDust(AbstractEntryArea):
         self.set_checking_value(self.entry_objects)
 
         self.result_area = self.create_result_field()
-        self.result_area.setObjectName("res_air")
-        self.setStyleSheet("#res_air {border-radius: 10px; background-color: blue;}")
+        self.result_area.setStyleSheet(constants.FIELDS_BORDER_STYLE)
+        self.result_area.setStyleSheet("background-color: red;")
+        #self.result_area.setObjectName("res_air")
+        #self.setStyleSheet("border-radius: 10px; background-color: blue;")
 
     @staticmethod
     def set_title_names():
@@ -370,6 +371,7 @@ class NoiseLevelsWithBackground(AbstractEntryArea):
             result_object.setFixedSize(constants.SIZE_NOISE_CALC_ENTRY_OBJECTS)
             result_object.setAlignment(constants.ALIGNMENT_CENTER_CENTER)
             result_object.setFrameShape(QtWidgets.QFrame.Shape.Box)    # ???
+            result_object.setStyleSheet("border-radius: 5px; background-color: blue;")
 
     def calculate(self):
         i = 0
