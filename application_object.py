@@ -1,5 +1,6 @@
 from PyQt6 import QtWidgets, QtCore, QtGui
 import sys
+from functools import partial
 import constants
 from calculators_objects import (AtmosphericAirDust, WorkAreaAirDust, VentilationEfficiency, NoiseLevelsWithBackground,
                                  BaseRegister, PhysicalFactorsOptions, RadiationControlOptions)
@@ -342,24 +343,23 @@ class ApplicationType(QtWidgets.QWidget):
         self.box.setColumnMinimumWidth(3, 40)
         self.box.setColumnMinimumWidth(5, 40)
 
-        self.set_light_style()
+        self.calcs_list = (self.calculators.air_calc, self.calculators.work_area_calc, self.calculators.flow_calc,
+                           self.calculators.noise_calc)
+
+        self.set_app_style(constants.TYPE_LIGHT_STYLE)
         self.show()
 
-    def set_light_style(self):
-        self.setStyleSheet("* {font: 13px arial, sans-serif; background-color: #fcfcee;} "
-                           "QMenuBar {color: red; background-color: #18171c;}") # main window, all fonts
-        #self.menu_area.setStyleSheet("color: red; background-color: #18171c;")
-        self.selector_area.setStyleSheet("border-style: hidden; border-radius: 9px; background-color: red; color: blue;")
+    def set_app_style(self, style_list):
+        self.setStyleSheet(style_list[0])
+        self.selector_area.setStyleSheet(style_list[1])
+        self.calculators.calcs_area.setStyleSheet(style_list[2])
 
-        # на один калькулятор
-        self.calculators.calcs_area.setStyleSheet("color: blue;")
-
-        self.calculators.air_calc.setStyleSheet("* {color: green;} QLineEdit {background-color: red; color: blue;}")
-        self.calculators.air_calc.result_area.setStyleSheet("border-style: hidden; border-radius: 9px; "
-                                                            "background-color: #181454; color: green;")
-
-
-
+        for calc in self.calcs_list:
+            calc.setStyleSheet(style_list[3])
+            if self.calcs_list.index(calc) == 3:
+                calc.set_result_field_style(style_list[4])
+            else:
+                calc.result_area.setStyleSheet(style_list[4])
 
     def create_main_menu(self):
         main_menu = QtWidgets.QMenuBar(self)

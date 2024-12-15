@@ -366,7 +366,10 @@ class NoiseLevelsWithBackground(AbstractInputZone):
         for result_object in result_objects:
             result_object.setFixedSize(constants.SIZE_NOISE_CALC_ENTRY_OBJECTS)
             result_object.setAlignment(constants.ALIGNMENT_CENTER_CENTER)
-            #result_object.setStyleSheet("border-radius: 5px; background-color: blue;")   Method !
+
+    def set_result_field_style(self, style):
+        for result_object in self.result_area:
+            result_object.setStyleSheet(style)
 
     def calculate(self):
         i = 0

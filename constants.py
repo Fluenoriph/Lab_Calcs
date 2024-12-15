@@ -36,6 +36,23 @@ HELP_INFO_MESSAGE = ("Справка",
 ABOUT_INFO_MESSAGE = ("О программе", "Калькулятор Лабораторный 2.1\n\nСвободное ПО с окрытым исходным кодом\n\n"
                                      "(C) Иван Богданов, 2024. Все права защищены")
 
+
+# 0. Главный стиль; 1. Стиль селектора; 2. Цвет названий калькуляторов; 3. Стиль области ввода; 4. Стиль поля результатов;
+
+TYPE_LIGHT_STYLE = ("* {font: 13px arial, sans-serif; background-color: #fcfcee;} "
+                    "QMenuBar {color: red; background-color: #18171c;}",
+                    "border-style: hidden; border-radius: 9px; background-color: red; color: blue;", "color: blue;",
+                    "* {color: green;} QLineEdit {background-color: red; color: blue;}", "border-style: hidden; "
+                    "border-radius: 5px; background-color: #181454; color: green;")
+
+
+
+
+
+
+
+
+
 DARK_COLORS = ("#0a0a0a;", "#bbbbbb;", "#414a4c;", "#2c3337;", "#00bfff;", "#1a0000;", "#00b300;",
                "#1c1c1c;", "#022027;", "#9d9101;")
 
