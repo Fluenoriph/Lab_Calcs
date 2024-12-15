@@ -126,7 +126,6 @@ class CalculatorObjectsController(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         #self.setFixedSize(900, 400)
-        self.setStyleSheet("QLabel {background-color: green;}")
 
         self.box = QtWidgets.QGridLayout(self)
         self.box.setSpacing(15)
@@ -325,8 +324,6 @@ class ApplicationType(QtWidgets.QWidget):
         y = (screen_size.height() - self.frameSize().height()) // 2
         self.move(x, y)
         self.activateWindow()
-        self.setStyleSheet("*{font: 13px arial, sans-serif;}"
-                           "QPushButton {border-radius: 10px; padding: 5px; background-color: red;}")
 
         self.box = QtWidgets.QGridLayout(self)
         self.box.setHorizontalSpacing(10)
@@ -334,19 +331,35 @@ class ApplicationType(QtWidgets.QWidget):
 
         self.menu_area = self.create_main_menu()
         self.selector_area = self.create_selector_panel()
-
         self.registers = RegisterObjectsController(self)
         self.calculators = CalculatorObjectsController(self)
         self.registers.close()
 
-        self.box.addWidget(self.menu_area, 0, 0, 1, 5)
+        self.box.addWidget(self.menu_area, 0, 0, 1, 6)
         self.box.addWidget(self.selector_area, 1, 1, 1, 1, constants.ALIGNMENT_TOP_LEFT)
         self.box.addWidget(self.calculators, 1, 2, 1, 1, constants.ALIGNMENT_TOP_LEFT)
         self.box.setColumnMinimumWidth(0, 1)
         self.box.setColumnMinimumWidth(3, 40)
         self.box.setColumnMinimumWidth(5, 40)
 
+        self.set_light_style()
         self.show()
+
+    def set_light_style(self):
+        self.setStyleSheet("* {font: 13px arial, sans-serif; background-color: #fcfcee;} "
+                           "QMenuBar {color: red; background-color: #18171c;}") # main window, all fonts
+        #self.menu_area.setStyleSheet("color: red; background-color: #18171c;")
+        self.selector_area.setStyleSheet("border-style: hidden; border-radius: 9px; background-color: red; color: blue;")
+
+        # на один калькулятор
+        self.calculators.calcs_area.setStyleSheet("color: blue;")
+
+        self.calculators.air_calc.setStyleSheet("* {color: green;} QLineEdit {background-color: red; color: blue;}")
+        self.calculators.air_calc.result_area.setStyleSheet("border-style: hidden; border-radius: 9px; "
+                                                            "background-color: #181454; color: green;")
+
+
+
 
     def create_main_menu(self):
         main_menu = QtWidgets.QMenuBar(self)
@@ -399,7 +412,6 @@ class ApplicationType(QtWidgets.QWidget):
         selector_panel.setFixedSize(constants.SIZE_SELECTOR_AREA)
         selector_panel.setSpacing(10)
         selector_panel.setFrameStyle(QtWidgets.QFrame.Shape.NoFrame)
-        selector_panel.setStyleSheet(constants.BORDER_STYLE)
 
         selector_panel.names = (constants.SELECTOR_PANEL_TITLE_NAMES[0], constants.SELECTOR_PANEL_TITLE_NAMES[1])
 

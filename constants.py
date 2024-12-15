@@ -161,8 +161,3 @@ CONTENTS_MARGINS_ALL_OBJECTS = QtCore.QMargins(5, 5, 5, 5)
 CONTENTS_MARGINS_NULLS = QtCore.QMargins(0, 0, 0, 0)
 
 CONTENTS_MARGINS_CALCS = QtCore.QMargins(10, 30, 10, 10)
-
-FIELDS_BORDER_STYLE = "border-style: hidden; border-radius: 5px;"
-
-BORDER_STYLE = "border-style: hidden; border-radius: 9px;"
-

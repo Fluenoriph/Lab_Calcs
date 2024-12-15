@@ -8,7 +8,7 @@ from decimal import Decimal, ROUND_HALF_UP
 locale.setlocale(locale.LC_ALL, "ru")
 
 
-class EntryValueField(QtWidgets.QLineEdit):
+class InputValueField(QtWidgets.QLineEdit):
     ALL_VALUES_CHECK_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,]+"))
     TEMPERATURE_CHECK_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,\\-]+"))
 
@@ -18,15 +18,15 @@ class EntryValueField(QtWidgets.QLineEdit):
         self.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.setFrame(True)
         self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
-        self.setStyleSheet(constants.FIELDS_BORDER_STYLE)
+        self.setStyleSheet("border-style: hidden; border-radius: 5px;")
 
     def check_entry_value(self):
         return self.textEdited.connect(partial(self.validate_entry_text,
-                                               EntryValueField.ALL_VALUES_CHECK_RE_STRING))
+                                               InputValueField.ALL_VALUES_CHECK_RE_STRING))
 
     def check_temperature_entry_value(self):
         return self.editingFinished.connect(partial(self.validate_entry_text,
-                                                    EntryValueField.TEMPERATURE_CHECK_RE_STRING))
+                                                    InputValueField.TEMPERATURE_CHECK_RE_STRING))
 
     @QtCore.pyqtSlot()
     def validate_entry_text(self, validator):
@@ -46,7 +46,7 @@ class EntryValueField(QtWidgets.QLineEdit):
         return self.value
 
 
-class AbstractEntryArea(QtWidgets.QWidget):
+class AbstractInputZone(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.box = QtWidgets.QGridLayout(self)
@@ -111,7 +111,7 @@ class AbstractEntryArea(QtWidgets.QWidget):
             entry_object.setRange(0, 9999)
 
 
-class AtmosphericAirDust(AbstractEntryArea):
+class AtmosphericAirDust(AbstractInputZone):
     def __init__(self, volume=None, temperature=None, pressure=None, mass_before=None,
                  mass_after=None, result_string=None, ):
         super().__init__()
@@ -126,16 +126,12 @@ class AtmosphericAirDust(AbstractEntryArea):
         self.titles = self.set_title_names()
         self.create_title_objects(self.titles)
 
-        self.entry_objects = self.create_entry_objects(EntryValueField, self.parameters, row_count=0, column_count=1)
+        self.entry_objects = self.create_entry_objects(InputValueField, self.parameters, row_count=0, column_count=1)
         self.set_size_entry_objects(self.entry_objects, constants.SIZE_OTHERS_ENTRY_OBJECTS)
         self.set_max_length(self.entry_objects, max_len=10)
         self.set_checking_value(self.entry_objects)
 
         self.result_area = self.create_result_field()
-        self.result_area.setStyleSheet(constants.FIELDS_BORDER_STYLE)
-        self.result_area.setStyleSheet("background-color: red;")
-        #self.result_area.setObjectName("res_air")
-        #self.setStyleSheet("border-radius: 10px; background-color: blue;")
 
     @staticmethod
     def set_title_names():
@@ -223,7 +219,7 @@ class WorkAreaAirDust(AtmosphericAirDust):
         self.result_area.setText(self.result_string)
 
 
-class VentilationEfficiency(AbstractEntryArea):
+class VentilationEfficiency(AbstractInputZone):
     def __init__(self, room_square=None, room_height=None, flow_speed=None, diameter=None, width=None, height=None,
                  hole_square = None, result_string = None):
         super().__init__()
@@ -237,7 +233,7 @@ class VentilationEfficiency(AbstractEntryArea):
         self.result_string = result_string
 
         self.create_title_objects(constants.VENTILATION_CALC_TITLE_NAMES)
-        self.entry_objects = self.create_entry_objects(EntryValueField, self.parameters, row_count=0, column_count=1)
+        self.entry_objects = self.create_entry_objects(InputValueField, self.parameters, row_count=0, column_count=1)
         self.set_size_entry_objects(self.entry_objects[0:3], constants.SIZE_OTHERS_ENTRY_OBJECTS)
         self.set_size_entry_objects(self.entry_objects[3:6], constants.SIZE_VENTILATION_HOLE_ENTRY_OBJECTS)
         self.set_max_length(self.entry_objects, max_len=7)
@@ -287,7 +283,7 @@ class VentilationEfficiency(AbstractEntryArea):
         self.entry_objects[3].clear()
 
 
-class NoiseLevelsWithBackground(AbstractEntryArea):
+class NoiseLevelsWithBackground(AbstractInputZone):
     def __init__(self, octave_band_31_5=None, octave_band_63=None, octave_band_125=None, octave_band_250=None,
                  octave_band_500=None, octave_band_1k=None, octave_band_2k=None, octave_band_4k=None,
                  octave_band_8k=None, octave_band_l_as=None, delta_result = None, correct_result = None):
@@ -306,8 +302,8 @@ class NoiseLevelsWithBackground(AbstractEntryArea):
         self.titles = constants.NOISE_CALC_BANDLINE_NAMES + constants.NOISE_CALC_RESULT_NAMES
         self.create_title_objects(self.titles)
 
-        self.entry_objects_source = self.create_entry_objects(EntryValueField, self.parameters, row_count=1, column_count=1)
-        self.entry_objects_background = self.create_entry_objects(EntryValueField, self.parameters, row_count=2, column_count=1)
+        self.entry_objects_source = self.create_entry_objects(InputValueField, self.parameters, row_count=1, column_count=1)
+        self.entry_objects_background = self.create_entry_objects(InputValueField, self.parameters, row_count=2, column_count=1)
 
         self.entry_objects = self.entry_objects_source + self.entry_objects_background
         self.set_size_entry_objects(self.entry_objects, constants.SIZE_NOISE_CALC_ENTRY_OBJECTS)
@@ -370,8 +366,7 @@ class NoiseLevelsWithBackground(AbstractEntryArea):
         for result_object in result_objects:
             result_object.setFixedSize(constants.SIZE_NOISE_CALC_ENTRY_OBJECTS)
             result_object.setAlignment(constants.ALIGNMENT_CENTER_CENTER)
-            result_object.setFrameShape(QtWidgets.QFrame.Shape.Box)    # ???
-            result_object.setStyleSheet("border-radius: 5px; background-color: blue;")
+            #result_object.setStyleSheet("border-radius: 5px; background-color: blue;")   Method !
 
     def calculate(self):
         i = 0
@@ -407,7 +402,7 @@ class NoiseLevelsWithBackground(AbstractEntryArea):
             i += 1
 
 
-class BaseRegister(AbstractEntryArea):
+class BaseRegister(AbstractInputZone):
     def __init__(self, date_of_research=None, protocol_date=None, protocol_number=None, work_type=None,
                  object_name=None, object_address=None, administrator=None):
         super().__init__()
@@ -479,7 +474,7 @@ class BaseRegister(AbstractEntryArea):
         return query
 
 
-class PhysicalFactorsOptions(AbstractEntryArea):
+class PhysicalFactorsOptions(AbstractInputZone):
     def __init__(self, microclimate=None, light=None, noise=None, vibration=None, emf=None, aeroionics=None,
                  ventilation=None):
         super().__init__()
@@ -547,7 +542,7 @@ class PhysicalFactorsOptions(AbstractEntryArea):
         return query
 
 
-class RadiationControlOptions(AbstractEntryArea):
+class RadiationControlOptions(AbstractInputZone):
     def __init__(self, gamma_radiation=None, radon_volume_activity=None,
                  radon_equivalent_equilibrium_volumetric_activity=None, radon_flux_density=None):
         super().__init__()
