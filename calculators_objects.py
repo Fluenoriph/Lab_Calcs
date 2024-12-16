@@ -115,7 +115,7 @@ class AtmosphericAirDust(AbstractInputZone):
     def __init__(self, volume=None, temperature=None, pressure=None, mass_before=None,
                  mass_after=None, result_string=None, ):
         super().__init__()
-        self.setFixedSize(constants.SIZE_AIR_CALC)
+        self.setFixedSize(constants.SIZE_AIR_FLOW_CALC)
         self.box.setVerticalSpacing(20)
         self.box.setHorizontalSpacing(50)
         self.box.setContentsMargins(constants.CONTENTS_MARGINS_CALCS)
@@ -223,7 +223,7 @@ class VentilationEfficiency(AbstractInputZone):
     def __init__(self, room_square=None, room_height=None, flow_speed=None, diameter=None, width=None, height=None,
                  hole_square = None, result_string = None):
         super().__init__()
-        self.setFixedSize(constants.SIZE_VENTILATION_CALC)
+        self.setFixedSize(constants.SIZE_AIR_FLOW_CALC)
         self.box.setVerticalSpacing(20)
         self.box.setHorizontalSpacing(50)
         self.box.setContentsMargins(constants.CONTENTS_MARGINS_CALCS)

@@ -33,31 +33,24 @@ HELP_INFO_MESSAGE = ("Справка",
                      "фонового шума.\nМУК 4.3.3722-21 «Контроль уровня шума на территории жилой застройки, в жилых и "
                      "общественных зданиях и помещениях»")
 
-ABOUT_INFO_MESSAGE = ("О программе", "Калькулятор Лабораторный 2.1\n\nСвободное ПО с окрытым исходным кодом\n\n"
-                                     "(C) Иван Богданов, 2024. Все права защищены")
+ABOUT_INFO_MESSAGE = ("О программе", "Лабораторные калькуляторы 2.1.0 Beta\n\nFree software\n\n"
+                                     "(C) Иван Богданов, 2025. Все права защищены\n\nfluenoriph@gmail.com")
 
 
 # 0. Главный стиль; 1. Стиль селектора; 2. Цвет названий калькуляторов; 3. Стиль области ввода; 4. Стиль поля результатов;
 
-TYPE_LIGHT_STYLE = ("* {font: 13px arial, sans-serif; background-color: #fcfcee;} "
+TYPE_LIGHT_STYLE = ("* {font: 13px arial, sans-serif; background-color: #fff5ee;} "
+                    "QMenuBar {color: #161a1e; background-color: #f0f8ff;}",
+                    "border-style: hidden; border-radius: 9px; background-color: #a3c6c0; color: #1b1116;",
+                    "color: #151719;", "* {color: #18171c;} QLineEdit {background-color: #e4a010; color: #1d1018;}", "border-style: hidden; "
+                    "border-radius: 5px; background-color: #6699cc; color: #1c1c1c;")
+
+TYPE_DARK_STYLE = ("* {font: 13px arial, sans-serif; background-color: #fcfcee;} "
                     "QMenuBar {color: red; background-color: #18171c;}",
                     "border-style: hidden; border-radius: 9px; background-color: red; color: blue;", "color: blue;",
                     "* {color: green;} QLineEdit {background-color: red; color: blue;}", "border-style: hidden; "
-                    "border-radius: 5px; background-color: #181454; color: green;")
+                    "border-radius: 5px; background-color: #181454; color: ;")
 
-
-
-
-
-
-
-
-
-DARK_COLORS = ("#0a0a0a;", "#bbbbbb;", "#414a4c;", "#2c3337;", "#00bfff;", "#1a0000;", "#00b300;",
-               "#1c1c1c;", "#022027;", "#9d9101;")
-
-LIGHT_COLORS = ("#fcfcee;", "#18171c;", "#f5f5f5;", "#f0f8ff;", "#140f0b;", "#afeeee;", "#003399;",
-                "#45cea2;", "#eedc82;", "#282828;")
 
 MAIN_MENU_TITLE_NAMES = ("Файл", "Вид", "Помощь", "Выход", "Темы", "Темная", "Светлая")
 
@@ -66,7 +59,7 @@ SELECTOR_PANEL_TITLE_NAMES = ("Калькуляторы", "Журналы")
 
 # Значения объектов калькуляторов ######################################################################################
 
-CALCULATORS_NAMES = ("Пыль в атмосф. возд.", "Пыль в возд. раб. зоны", "Эффект. вентил.", "Учет влияния фон. шума")
+CALCULATORS_NAMES = ("Пыль в атмосф. воздухе", "Пыль в воздухе раб. зоны", "Эффектив. вентиляции", "Учет влияния фонового шума")
 
 ATMOSPHERIC_CALC_DUST_TITLE_NAMES = ("Объем взятого на анализ атмосферного воздуха, л",
                                      "Температура воздуха, прошедшего через ротаметр, ℃",
@@ -151,11 +144,9 @@ ALIGNMENT_TOP_RIGHT = QtCore.Qt.AlignmentFlag.AlignTop | QtCore.Qt.AlignmentFlag
 
 ALIGNMENT_BOTTOM_CENTER = QtCore.Qt.AlignmentFlag.AlignBottom | QtCore.Qt.AlignmentFlag.AlignCenter
 
-SIZE_AIR_CALC = QtCore.QSize(600, 470)
+SIZE_AIR_FLOW_CALC = QtCore.QSize(600, 470)
 
-SIZE_VENTILATION_CALC = QtCore.QSize(600, 470)    # Одинаковое !!!
-
-SIZE_NOISE_CALC = QtCore.QSize(700, 250)
+SIZE_NOISE_CALC = QtCore.QSize(680, 230)
 
 SIZE_OTHERS_ENTRY_OBJECTS = QtCore.QSize(80, 30)
 
@@ -165,7 +156,7 @@ SIZE_NOISE_CALC_ENTRY_OBJECTS = QtCore.QSize(40, 30)
 
 SIZE_RESULT_FIELD = QtCore.QSize(550, 70)
 
-SIZE_SELECTOR_AREA = QtCore.QSize(150, 500)
+SIZE_SELECTOR_AREA = QtCore.QSize(150, 488)
 
 SIZE_OPTIONS_AREA_ENTRY_OBJECTS = QtCore.QSize(55, 30)
 
