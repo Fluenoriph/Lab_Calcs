@@ -328,6 +328,7 @@ class ApplicationType(QtWidgets.QWidget):
 
         self.box = QtWidgets.QGridLayout(self)
         self.box.setHorizontalSpacing(10)
+        self.box.setVerticalSpacing(15)
         self.box.setContentsMargins(constants.CONTENTS_MARGINS_NULLS)
 
         self.menu_area = self.create_main_menu()

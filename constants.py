@@ -40,10 +40,10 @@ ABOUT_INFO_MESSAGE = ("О программе", "Лабораторные кал�
 # 0. Главный стиль; 1. Стиль селектора; 2. Цвет названий калькуляторов; 3. Стиль области ввода; 4. Стиль поля результатов;
 
 TYPE_LIGHT_STYLE = ("* {font: 13px arial, sans-serif; background-color: #fff5ee;} "
-                    "QMenuBar {color: #161a1e; background-color: #f0f8ff;}",
-                    "border-style: hidden; border-radius: 9px; background-color: #a3c6c0; color: #1b1116;",
-                    "color: #151719;", "* {color: #18171c;} QLineEdit {background-color: #e4a010; color: #1d1018;}", "border-style: hidden; "
-                    "border-radius: 5px; background-color: #6699cc; color: #1c1c1c;")
+                    "QMenuBar {color: #1b1116; background-color: #fffafa;}",
+                    "border-style: hidden; border-radius: 9px; background-color: #c7fcec; color: #1b1116;",
+                    "color: #151719;", "* {color: #18171c;} QLineEdit {background-color: #1cd3a2; color: #414a4c;}",
+                    "border-style: hidden; border-radius: 5px; background-color: #6699cc; color: #f7f5f6;")
 
 TYPE_DARK_STYLE = ("* {font: 13px arial, sans-serif; background-color: #fcfcee;} "
                     "QMenuBar {color: red; background-color: #18171c;}",
