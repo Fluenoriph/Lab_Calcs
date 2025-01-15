@@ -14,31 +14,24 @@ class RegisterObjectsController(QtWidgets.QWidget):
         self.box = QtWidgets.QGridLayout(self)
         self.box.setContentsMargins(constants.CONTENTS_MARGINS_ALL_OBJECTS)
         self.box.setSpacing(40)
-
-        self.icon_size = QtCore.QSize(40, 40)
         self.icon_ok = QtGui.QIcon('images/ok.ico')
         self.icon_clear = QtGui.QIcon('images/clear.ico')
         self.icon_save = QtGui.QIcon('images/save.ico')
-
         self.base_register_area = BaseRegister()
         self.options_area = QtWidgets.QTabWidget(self)
         self.options_area.setDocumentMode(True)
         self.options_area.setCurrentIndex(0)
         self.options_area.setUsesScrollButtons(False)
         self.options_area.currentChanged.connect(self.clear_protocol_number_entry_field)
-
         self.physical_register_options = PhysicalFactorsOptions()
         self.radiation_control_register_options = RadiationControlOptions()
-
         self.options_area.addTab(self.physical_register_options, constants.REGISTERS_NAMES[0])
         self.options_area.addTab(self.radiation_control_register_options, constants.REGISTERS_NAMES[1])
-
         self.save = QtWidgets.QPushButton(self)
         self.save.clicked.connect(self.select_insert_command)
         self.save.setIcon(self.icon_save)
         self.save.setToolTip("Сохранить протокол")
         self.save.setToolTipDuration(3000)
-
         self.clear = QtWidgets.QPushButton(self)
         self.clear.clicked.connect(self.clear_registers_values)
         self.clear.setIcon(self.icon_clear)
@@ -47,7 +40,7 @@ class RegisterObjectsController(QtWidgets.QWidget):
 
         i = 0
         for button in (self.save, self.clear):
-            button.setIconSize(self.icon_size)
+            button.setIconSize(constants.SIZE_ICON)
             button.setFlat(True)
             button.setAutoDefault(True)
             self.box.addWidget(button, i, 2, alignment=constants.ALIGNMENT_LEFT_CENTER)
@@ -111,10 +104,8 @@ class RegisterObjectsController(QtWidgets.QWidget):
     def clear_registers_values(self):
         for base_entry_object in self.base_register_area.entry_objects:
             base_entry_object.clear()
-
         for physical_entry_object in self.physical_register_options.entry_objects:
             physical_entry_object.clear()
-
         for radiation_entry_object in self.radiation_control_register_options.entry_objects:
             radiation_entry_object.clear()
 
@@ -131,34 +122,27 @@ class CalculatorObjectsController(QtWidgets.QWidget):
         self.box = QtWidgets.QGridLayout(self)
         self.box.setSpacing(15)
         self.box.setContentsMargins(constants.CONTENTS_MARGINS_ALL_OBJECTS)
-
-        self.icon_size = QtCore.QSize(40, 40)
         self.icon_ok = QtGui.QIcon('images/ok.ico')
         self.icon_clear = QtGui.QIcon('images/clear.ico')
         self.icon_save = QtGui.QIcon('images/save.ico')
-
         self.calcs_area = QtWidgets.QTabWidget(self)
         self.calcs_area.setCurrentIndex(0)
         self.calcs_area.setDocumentMode(True)
         self.calcs_area.setUsesScrollButtons(False)
-
         self.air_calc = AtmosphericAirDust()
         self.work_area_calc = WorkAreaAirDust()
         self.flow_calc = VentilationEfficiency()
         self.noise_calc = NoiseLevelsWithBackground()
-
         self.calculate = QtWidgets.QPushButton(self)
         self.calculate.clicked.connect(self.calculating)
         self.calculate.setIcon(self.icon_ok)
         self.calculate.setToolTip("Вычислить")
         self.calculate.setToolTipDuration(3000)
-
         self.clear = QtWidgets.QPushButton(self)
         self.clear.clicked.connect(self.clear_calculator)
         self.clear.setIcon(self.icon_clear)
         self.clear.setToolTip("Очистить всё")
         self.clear.setToolTipDuration(3000)
-
         self.save = QtWidgets.QPushButton(self)
         self.save.clicked.connect(self.saving)
         self.save.setIcon(self.icon_save)
@@ -167,7 +151,7 @@ class CalculatorObjectsController(QtWidgets.QWidget):
 
         i = 1
         for button in (self.calculate, self.clear, self.save):
-            button.setIconSize(self.icon_size)
+            button.setIconSize(constants.SIZE_ICON)
             button.setFlat(True)
             button.setAutoDefault(True)
             self.box.addWidget(button, i, 1, alignment=constants.ALIGNMENT_LEFT_CENTER)
@@ -189,11 +173,11 @@ class CalculatorObjectsController(QtWidgets.QWidget):
     def create_data_to_save(title_names, entry_fields, result):
         data = []
 
-        i = 0
-        for string in range(len(title_names)):
-            string = title_names[i] + ': ' + str(entry_fields[i].get_entry_value()) + '\n'
-            data.append(string)
-            i += 1
+        #i = 0
+        for i in range(len(title_names)):
+            #string = title_names[i] + ': ' + str(entry_fields[i].get_entry_value()) + '\n'
+            data.append(title_names[i] + ': ' + str(entry_fields[i].get_entry_value()) + '\n')
+            #i += 1
 
         data.append(result.text() + constants.SEPARATOR)
         return data
@@ -202,40 +186,22 @@ class CalculatorObjectsController(QtWidgets.QWidget):
     def create_noise_calc_data_to_save(bands, source, background, delta, correct):
         data = []
 
-        i = 0
-        while i < 10:
+        for i in range(11):
             band_str = (bands[i] + '   |   ')
             data.append(band_str)
-            i += 1
-        data.append('\n')
-
-        i = 0
-        while i < 10:
+            data.append('\n')
             source_str = (str(source[i].get_entry_value()) + '      ')
             data.append(source_str)
-            i += 1
-        data.append('\n')
-
-        i = 0
-        while i < 10:
+            data.append('\n')
             background_str = (str(background[i].get_entry_value()) + '      ')
             data.append(background_str)
-            i += 1
-        data.append('\n')
-
-        i = 0
-        while i < 10:
+            data.append('\n')
             delta_str = (delta[i].text() + '      ')
             data.append(delta_str)
-            i += 1
-        data.append('\n')
-
-        i = 0
-        while i < 10:
+            data.append('\n')
             correct_str = (correct[i].text() + '      ')
             data.append(correct_str)
-            i += 1
-        data.append(constants.SEPARATOR)
+            data.append(constants.SEPARATOR)
 
         return data
 

@@ -4,7 +4,6 @@ import math
 import locale
 from functools import partial
 from decimal import Decimal, ROUND_HALF_UP
-
 locale.setlocale(locale.LC_ALL, "ru")
 
 
@@ -31,7 +30,6 @@ class InputValueField(QtWidgets.QLineEdit):
     @QtCore.pyqtSlot()
     def validate_entry_text(self, validator):
         self.setValidator(validator)
-
         if self.hasAcceptableInput():
             self.value = self.text()
             self.value = self.value.replace(",", ".")
@@ -55,21 +53,16 @@ class AbstractInputZone(QtWidgets.QWidget):
         self.box.setContentsMargins(constants.CONTENTS_MARGINS_ALL_OBJECTS)
 
     def create_title_objects(self, title_list):
-        i = 0
-        for title_object in range(len(title_list)):
-            title_object = QtWidgets.QLabel(title_list[i], self)
-            self.box.addWidget(title_object, i, 0, constants.ALIGNMENT_LEFT_CENTER)
-            i += 1
+        for i in range(len(title_list)):
+            self.box.addWidget(QtWidgets.QLabel(title_list[i], self), i, 0, constants.ALIGNMENT_LEFT_CENTER)
 
     def create_entry_objects(self, entry_type, entry_objects_list, row_count, column_count):
         entry_objects = []
-
         for _ in entry_objects_list:
             entry_object = entry_type(self)
             entry_objects.append(entry_object)
             self.box.addWidget(entry_object, row_count, column_count, constants.ALIGNMENT_LEFT_CENTER)
             row_count += 1
-
         return tuple(entry_objects)
 
     def create_result_field(self):
@@ -78,27 +71,21 @@ class AbstractInputZone(QtWidgets.QWidget):
         result_field.setIndent(20)
         result_field.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByKeyboard |
                                      QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
-
         row_count = self.box.rowCount()
         self.box.setRowMinimumHeight(row_count, 40)
         row_count += 2
         self.box.addWidget(result_field, row_count, 0, 1, 2, constants.ALIGNMENT_TOP_LEFT)
-
         return result_field
 
     @staticmethod
     def set_size_entry_objects(entry_objects_list, size):
-        i = 0
         for entry_object in entry_objects_list:
             entry_object.setFixedSize(size)
-            i += 1
 
     @staticmethod
     def set_max_length(entry_objects_list, max_len):
-        i = 0
         for entry_object in entry_objects_list:
             entry_object.setMaxLength(max_len)
-            i += 1
 
     @staticmethod
     def set_checking_value(entry_objects_list):
@@ -119,19 +106,43 @@ class AtmosphericAirDust(AbstractInputZone):
         self.box.setVerticalSpacing(20)
         self.box.setHorizontalSpacing(50)
         self.box.setContentsMargins(constants.CONTENTS_MARGINS_CALCS)
-
         self.parameters = (volume, temperature, pressure, mass_before, mass_after)
         self.result_string = result_string
-
         self.titles = self.set_title_names()
         self.create_title_objects(self.titles)
-
         self.entry_objects = self.create_entry_objects(InputValueField, self.parameters, row_count=0, column_count=1)
         self.set_size_entry_objects(self.entry_objects, constants.SIZE_OTHERS_ENTRY_OBJECTS)
         self.set_max_length(self.entry_objects, max_len=10)
         self.set_checking_value(self.entry_objects)
-
         self.result_area = self.create_result_field()
+
+    def calculate(self):
+        volume = self.entry_objects[0].get_entry_value() / 1000
+        temperature = self.entry_objects[1].get_entry_value()
+
+        if self.entry_objects[2].get_entry_value() < 640:
+            pressure = self.entry_objects[2].get_entry_value() * 7.5
+        else:
+            pressure = self.entry_objects[2].get_entry_value()
+
+        mass_before = self.entry_objects[3].get_entry_value() * 1000
+        mass_after = self.entry_objects[4].get_entry_value() * 1000
+        normal_volume = (volume * 273 * pressure) / ((273 + temperature) * 760)
+        concentrate = (mass_after - mass_before) / normal_volume
+        result = Decimal(concentrate).quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
+
+        if concentrate < 0.15:
+            self.result_string = constants.ATMOSPHERIC_CALC_DUST_RESULT_NAMES[1]
+        elif concentrate > 10.0:
+            self.result_string = constants.ATMOSPHERIC_CALC_DUST_RESULT_NAMES[2]
+        else:
+            delta = 0.110 * concentrate
+            result_delta = Decimal(delta).quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
+
+            self.result_string = (f"{constants.ATMOSPHERIC_CALC_DUST_RESULT_NAMES[0]} "
+                           f"{locale.format_string("%0.2f", result)} ± {locale.format_string("%0.2f", result_delta)} "
+                           f"мг/м³")
+        self.result_area.setText(self.result_string)
 
     @staticmethod
     def set_title_names():
@@ -145,46 +156,10 @@ class AtmosphericAirDust(AbstractInputZone):
             else:
                 entry_object.check_entry_value()
 
-    def calculate(self):
-        volume = self.entry_objects[0].get_entry_value() / 1000
-        temperature = self.entry_objects[1].get_entry_value()
-
-        if self.entry_objects[2].get_entry_value() < 640:
-            pressure = self.entry_objects[2].get_entry_value() * 7.5
-        else:
-            pressure = self.entry_objects[2].get_entry_value()
-
-        mass_before = self.entry_objects[3].get_entry_value() * 1000
-        mass_after = self.entry_objects[4].get_entry_value() * 1000
-
-        normal_volume = (volume * 273 * pressure) / ((273 + temperature) * 760)
-        concentrate = (mass_after - mass_before) / normal_volume
-        result = Decimal(concentrate).quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
-
-        if concentrate < 0.15:
-            self.result_string = constants.ATMOSPHERIC_CALC_DUST_RESULT_NAMES[1]
-
-        elif concentrate > 10.0:
-            self.result_string = constants.ATMOSPHERIC_CALC_DUST_RESULT_NAMES[2]
-
-        else:
-            delta = 0.110 * concentrate
-            result_delta = Decimal(delta).quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
-
-            self.result_string = (f"{constants.ATMOSPHERIC_CALC_DUST_RESULT_NAMES[0]} "
-                           f"{locale.format_string("%0.2f", result)} ± {locale.format_string("%0.2f", result_delta)} "
-                           f"мг/м³")
-
-        self.result_area.setText(self.result_string)
-
 
 class WorkAreaAirDust(AtmosphericAirDust):
     def __init__(self):
         super().__init__()
-
-    @staticmethod
-    def set_title_names():
-        return constants.WORK_AREA_CALC_DUST_TITLE_NAMES
 
     def calculate(self):
         volume = self.entry_objects[0].get_entry_value()
@@ -197,17 +172,14 @@ class WorkAreaAirDust(AtmosphericAirDust):
 
         mass_before = self.entry_objects[3].get_entry_value() * 1000
         mass_after = self.entry_objects[4].get_entry_value() * 1000
-
         normal_volume = (volume * 293 * pressure) / ((273 + temperature) * 760)
         concentrate = (mass_after - mass_before) * 1000 / normal_volume
         result = Decimal(concentrate).quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
 
         if concentrate < 1.0:
             self.result_string = constants.WORK_AREA_CALC_DUST_RESULT_NAMES[1]
-
         elif concentrate > 250.0:
             self.result_string = constants.WORK_AREA_CALC_DUST_RESULT_NAMES[2]
-
         else:
             delta = 0.24 * concentrate
             result_delta = Decimal(delta).quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
@@ -215,8 +187,11 @@ class WorkAreaAirDust(AtmosphericAirDust):
             self.result_string = (f"{constants.WORK_AREA_CALC_DUST_RESULT_NAMES[0]} "
                            f"{locale.format_string("%0.2f", result)} ± {locale.format_string("%0.2f", result_delta)} "
                            f"мг/м³")
-
         self.result_area.setText(self.result_string)
+
+    @staticmethod
+    def set_title_names():
+        return constants.WORK_AREA_CALC_DUST_TITLE_NAMES
 
 
 class VentilationEfficiency(AbstractInputZone):
@@ -227,11 +202,9 @@ class VentilationEfficiency(AbstractInputZone):
         self.box.setVerticalSpacing(20)
         self.box.setHorizontalSpacing(50)
         self.box.setContentsMargins(constants.CONTENTS_MARGINS_CALCS)
-
         self.parameters = (room_square, room_height, flow_speed, diameter, width, height)
         self.hole_square = hole_square
         self.result_string = result_string
-
         self.create_title_objects(constants.VENTILATION_CALC_TITLE_NAMES)
         self.entry_objects = self.create_entry_objects(InputValueField, self.parameters, row_count=0, column_count=1)
         self.set_size_entry_objects(self.entry_objects[0:3], constants.SIZE_OTHERS_ENTRY_OBJECTS)
@@ -239,7 +212,6 @@ class VentilationEfficiency(AbstractInputZone):
         self.set_max_length(self.entry_objects, max_len=7)
         self.set_checking_value(self.entry_objects)
         self.set_hole_type()
-
         self.result_area = self.create_result_field()
 
     def set_hole_type(self):
@@ -255,7 +227,6 @@ class VentilationEfficiency(AbstractInputZone):
         if self.entry_objects[3].get_entry_value():
             diameter = self.entry_objects[3].get_entry_value() / 100
             self.hole_square = (math.pi * pow(diameter, 2)) / 4
-
         else:
             width = self.entry_objects[4].get_entry_value() / 100
             height = self.entry_objects[5].get_entry_value() / 100
@@ -270,7 +241,6 @@ class VentilationEfficiency(AbstractInputZone):
         self.result_string = (f"{constants.VENTILATION_CALC_RESULT_NAMES[0]} {locale.format_string("%0.1f", perfomance_result)} "
                        f"м³/ч\n\n{constants.VENTILATION_CALC_RESULT_NAMES[1]} "
                        f"{locale.format_string("%0.1f", per_in_hour_result)} раз/ч")
-
         self.result_area.setText(self.result_string)
 
     @QtCore.pyqtSlot()
@@ -292,45 +262,32 @@ class NoiseLevelsWithBackground(AbstractInputZone):
         #self.box.setHorizontalSpacing(15)
         #self.box.setVerticalSpacing(5)
         self.box.setContentsMargins(constants.CONTENTS_MARGINS_CALCS)
-
         self.parameters = (octave_band_31_5, octave_band_63, octave_band_125, octave_band_250, octave_band_500,
                            octave_band_1k, octave_band_2k, octave_band_4k, octave_band_8k, octave_band_l_as)
-
         self.delta_result = delta_result
         self.correct_result = correct_result
-
         self.titles = constants.NOISE_CALC_BANDLINE_NAMES + constants.NOISE_CALC_RESULT_NAMES
         self.create_title_objects(self.titles)
-
         self.entry_objects_source = self.create_entry_objects(InputValueField, self.parameters, row_count=1, column_count=1)
         self.entry_objects_background = self.create_entry_objects(InputValueField, self.parameters, row_count=2, column_count=1)
-
         self.entry_objects = self.entry_objects_source + self.entry_objects_background
         self.set_size_entry_objects(self.entry_objects, constants.SIZE_NOISE_CALC_ENTRY_OBJECTS)
         self.set_max_length(self.entry_objects, max_len=5)
         self.set_checking_value(self.entry_objects)
-
         self.result_area = self.create_result_field()
         self.set_result_field_properties(self.result_area)
         self.delta_result_area = self.result_area[0:10]
         self.correct_result_area = self.result_area[10:20]
 
     def create_title_objects(self, title_objects):
-        i = 0
-        j = 1
-        for _ in title_objects[0:10]:
-            title_band = QtWidgets.QLabel(title_objects[i], self)
-            self.box.addWidget(title_band, 0, j, constants.ALIGNMENT_BOTTOM_CENTER)
-            i += 1
+        j = k = 1
+        for i in range(10):
+            self.box.addWidget(QtWidgets.QLabel(title_objects[i], self), 0, j, constants.ALIGNMENT_BOTTOM_CENTER)
             j += 1
-
-        j = 1
-        for _ in title_objects[10:14]:
-            title_of_level = QtWidgets.QLabel(title_objects[i], self)
-            self.box.addWidget(title_of_level, j, 0, constants.ALIGNMENT_LEFT_CENTER)
-            i += 1
-            j += 1
-
+        for i in range(10, 14):
+            self.box.addWidget(QtWidgets.QLabel(title_objects[i], self), k, 0, constants.ALIGNMENT_LEFT_CENTER)
+            k += 1
+     # Не нужна для этого класса !!!
     def create_entry_objects(self, entry_type, entry_objects_list, row_count, column_count):
         entry_objects = []
 
@@ -339,41 +296,28 @@ class NoiseLevelsWithBackground(AbstractInputZone):
             entry_objects.append(entry_object)
             self.box.addWidget(entry_object, row_count, column_count, constants.ALIGNMENT_CENTER_CENTER)
             column_count += 1
+
         return tuple(entry_objects)
 
     def create_result_field(self):
         result_objects = []
-        j = range(1, 11)
 
-        i = 1
-        for _ in j:
+        for i in range(1, 11):
             object_delta = QtWidgets.QLabel(self)
             result_objects.append(object_delta)
             self.box.addWidget(object_delta, 3, i, constants.ALIGNMENT_CENTER_CENTER)
-            i += 1
-
-        i = 1
-        for _ in j:
             object_correct = QtWidgets.QLabel(self)
             result_objects.append(object_correct)
             self.box.addWidget(object_correct, 4, i, constants.ALIGNMENT_CENTER_CENTER)
-            i += 1
 
         return tuple(result_objects)
-
-    @staticmethod
-    def set_result_field_properties(result_objects):
-        for result_object in result_objects:
-            result_object.setFixedSize(constants.SIZE_NOISE_CALC_ENTRY_OBJECTS)
-            result_object.setAlignment(constants.ALIGNMENT_CENTER_CENTER)
 
     def set_result_field_style(self, style):
         for result_object in self.result_area:
             result_object.setStyleSheet(style)
 
     def calculate(self):
-        i = 0
-        while i < 10:
+        for i in range(11):
             self.delta_result = (self.entry_objects_source[i].get_entry_value() -
                                  self.entry_objects_background[i].get_entry_value())
 
@@ -402,7 +346,12 @@ class NoiseLevelsWithBackground(AbstractInputZone):
 
             self.delta_result_area[i].setText(locale.format_string("%0.1f", self.delta_result))
             self.correct_result_area[i].setText(locale.format_string("%0.1f", self.correct_result))
-            i += 1
+
+    @staticmethod
+    def set_result_field_properties(result_objects):
+        for result_object in result_objects:
+            result_object.setFixedSize(constants.SIZE_NOISE_CALC_ENTRY_OBJECTS)
+            result_object.setAlignment(constants.ALIGNMENT_CENTER_CENTER)
 
 
 class BaseRegister(AbstractInputZone):
@@ -412,23 +361,18 @@ class BaseRegister(AbstractInputZone):
         self.box.setVerticalSpacing(15)
         self.box.setHorizontalSpacing(30)
         self.visual_date = QtCore.QDate(2025, 1, 1)
-
         self.parameters = (date_of_research, protocol_date, protocol_number, work_type, object_name, object_address,
                            administrator)
-
         self.create_title_objects(constants.BASE_REGISTER_TITLE_NAMES)
-
         self.entry_objects = self.create_entry_objects(QtWidgets.QLineEdit, self.parameters, row_count=0, column_count=1)
         self.set_size_entry_objects(self.entry_objects[:4], constants.SIZE_BASE_REGISTER_PROTOCOL_INFO)
         self.set_size_entry_objects(self.entry_objects[4:6], constants.SIZE_BASE_REGISTER_OBJECT_DATA)
         self.entry_objects[6].setFixedSize(120, 30)
         self.entry_objects[2].setMaxLength(10)
-
         self.work_type_completer = QtWidgets.QCompleter(constants.WORK_TYPE_AUTO_NAMES, self)
         self.entry_objects[3].setCompleter(self.work_type_completer)
         self.administrator_completer = QtWidgets.QCompleter(constants.EMPLOYEE_AUTO_NAMES, self)
         self.entry_objects[6].setCompleter(self.administrator_completer)
-
         self.connection_with_database = QtSql.QSqlDatabase.addDatabase('QSQLITE')
         self.connection_with_database.setDatabaseName(constants.DATABASE_NAME)
 
@@ -440,7 +384,6 @@ class BaseRegister(AbstractInputZone):
             entry_objects.append(date_object)
             self.box.addWidget(date_object, row_count, column_count, constants.ALIGNMENT_LEFT_CENTER)
             row_count += 1
-
         for _ in entry_objects_list[2:7]:
             entry_object = entry_type(self)
             entry_objects.append(entry_object)
@@ -484,13 +427,10 @@ class PhysicalFactorsOptions(AbstractInputZone):
         #self.setFixedSize(300, 400)
         self.box.setHorizontalSpacing(10)
         self.box.setVerticalSpacing(10)
-
         self.parameters = (microclimate, light, noise, vibration, emf, aeroionics, ventilation)
-
         self.create_title_objects(constants.PHYSICAL_FACTORS_TITLE_NAMES)
         self.entry_objects_ok_standart = self.create_entry_objects(QtWidgets.QSpinBox, self.parameters, row_count=1, column_count=1)
         self.entry_objects_no_standart = self.create_entry_objects(QtWidgets.QSpinBox, self.parameters, row_count=1, column_count=2)
-
         self.entry_objects = self.entry_objects_ok_standart + self.entry_objects_no_standart
         self.set_size_entry_objects(self.entry_objects, constants.SIZE_OPTIONS_AREA_ENTRY_OBJECTS)
         self.set_range_value(self.entry_objects)
@@ -551,15 +491,11 @@ class RadiationControlOptions(AbstractInputZone):
         super().__init__()
         self.box.setHorizontalSpacing(20)
         self.box.setVerticalSpacing(5)
-
         self.parameters = (gamma_radiation, radon_volume_activity, radon_equivalent_equilibrium_volumetric_activity,
                            radon_flux_density)
-
         self.create_title_objects(constants.RADIATION_CONTROL_TITLE_NAMES)
-
         self.entry_objects_ok_standart = self.create_entry_objects(QtWidgets.QSpinBox, self.parameters, row_count=1, column_count=1)
         self.entry_objects_no_standart = self.create_entry_objects(QtWidgets.QSpinBox, self.parameters, row_count=1, column_count=2)
-
         self.entry_objects = self.entry_objects_ok_standart + self.entry_objects_no_standart
         self.set_size_entry_objects(self.entry_objects, constants.SIZE_OPTIONS_AREA_ENTRY_OBJECTS)
         self.set_range_value(self.entry_objects)
