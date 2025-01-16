@@ -38,12 +38,12 @@ class RegisterObjectsController(QtWidgets.QWidget):
         self.clear.setToolTip("Очистить все журналы")
         self.clear.setToolTipDuration(3000)
 
-        i = 0
-        for button in (self.save, self.clear):
-            button.setIconSize(constants.SIZE_ICON)
-            button.setFlat(True)
-            button.setAutoDefault(True)
-            self.box.addWidget(button, i, 2, alignment=constants.ALIGNMENT_LEFT_CENTER)
+        i = 0            # кнопки внизу !!
+        for _ in (self.save, self.clear):
+            _.setIconSize(constants.SIZE_ICON)
+            _.setFlat(True)
+            _.setAutoDefault(True)
+            self.box.addWidget(_, i, 2, alignment=constants.ALIGNMENT_LEFT_CENTER)
             i += 1
 
         self.box.addWidget(self.base_register_area, 0, 0, 5, 1, alignment=constants.ALIGNMENT_TOP_LEFT)
@@ -102,16 +102,18 @@ class RegisterObjectsController(QtWidgets.QWidget):
 
     @QtCore.pyqtSlot()
     def clear_registers_values(self):
-        for base_entry_object in self.base_register_area.entry_objects:
-            base_entry_object.clear()
-        for physical_entry_object in self.physical_register_options.entry_objects:
-            physical_entry_object.clear()
-        for radiation_entry_object in self.radiation_control_register_options.entry_objects:
-            radiation_entry_object.clear()
+        for _ in self.base_register_area.entry_objects_dates:
+            _.clear()
+        for _ in self.base_register_area.entry_objects_others:
+            _.clear()
+        for _ in self.physical_register_options.entry_objects:
+            _.clear()
+        for _ in self.radiation_control_register_options.entry_objects:
+            _.clear()
 
     @QtCore.pyqtSlot()
     def clear_protocol_number_entry_field(self):
-        self.base_register_area.entry_objects[2].clear()
+        self.base_register_area.entry_objects_others[0].clear()
 
 
 class CalculatorObjectsController(QtWidgets.QWidget):
@@ -150,11 +152,11 @@ class CalculatorObjectsController(QtWidgets.QWidget):
         self.save.setToolTipDuration(3000)
 
         i = 1
-        for button in (self.calculate, self.clear, self.save):
-            button.setIconSize(constants.SIZE_ICON)
-            button.setFlat(True)
-            button.setAutoDefault(True)
-            self.box.addWidget(button, i, 1, alignment=constants.ALIGNMENT_LEFT_CENTER)
+        for _ in (self.calculate, self.clear, self.save):
+            _.setIconSize(constants.SIZE_ICON)
+            _.setFlat(True)
+            _.setAutoDefault(True)
+            self.box.addWidget(_, i, 1, alignment=constants.ALIGNMENT_LEFT_CENTER)
             i += 1
 
         self.calcs_area.addTab(self.air_calc, constants.CALCULATORS_NAMES[0])
@@ -165,28 +167,23 @@ class CalculatorObjectsController(QtWidgets.QWidget):
 
     @staticmethod
     def clear_entry_fields(entry_objects):
-        for clear in entry_objects:
-            clear.clear()
-            clear.value = None
+        for _ in entry_objects:
+            _.clear()
+            _.value = None
 
     @staticmethod
     def create_data_to_save(title_names, entry_fields, result):
         data = []
-
-        #i = 0
         for i in range(len(title_names)):
-            #string = title_names[i] + ': ' + str(entry_fields[i].get_entry_value()) + '\n'
             data.append(title_names[i] + ': ' + str(entry_fields[i].get_entry_value()) + '\n')
-            #i += 1
 
         data.append(result.text() + constants.SEPARATOR)
         return data
 
     @staticmethod
-    def create_noise_calc_data_to_save(bands, source, background, delta, correct):
+    def create_noise_calc_data_to_save(bands, source, background, delta, correct):     # переделать запись в файл !!!!!!!
         data = []
-
-        for i in range(11):
+        for i in range(10):
             band_str = (bands[i] + '   |   ')
             data.append(band_str)
             data.append('\n')
@@ -202,7 +199,6 @@ class CalculatorObjectsController(QtWidgets.QWidget):
             correct_str = (correct[i].text() + '      ')
             data.append(correct_str)
             data.append(constants.SEPARATOR)
-
         return data
 
     @staticmethod
@@ -321,12 +317,12 @@ class ApplicationType(QtWidgets.QWidget):
         self.selector_area.setStyleSheet(style_list[1])
         self.calculators.calcs_area.setStyleSheet(style_list[2])
 
-        for calc in self.calcs_list:
-            calc.setStyleSheet(style_list[3])
-            if self.calcs_list.index(calc) == 3:
-                calc.set_result_field_style(style_list[4])
+        for _ in self.calcs_list:
+            _.setStyleSheet(style_list[3])
+            if self.calcs_list.index(_) == 3:
+                _.set_result_field_style(style_list[4])
             else:
-                calc.result_area.setStyleSheet(style_list[4])
+                _.result_area.setStyleSheet(style_list[4])
 
     def create_main_menu(self):
         main_menu = QtWidgets.QMenuBar(self)
@@ -379,21 +375,16 @@ class ApplicationType(QtWidgets.QWidget):
         selector_panel.setFixedSize(constants.SIZE_SELECTOR_AREA)
         selector_panel.setSpacing(10)
         selector_panel.setFrameStyle(QtWidgets.QFrame.Shape.NoFrame)
-
         selector_panel.names = (constants.SELECTOR_PANEL_TITLE_NAMES[0], constants.SELECTOR_PANEL_TITLE_NAMES[1])
-
         selector_panel.model_type = QtCore.QStringListModel(selector_panel.names)
         selector_panel.setModel(selector_panel.model_type)
         selector_panel.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.NoSelection)
         selector_panel.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         selector_panel.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
         selector_panel.setTabKeyNavigation(True)
-
         selector_panel.calculators_index = selector_panel.model_type.index(0, 0)
         selector_panel.registers_index = selector_panel.model_type.index(1, 0)
-
         selector_panel.clicked.connect(self.click_on_selector_panel)
-
         return selector_panel
 
     @QtCore.pyqtSlot()

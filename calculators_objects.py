@@ -52,17 +52,44 @@ class AbstractInputZone(QtWidgets.QWidget):
         #self.box.setHorizontalSpacing(40)
         self.box.setContentsMargins(constants.CONTENTS_MARGINS_ALL_OBJECTS)
 
-    def create_title_objects(self, title_list):
-        for i in range(len(title_list)):
-            self.box.addWidget(QtWidgets.QLabel(title_list[i], self), i, 0, constants.ALIGNMENT_LEFT_CENTER)
+    def create_title_objects(self, title_list, column_count):
+        i = j = 1
+        row_count = 0
+        position = constants.ALIGNMENT_LEFT_CENTER
+        r = len(title_list)
 
-    def create_entry_objects(self, entry_type, entry_objects_list, row_count, column_count):
+        if column_count == 0 and r == 4:
+            row_count = 1
+            j = 0
+        elif column_count == 0:
+            j = 0
+        else:
+            i = 0
+            position = constants.ALIGNMENT_BOTTOM_CENTER
+
+        for n in range(r):
+            self.box.addWidget(QtWidgets.QLabel(title_list[n], self), row_count, column_count, position)
+            row_count += i
+            column_count += j
+
+    def create_entry_objects(self, range_value, row_count, column_count, entry_type=InputValueField,
+                             position=constants.ALIGNMENT_LEFT_CENTER):
         entry_objects = []
-        for _ in entry_objects_list:
+        i = j = 1
+        if row_count == 0 or entry_type == QtWidgets.QSpinBox:
+            j = 0
+        elif row_count == 2 and entry_type == QtWidgets.QLineEdit:
+            j = 0
+        else:
+            i = 0
+
+        for _ in range(range_value):
             entry_object = entry_type(self)
             entry_objects.append(entry_object)
-            self.box.addWidget(entry_object, row_count, column_count, constants.ALIGNMENT_LEFT_CENTER)
-            row_count += 1
+            self.box.addWidget(entry_object, row_count, column_count, position)
+            row_count += i
+            column_count += j
+
         return tuple(entry_objects)
 
     def create_result_field(self):
@@ -79,38 +106,36 @@ class AbstractInputZone(QtWidgets.QWidget):
 
     @staticmethod
     def set_size_entry_objects(entry_objects_list, size):
-        for entry_object in entry_objects_list:
-            entry_object.setFixedSize(size)
+        for _ in entry_objects_list:
+            _.setFixedSize(size)
 
     @staticmethod
     def set_max_length(entry_objects_list, max_len):
-        for entry_object in entry_objects_list:
-            entry_object.setMaxLength(max_len)
+        for _ in entry_objects_list:
+            _.setMaxLength(max_len)
 
     @staticmethod
     def set_checking_value(entry_objects_list):
-        for check in entry_objects_list:
-            check.check_entry_value()
+        for _ in entry_objects_list:
+            _.check_entry_value()
 
     @staticmethod
     def set_range_value(entry_objects_list):
-        for entry_object in entry_objects_list:
-            entry_object.setRange(0, 9999)
+        for _ in entry_objects_list:
+            _.setRange(0, 9999)
 
 
 class AtmosphericAirDust(AbstractInputZone):
-    def __init__(self, volume=None, temperature=None, pressure=None, mass_before=None,
-                 mass_after=None, result_string=None, ):
+    def __init__(self, result_string=None, ):
         super().__init__()
         self.setFixedSize(constants.SIZE_AIR_FLOW_CALC)
         self.box.setVerticalSpacing(20)
         self.box.setHorizontalSpacing(50)
         self.box.setContentsMargins(constants.CONTENTS_MARGINS_CALCS)
-        self.parameters = (volume, temperature, pressure, mass_before, mass_after)
         self.result_string = result_string
         self.titles = self.set_title_names()
-        self.create_title_objects(self.titles)
-        self.entry_objects = self.create_entry_objects(InputValueField, self.parameters, row_count=0, column_count=1)
+        self.create_title_objects(self.titles, 0)
+        self.entry_objects = self.create_entry_objects(5, row_count=0, column_count=1)
         self.set_size_entry_objects(self.entry_objects, constants.SIZE_OTHERS_ENTRY_OBJECTS)
         self.set_max_length(self.entry_objects, max_len=10)
         self.set_checking_value(self.entry_objects)
@@ -150,11 +175,11 @@ class AtmosphericAirDust(AbstractInputZone):
 
     @staticmethod
     def set_checking_value(entry_objects_list):
-        for entry_object in entry_objects_list:
-            if entry_objects_list.index(entry_object) == 1:
-                entry_object.check_temperature_entry_value()
+        for _ in entry_objects_list:
+            if entry_objects_list.index(_) == 1:
+                _.check_temperature_entry_value()
             else:
-                entry_object.check_entry_value()
+                _.check_entry_value()
 
 
 class WorkAreaAirDust(AtmosphericAirDust):
@@ -195,18 +220,16 @@ class WorkAreaAirDust(AtmosphericAirDust):
 
 
 class VentilationEfficiency(AbstractInputZone):
-    def __init__(self, room_square=None, room_height=None, flow_speed=None, diameter=None, width=None, height=None,
-                 hole_square = None, result_string = None):
+    def __init__(self, hole_square = None, result_string = None):
         super().__init__()
         self.setFixedSize(constants.SIZE_AIR_FLOW_CALC)
         self.box.setVerticalSpacing(20)
         self.box.setHorizontalSpacing(50)
         self.box.setContentsMargins(constants.CONTENTS_MARGINS_CALCS)
-        self.parameters = (room_square, room_height, flow_speed, diameter, width, height)
         self.hole_square = hole_square
         self.result_string = result_string
-        self.create_title_objects(constants.VENTILATION_CALC_TITLE_NAMES)
-        self.entry_objects = self.create_entry_objects(InputValueField, self.parameters, row_count=0, column_count=1)
+        self.create_title_objects(constants.VENTILATION_CALC_TITLE_NAMES, 0)
+        self.entry_objects = self.create_entry_objects(6, row_count=0, column_count=1)
         self.set_size_entry_objects(self.entry_objects[0:3], constants.SIZE_OTHERS_ENTRY_OBJECTS)
         self.set_size_entry_objects(self.entry_objects[3:6], constants.SIZE_VENTILATION_HOLE_ENTRY_OBJECTS)
         self.set_max_length(self.entry_objects, max_len=7)
@@ -254,22 +277,20 @@ class VentilationEfficiency(AbstractInputZone):
 
 
 class NoiseLevelsWithBackground(AbstractInputZone):
-    def __init__(self, octave_band_31_5=None, octave_band_63=None, octave_band_125=None, octave_band_250=None,
-                 octave_band_500=None, octave_band_1k=None, octave_band_2k=None, octave_band_4k=None,
-                 octave_band_8k=None, octave_band_l_as=None, delta_result = None, correct_result = None):
+    def __init__(self, delta_result = None, correct_result = None):
         super().__init__()
         self.setFixedSize(constants.SIZE_NOISE_CALC)
         #self.box.setHorizontalSpacing(15)
         #self.box.setVerticalSpacing(5)
         self.box.setContentsMargins(constants.CONTENTS_MARGINS_CALCS)
-        self.parameters = (octave_band_31_5, octave_band_63, octave_band_125, octave_band_250, octave_band_500,
-                           octave_band_1k, octave_band_2k, octave_band_4k, octave_band_8k, octave_band_l_as)
         self.delta_result = delta_result
         self.correct_result = correct_result
-        self.titles = constants.NOISE_CALC_BANDLINE_NAMES + constants.NOISE_CALC_RESULT_NAMES
-        self.create_title_objects(self.titles)
-        self.entry_objects_source = self.create_entry_objects(InputValueField, self.parameters, row_count=1, column_count=1)
-        self.entry_objects_background = self.create_entry_objects(InputValueField, self.parameters, row_count=2, column_count=1)
+        self.create_title_objects(constants.NOISE_CALC_BANDLINE_NAMES, 1)
+        self.create_title_objects(constants.NOISE_CALC_RESULT_NAMES, 0)
+        self.entry_objects_source = self.create_entry_objects(10, 1, 1,
+                                                              InputValueField, constants.ALIGNMENT_CENTER_CENTER)
+        self.entry_objects_background = self.create_entry_objects(10, 2, 1,
+                                                                  InputValueField, constants.ALIGNMENT_CENTER_CENTER)
         self.entry_objects = self.entry_objects_source + self.entry_objects_background
         self.set_size_entry_objects(self.entry_objects, constants.SIZE_NOISE_CALC_ENTRY_OBJECTS)
         self.set_max_length(self.entry_objects, max_len=5)
@@ -279,45 +300,30 @@ class NoiseLevelsWithBackground(AbstractInputZone):
         self.delta_result_area = self.result_area[0:10]
         self.correct_result_area = self.result_area[10:20]
 
-    def create_title_objects(self, title_objects):
-        j = k = 1
-        for i in range(10):
-            self.box.addWidget(QtWidgets.QLabel(title_objects[i], self), 0, j, constants.ALIGNMENT_BOTTOM_CENTER)
-            j += 1
-        for i in range(10, 14):
-            self.box.addWidget(QtWidgets.QLabel(title_objects[i], self), k, 0, constants.ALIGNMENT_LEFT_CENTER)
-            k += 1
-     # Не нужна для этого класса !!!
-    def create_entry_objects(self, entry_type, entry_objects_list, row_count, column_count):
-        entry_objects = []
-
-        for _ in entry_objects_list:
-            entry_object = entry_type(self)
-            entry_objects.append(entry_object)
-            self.box.addWidget(entry_object, row_count, column_count, constants.ALIGNMENT_CENTER_CENTER)
-            column_count += 1
-
-        return tuple(entry_objects)
-
     def create_result_field(self):
         result_objects = []
+        i = j = 1
+        r = range(10)
 
-        for i in range(1, 11):
+        for _ in r:
             object_delta = QtWidgets.QLabel(self)
             result_objects.append(object_delta)
             self.box.addWidget(object_delta, 3, i, constants.ALIGNMENT_CENTER_CENTER)
+            i += 1
+        for _ in r:
             object_correct = QtWidgets.QLabel(self)
             result_objects.append(object_correct)
-            self.box.addWidget(object_correct, 4, i, constants.ALIGNMENT_CENTER_CENTER)
+            self.box.addWidget(object_correct, 4, j, constants.ALIGNMENT_CENTER_CENTER)
+            j += 1
 
         return tuple(result_objects)
 
     def set_result_field_style(self, style):
-        for result_object in self.result_area:
-            result_object.setStyleSheet(style)
+        for _ in self.result_area:
+            _.setStyleSheet(style)
 
     def calculate(self):
-        for i in range(11):
+        for i in range(10):
             self.delta_result = (self.entry_objects_source[i].get_entry_value() -
                                  self.entry_objects_background[i].get_entry_value())
 
@@ -349,54 +355,41 @@ class NoiseLevelsWithBackground(AbstractInputZone):
 
     @staticmethod
     def set_result_field_properties(result_objects):
-        for result_object in result_objects:
-            result_object.setFixedSize(constants.SIZE_NOISE_CALC_ENTRY_OBJECTS)
-            result_object.setAlignment(constants.ALIGNMENT_CENTER_CENTER)
+        for _ in result_objects:
+            _.setFixedSize(constants.SIZE_NOISE_CALC_ENTRY_OBJECTS)
+            _.setAlignment(constants.ALIGNMENT_CENTER_CENTER)
 
 
 class BaseRegister(AbstractInputZone):
-    def __init__(self, date_of_research=None, protocol_date=None, protocol_number=None, work_type=None,
-                 object_name=None, object_address=None, administrator=None):
+    def __init__(self):
         super().__init__()
         self.box.setVerticalSpacing(15)
         self.box.setHorizontalSpacing(30)
         self.visual_date = QtCore.QDate(2025, 1, 1)
-        self.parameters = (date_of_research, protocol_date, protocol_number, work_type, object_name, object_address,
-                           administrator)
-        self.create_title_objects(constants.BASE_REGISTER_TITLE_NAMES)
-        self.entry_objects = self.create_entry_objects(QtWidgets.QLineEdit, self.parameters, row_count=0, column_count=1)
-        self.set_size_entry_objects(self.entry_objects[:4], constants.SIZE_BASE_REGISTER_PROTOCOL_INFO)
-        self.set_size_entry_objects(self.entry_objects[4:6], constants.SIZE_BASE_REGISTER_OBJECT_DATA)
-        self.entry_objects[6].setFixedSize(120, 30)
-        self.entry_objects[2].setMaxLength(10)
+        self.create_title_objects(constants.BASE_REGISTER_TITLE_NAMES, 0)
+        self.entry_objects_dates = self.create_entry_objects(2, 0, 1,
+                                                             QtWidgets.QDateEdit)
+        self.entry_objects_others = self.create_entry_objects(5, 2, 1,
+                                                              QtWidgets.QLineEdit)
+
+        self.set_size_entry_objects(self.entry_objects_dates, constants.SIZE_BASE_REGISTER_PROTOCOL_INFO)      # refactor lower ?????
+        self.set_size_entry_objects(self.entry_objects_others[0:2], constants.SIZE_BASE_REGISTER_PROTOCOL_INFO)
+
+        self.set_size_entry_objects(self.entry_objects_others[2:4], constants.SIZE_BASE_REGISTER_OBJECT_DATA)
+        self.entry_objects_others[4].setFixedSize(120, 30)
+        self.entry_objects_others[0].setMaxLength(10)
         self.work_type_completer = QtWidgets.QCompleter(constants.WORK_TYPE_AUTO_NAMES, self)
-        self.entry_objects[3].setCompleter(self.work_type_completer)
+        self.entry_objects_others[1].setCompleter(self.work_type_completer)
         self.administrator_completer = QtWidgets.QCompleter(constants.EMPLOYEE_AUTO_NAMES, self)
-        self.entry_objects[6].setCompleter(self.administrator_completer)
+        self.entry_objects_others[4].setCompleter(self.administrator_completer)
         self.connection_with_database = QtSql.QSqlDatabase.addDatabase('QSQLITE')
         self.connection_with_database.setDatabaseName(constants.DATABASE_NAME)
-
-    def create_entry_objects(self, entry_type, entry_objects_list, row_count, column_count):
-        entry_objects = []
-
-        for _ in entry_objects_list[0:2]:
-            date_object = QtWidgets.QDateEdit(self.visual_date, self)
-            entry_objects.append(date_object)
-            self.box.addWidget(date_object, row_count, column_count, constants.ALIGNMENT_LEFT_CENTER)
-            row_count += 1
-        for _ in entry_objects_list[2:7]:
-            entry_object = entry_type(self)
-            entry_objects.append(entry_object)
-            self.box.addWidget(entry_object, row_count, column_count, constants.ALIGNMENT_LEFT_CENTER)
-            row_count += 1
-
-        return tuple(entry_objects)
 
     def ready_insert_to_protocol_table(self):
         query = QtSql.QSqlQuery()
         query.prepare(constants.BASE_REGISTER_COMMANDS_INSERT[0])
         query.bindValue(':number', self.entry_objects[2].text())
-        query.bindValue(':protocol_date', self.entry_objects[1].text())
+        query.bindValue(':protocol_date', self.entry_objects_dates[1].text())
         query.bindValue(':work_type', self.entry_objects[3].text())
         query.bindValue(':employee', self.entry_objects[6].text())
         return query
@@ -404,7 +397,7 @@ class BaseRegister(AbstractInputZone):
     def ready_insert_to_dates_of_research_table(self):
         query = QtSql.QSqlQuery()
         query.prepare(constants.BASE_REGISTER_COMMANDS_INSERT[1])
-        query.bindValue(':current_date', self.entry_objects[0].text())
+        query.bindValue(':current_date', self.entry_objects_dates[0].text())
         return query
 
     def ready_insert_to_objects_names_table(self):
@@ -421,16 +414,16 @@ class BaseRegister(AbstractInputZone):
 
 
 class PhysicalFactorsOptions(AbstractInputZone):
-    def __init__(self, microclimate=None, light=None, noise=None, vibration=None, emf=None, aeroionics=None,
-                 ventilation=None):
+    def __init__(self):
         super().__init__()
         #self.setFixedSize(300, 400)
         self.box.setHorizontalSpacing(10)
         self.box.setVerticalSpacing(10)
-        self.parameters = (microclimate, light, noise, vibration, emf, aeroionics, ventilation)
-        self.create_title_objects(constants.PHYSICAL_FACTORS_TITLE_NAMES)
-        self.entry_objects_ok_standart = self.create_entry_objects(QtWidgets.QSpinBox, self.parameters, row_count=1, column_count=1)
-        self.entry_objects_no_standart = self.create_entry_objects(QtWidgets.QSpinBox, self.parameters, row_count=1, column_count=2)
+        self.create_title_objects(constants.PHYSICAL_FACTORS_TITLE_NAMES, 0)
+        self.entry_objects_ok_standart = self.create_entry_objects(7, 1, 1,
+                                                                   QtWidgets.QSpinBox)
+        self.entry_objects_no_standart = self.create_entry_objects(7, 1, 2,
+                                                                   QtWidgets.QSpinBox)
         self.entry_objects = self.entry_objects_ok_standart + self.entry_objects_no_standart
         self.set_size_entry_objects(self.entry_objects, constants.SIZE_OPTIONS_AREA_ENTRY_OBJECTS)
         self.set_range_value(self.entry_objects)
@@ -486,16 +479,15 @@ class PhysicalFactorsOptions(AbstractInputZone):
 
 
 class RadiationControlOptions(AbstractInputZone):
-    def __init__(self, gamma_radiation=None, radon_volume_activity=None,
-                 radon_equivalent_equilibrium_volumetric_activity=None, radon_flux_density=None):
+    def __init__(self):
         super().__init__()
         self.box.setHorizontalSpacing(20)
         self.box.setVerticalSpacing(5)
-        self.parameters = (gamma_radiation, radon_volume_activity, radon_equivalent_equilibrium_volumetric_activity,
-                           radon_flux_density)
-        self.create_title_objects(constants.RADIATION_CONTROL_TITLE_NAMES)
-        self.entry_objects_ok_standart = self.create_entry_objects(QtWidgets.QSpinBox, self.parameters, row_count=1, column_count=1)
-        self.entry_objects_no_standart = self.create_entry_objects(QtWidgets.QSpinBox, self.parameters, row_count=1, column_count=2)
+        self.create_title_objects(constants.RADIATION_CONTROL_TITLE_NAMES, 0)
+        self.entry_objects_ok_standart = self.create_entry_objects(4, 1, 1,
+                                                                   QtWidgets.QSpinBox)
+        self.entry_objects_no_standart = self.create_entry_objects(4, 1, 2,
+                                                                   QtWidgets.QSpinBox)
         self.entry_objects = self.entry_objects_ok_standart + self.entry_objects_no_standart
         self.set_size_entry_objects(self.entry_objects, constants.SIZE_OPTIONS_AREA_ENTRY_OBJECTS)
         self.set_range_value(self.entry_objects)
