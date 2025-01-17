@@ -1,5 +1,6 @@
 from PyQt6 import QtWidgets, QtCore, QtGui
 import sys
+from winpath import get_desktop
 from functools import partial
 import constants
 from calculators_objects import (AtmosphericAirDust, WorkAreaAirDust, VentilationEfficiency, NoiseLevelsWithBackground,
@@ -202,12 +203,13 @@ class CalculatorObjectsController(QtWidgets.QWidget):
         return data
 
     @staticmethod
-    def save_to_desktop(file_path, data):
+    def save_to_desktop(file, data):
+        file_path = get_desktop() + file
         with open (file_path, "a", encoding="utf-8") as txt:
             txt.writelines(data)
 
     def show_saving_message(self, file_name):
-        message = "Данные рассчета будут сохранены\nна рабочий стол в файл " + file_name
+        message = 'in dict' + file_name
         QtWidgets.QMessageBox.information(self, " ", message)
 
     @QtCore.pyqtSlot()
@@ -418,5 +420,6 @@ class ApplicationType(QtWidgets.QWidget):
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     # app.setWindowIcon(QtGui.QIcon("images/calc_type.ico"))
+    print(constants.main_interface["Справка"])
     app_type = ApplicationType()
     sys.exit(app.exec())
