@@ -159,7 +159,7 @@ class CalculatorObjectsController(QtWidgets.QWidget):
             _.setAutoDefault(True)
             self.box.addWidget(_, i, 1, alignment=constants.ALIGNMENT_LEFT_CENTER)
             i += 1
-
+         # for !!!!
         self.calcs_area.addTab(self.air_calc, constants.CALCULATORS_NAMES[0])
         self.calcs_area.addTab(self.work_area_calc, constants.CALCULATORS_NAMES[1])
         self.calcs_area.addTab(self.flow_calc, constants.CALCULATORS_NAMES[2])
@@ -293,7 +293,7 @@ class ApplicationType(QtWidgets.QWidget):
         self.box = QtWidgets.QGridLayout(self)
         self.box.setHorizontalSpacing(10)
         self.box.setVerticalSpacing(15)
-        self.box.setContentsMargins(constants.CONTENTS_MARGINS_NULLS)
+        self.box.setContentsMargins(0, 0, 0, 0)
 
         self.menu_area = self.create_main_menu()
         self.selector_area = self.create_selector_panel()

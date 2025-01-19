@@ -1,5 +1,5 @@
 from PyQt6 import QtWidgets, QtCore, QtGui, QtSql
-import constants
+import constants as ct
 import math
 import locale
 from functools import partial
@@ -50,12 +50,12 @@ class AbstractInputZone(QtWidgets.QWidget):
         self.box = QtWidgets.QGridLayout(self)
         #self.box.setVerticalSpacing(5)
         #self.box.setHorizontalSpacing(40)
-        self.box.setContentsMargins(constants.CONTENTS_MARGINS_ALL_OBJECTS)
+        self.box.setContentsMargins(ct.parameters_qt_core["Отступы калькулятора"])
 
     def create_title_objects(self, title_list, column_count):
         i = j = 1
         row_count = 0
-        position = constants.ALIGNMENT_LEFT_CENTER
+        position = ct.parameters_qt_core["Позиция левый-центр"]
         r = len(title_list)
 
         if column_count == 0 and r == 4:
@@ -65,7 +65,7 @@ class AbstractInputZone(QtWidgets.QWidget):
             j = 0
         else:
             i = 0
-            position = constants.ALIGNMENT_BOTTOM_CENTER
+            position = ct.parameters_qt_core["Позиция нижний-центр"]
 
         for n in range(r):
             self.box.addWidget(QtWidgets.QLabel(title_list[n], self), row_count, column_count, position)
@@ -73,7 +73,7 @@ class AbstractInputZone(QtWidgets.QWidget):
             column_count += j
 
     def create_entry_objects(self, range_value, row_count, column_count, entry_type=InputValueField,
-                             position=constants.ALIGNMENT_LEFT_CENTER):
+                             position=ct.parameters_qt_core["Позиция левый-центр"]):
         entry_objects = []
         i = j = 1
         if row_count == 0 or entry_type == QtWidgets.QSpinBox:
@@ -94,14 +94,14 @@ class AbstractInputZone(QtWidgets.QWidget):
 
     def create_result_field(self):
         result_field = QtWidgets.QLabel(self)
-        result_field.setFixedSize(constants.SIZE_RESULT_FIELD)
+        result_field.setFixedSize(ct.parameters_qt_core["Размеры поля результатов"])
         result_field.setIndent(20)
         result_field.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByKeyboard |
                                      QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
         row_count = self.box.rowCount()
         self.box.setRowMinimumHeight(row_count, 40)
         row_count += 2
-        self.box.addWidget(result_field, row_count, 0, 1, 2, constants.ALIGNMENT_TOP_LEFT)
+        self.box.addWidget(result_field, row_count, 0, 1, 2, ct.parameters_qt_core["Позиция левый-верхний"])
         return result_field
 
     @staticmethod
@@ -128,10 +128,10 @@ class AbstractInputZone(QtWidgets.QWidget):
 class AtmosphericAirDust(AbstractInputZone):
     def __init__(self, result_string=None, ):
         super().__init__()
-        self.setFixedSize(constants.SIZE_AIR_FLOW_CALC)
+        self.setFixedSize(ct.parameters_qt_core["Размеры калькулятора воздух"])
         self.box.setVerticalSpacing(20)
         self.box.setHorizontalSpacing(50)
-        self.box.setContentsMargins(constants.CONTENTS_MARGINS_CALCS)
+        self.box.setContentsMargins(ct.parameters_qt_core["Отступы калькулятора"])
         self.result_string = result_string
         self.titles = self.set_title_names()
         self.create_title_objects(self.titles, 0)
@@ -383,7 +383,7 @@ class BaseRegister(AbstractInputZone):
         self.administrator_completer = QtWidgets.QCompleter(constants.EMPLOYEE_AUTO_NAMES, self)
         self.entry_objects_others[4].setCompleter(self.administrator_completer)
         self.connection_with_database = QtSql.QSqlDatabase.addDatabase('QSQLITE')
-        self.connection_with_database.setDatabaseName(constants.DATABASE_NAME)
+        self.connection_with_database.setDatabaseName('register_data.db')
 
     def ready_insert_to_protocol_table(self):
         query = QtSql.QSqlQuery()

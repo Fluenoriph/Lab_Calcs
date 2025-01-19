@@ -1,8 +1,8 @@
 from PyQt6 import QtCore
 
 
-main_interface = {
-    "Главные названия": ("Файл", "Вид", "Помощь", "Выход", "Темы", "Темная", "Светлая", "Калькуляторы", "Журналы"),
+data_library = {
+    "Главное меню": ("Файл", "Вид", "Помощь", "Выход"),   # может и убрать отсюда
 
     "Справка": "1.  Расчет единичного измерения массовой концентрации взвешенных веществ в атмосферном воздухе.\n"
                      "РД 52.04.896-2020 «Массовая концентрация взвешенных веществ в пробах атмосферного воздуха. "
@@ -17,109 +17,30 @@ main_interface = {
     "О программе": "Лабораторные калькуляторы 2.1.0 Beta\n\nFree software\n\n"
                                      "(C) Иван Богданов, 2025. Все права защищены\n\nfluenoriph@gmail.com",
 
-    "Отчет": ("Данные рассчета будут сохранены\nна рабочий стол в файл ", "\\air_calc_result_log.txt",
-              "\\work_zone_calc_result_log.txt", "\\ventilation_calc_result_log.txt", "\\noise_calc_result_log.txt",
+    "Отчет": ("\\air_calc_result_log.txt", "\\work_zone_calc_result_log.txt", "\\ventilation_calc_result_log.txt",
+              "\\noise_calc_result_log.txt", "Данные рассчета будут сохранены\nна рабочий стол в файл ",
               "\n----------------------------------------------------------------------\n"),
 
-    "Главный стиль светлый": "* {font: 13px arial, sans-serif; background-color: #fff5ee;} "
-                    "QMenuBar {color: #1b1116; background-color: #fffafa;}",
+    "Светлая тема": {
+        "Главный стиль": "* {font: 13px arial, sans-serif; background-color: #fff5ee;} "
+                         "QMenuBar {color: #1b1116; background-color: #fffafa;}",
+        "Стиль селектора": "border-style: hidden; border-radius: 9px; background-color: #c7fcec; color: #1b1116;",
+        "Цвет названий калькуляторов": "color: #151719;",
+        "Стиль области ввода": "* {color: #18171c;} QLineEdit {background-color: #1cd3a2; color: #414a4c;}",
+        "Стиль поля результатов": "border-style: hidden; border-radius: 5px; background-color: #6699cc; color: #f7f5f6;"
+    },
 
-    "Главный стиль темный": "* {font: 13px arial, sans-serif; background-color: #fcfcee;} "
-                    "QMenuBar {color: red; background-color: #18171c;}",
+    "Темная тема": {
+        "Главный стиль": "* {font: 13px arial, sans-serif; background-color: #fcfcee;} "
+                         "QMenuBar {color: red; background-color: #18171c;}",
+        "Стиль селектора": "border-style: hidden; border-radius: 9px; background-color: red; color: blue;",
+        "Цвет названий калькуляторов": "color: blue;",
+        "Стиль области ввода": "* {color: green;} QLineEdit {background-color: red; color: blue;}",
+        "Стиль поля результатов": "border-style: hidden; border-radius: 5px; background-color: #181454; color: ;"
+    },
 
-    "Стиль селектора светлый": "border-style: hidden; border-radius: 9px; background-color: #c7fcec; color: #1b1116;",
+    "Размеры зоны выбора": QtCore.QSize(150, 488),
 
-    "Стиль селектора темный": "border-style: hidden; border-radius: 9px; background-color: red; color: blue;",
-
-    "Цвет названий калькуляторов светлый": "color: #151719;",
-
-    "Цвет названий калькуляторов темный": "color: blue;",
-
-    "Стиль области ввода светлый": "* {color: #18171c;} QLineEdit {background-color: #1cd3a2; color: #414a4c;}",
-
-    "Стиль области ввода темный": "* {color: green;} QLineEdit {background-color: red; color: blue;}",
-
-    "Стиль поля результатов светлый": "border-style: hidden; border-radius: 5px; background-color: #6699cc; color: #f7f5f6;",
-
-    "Стиль поля результатов темный": "border-style: hidden; border-radius: 5px; background-color: #181454; color: ;"
-}
-
-calculators = {
-    "Названия": ("Пыль в атмосф. воздухе", "Пыль в воздухе раб. зоны", "Эффектив. вентиляции", "Учет влияния фонового шума"),
-
-    "Параметры атм. возд.": ("Объем взятого на анализ атмосферного воздуха, л",
-                             "Температура воздуха, прошедшего через ротаметр, ℃",
-                             "Атмосферное давление в месте отбора, мм.рт.ст., кПа",
-                             "Среднее значение массы фильтра до отбора пробы, г",
-                             "Среднее значение массы фильтра после отбора пробы, г"),
-
-    "Результаты атм. возд.": ("Массовая концентрация взвешенных веществ:",
-                              "Массовая концентрация взвешенных веществ: менее 0,15 мг/м³",
-                              "Массовая концентрация взвешенных веществ: более 10 мг/м³"),
-
-    "Параметры возд. раб. зоны": ("Объем воздуха, отобранный для анализа, л",
-                                  "Температура воздуха в месте отбора пробы, ℃",
-                                  "Барометрическое давление в месте отбора пробы, мм.рт.ст., кПа",
-                                  "Масса фильтра до отбора пробы, г",
-                                  "Масса фильтра (с пылью) после отбора пробы, г"),
-
-    "Результаты возд. раб. зоны": ("Массовая концентрация пыли:", "Массовая концентрация пыли: менее 1,0 мг/м³",
-                                   "Массовая концентрация пыли: более 250 мг/м³"),
-
-    "Параметры вентиляция": ("Площадь помещения, м²", "Высота помещения, м",
-                             "Скорость движения воздуха в вентиляционном отверстии, м/с", "Диаметр, см", "Ширина, см",
-                             "Высота, см"),
-
-    "Результаты вентиляция": ("Производительность вентиляции:", "Кратность воздухообмена:"),
-
-    "Октавные полосы": ("31.5", "63", "125", "250", "500", "1K", "2K", "4K", "8K", "L(AS)"),
-
-    "Результаты шум": ("Общий уровень", "Фоновый уровень", "Разность с фоном", "С поправкой на фон")
-}
-
-
-
-
-DATABASE_NAME = 'register_data.db'
-
-REGISTERS_NAMES = ("Физические факторы", "Радиационные факторы")
-
-BASE_REGISTER_TITLE_NAMES = ("Дата проведения измерений", "Дата выпуска протокола", "Номер протокола", "Вид работ",
-                             "Наименование объекта", "Адрес объекта", "Исполнитель (Ф.И.О.)")
-
-WORK_TYPE_AUTO_NAMES = ("поручение", "план", "проф. визит", "заявка", "договор", "контракт")
-
-EMPLOYEE_AUTO_NAMES = ("Люлькова Н.В.", "Мотыляк А.А.", "Житникова В.В.", "Богданов И.И.")
-
-PHYSICAL_FACTORS_TITLE_NAMES = ("(соотв./ не соотв.)", "Микроклимат", "Освещенность", "Шум", "Вибрация", "ЭМП",
-                                "Аэроионы", "Вентиляция")
-
-RADIATION_CONTROL_TITLE_NAMES = ("(соотв./ не соотв.)", "МЭД гамма-излучения", "Объемная активность радона", "ЭРОА радона",
-                                 "Плотность потока радона")
-
-BASE_REGISTER_COMMANDS_INSERT = ("INSERT INTO protocols (number, protocol_date, work_type, employee) "
-                                 "VALUES (:number, :protocol_date, :work_type, :employee)",
-                                 "INSERT INTO dates_of_research (current_date) VALUES (:current_date)",
-                                 "INSERT INTO objects_names (name) VALUES (:name)",
-                                 "INSERT INTO objects_addresses (address) VALUES (:address)")
-
-PHYSICAL_REGISTER_COMMANDS_INSERT = ("INSERT INTO microclimate (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
-                                     "INSERT INTO light (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
-                                     "INSERT INTO noise (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
-                                     "INSERT INTO vibration (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
-                                     "INSERT INTO emf (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
-                                     "INSERT INTO aeroionics (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
-                                     "INSERT INTO ventilation (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)")
-
-RADIATION_REGISTER_COMMANDS_INSERT = ("INSERT INTO gamma_radiation (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
-                                      "INSERT INTO radon_volume_activity (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
-                                      "INSERT INTO eeva (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
-                                      "INSERT INTO radon_flux_density (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)")
-
-
-
-
-parameters_qt_core = {
     "Позиция левый-центр": QtCore.Qt.AlignmentFlag.AlignCenter | QtCore.Qt.AlignmentFlag.AlignLeft,
 
     "Позиция центр": QtCore.Qt.AlignmentFlag.AlignCenter,
@@ -128,36 +49,85 @@ parameters_qt_core = {
 
     "Позиция нижний-центр": QtCore.Qt.AlignmentFlag.AlignBottom | QtCore.Qt.AlignmentFlag.AlignCenter,
 
+    "Калькуляторы": {
+        "Пыль в атмосф. воздухе": {
+            "Параметры": ("Объем взятого на анализ атмосферного воздуха, л",
+                          "Температура воздуха, прошедшего через ротаметр, ℃",
+                          "Атмосферное давление в месте отбора, мм.рт.ст., кПа",
+                          "Среднее значение массы фильтра до отбора пробы, г",
+                          "Среднее значение массы фильтра после отбора пробы, г"),
+            "Результаты": ("Массовая концентрация взвешенных веществ:",
+                           "Массовая концентрация взвешенных веществ: менее 0,15 мг/м³",
+                           "Массовая концентрация взвешенных веществ: более 10 мг/м³")
+        },
 
+        "Пыль в воздухе раб. зоны": {
+            "Параметры": ("Объем воздуха, отобранный для анализа, л",
+                        "Температура воздуха в месте отбора пробы, ℃",
+                        "Барометрическое давление в месте отбора пробы, мм.рт.ст., кПа",
+                        "Масса фильтра до отбора пробы, г",
+                        "Масса фильтра (с пылью) после отбора пробы, г"),
+            "Результаты": ("Массовая концентрация пыли:", "Массовая концентрация пыли: менее 1,0 мг/м³",
+                           "Массовая концентрация пыли: более 250 мг/м³")
+        },
 
+        "Эффектив. вентиляции": {
+            "Параметры": ("Площадь помещения, м²", "Высота помещения, м",
+                          "Скорость движения воздуха в вентиляционном отверстии, м/с", "Диаметр, см", "Ширина, см",
+                          "Высота, см"),
+            "Результаты": ("Производительность вентиляции:", "Кратность воздухообмена:"),
+            "Размеры поля ввода параметров отверстия": QtCore.QSize(60, 30)
+        },
 
+        "Учет влияния фонового шума": {
+            "Параметры": ("31.5", "63", "125", "250", "500", "1K", "2K", "4K", "8K", "L(AS)"),
+            "Результаты": ("Общий уровень", "Фоновый уровень", "Разность с фоном", "С поправкой на фон"),
+            "Размеры": QtCore.QSize(680, 230),
+            "Размеры поля ввода": QtCore.QSize(40, 30)
+        },
+
+        "Размеры": QtCore.QSize(600, 470),
+        "Размеры поля ввода": QtCore.QSize(80, 30),
+        "Размеры поля результатов": QtCore.QSize(550, 70),
+        "Отступы калькулятора": QtCore.QMargins(10, 30, 10, 10)
+    },
+
+    "Журналы": {
+        "Основной регистратор": {
+            "Параметры": ("Дата проведения измерений", "Дата выпуска протокола", "Номер протокола", "Вид работ",
+                          "Наименование объекта", "Адрес объекта", "Исполнитель (Ф.И.О.)"),
+            "Тип": ("поручение", "план", "проф. визит", "заявка", "договор", "контракт"),
+            "Сотрудники": ("Люлькова Н.В.", "Мотыляк А.А.", "Житникова В.В.", "Богданов И.И."),
+            "Запись в базу данных": ("INSERT INTO protocols (number, protocol_date, work_type, employee) "
+                                     "VALUES (:number, :protocol_date, :work_type, :employee)",
+                                     "INSERT INTO dates_of_research (current_date) VALUES (:current_date)",
+                                     "INSERT INTO objects_names (name) VALUES (:name)",
+                                     "INSERT INTO objects_addresses (address) VALUES (:address)"),
+            "Размеры поля ввода инфо. протокола": QtCore.QSize(100, 30),
+            "Размеры поля ввода инфо. объекта": QtCore.QSize(200, 30)
+        },
+
+        "Физические факторы": {
+            "Параметры": ("(соотв./ не соотв.)", "Микроклимат", "Освещенность", "Шум", "Вибрация", "ЭМП", "Аэроионы",
+                          "Вентиляция"),
+            "Запись в базу данных": ("INSERT INTO microclimate (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
+                                     "INSERT INTO light (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
+                                     "INSERT INTO noise (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
+                                     "INSERT INTO vibration (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
+                                     "INSERT INTO emf (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
+                                     "INSERT INTO aeroionics (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
+                                     "INSERT INTO ventilation (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)")
+        },
+
+        "Радиационные факторы": {
+            "Параметры": ("(соотв./ не соотв.)", "МЭД гамма-излучения", "Объемная активность радона", "ЭРОА радона",
+                               "Плотность потока радона"),
+            "Запись в базу данных": ("INSERT INTO gamma_radiation (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
+                                     "INSERT INTO radon_volume_activity (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
+                                     "INSERT INTO eeva (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
+                                     "INSERT INTO radon_flux_density (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)")
+        },
+
+        "Размеры поля ввода факторов": QtCore.QSize(55, 30)
+    }
 }
-
-
-SIZE_AIR_FLOW_CALC = QtCore.QSize(600, 470)
-
-SIZE_NOISE_CALC = QtCore.QSize(680, 230)
-
-SIZE_OTHERS_ENTRY_OBJECTS = QtCore.QSize(80, 30)
-
-SIZE_VENTILATION_HOLE_ENTRY_OBJECTS = QtCore.QSize(60, 30)
-
-SIZE_NOISE_CALC_ENTRY_OBJECTS = QtCore.QSize(40, 30)
-
-SIZE_RESULT_FIELD = QtCore.QSize(550, 70)
-
-SIZE_SELECTOR_AREA = QtCore.QSize(150, 488)
-
-SIZE_OPTIONS_AREA_ENTRY_OBJECTS = QtCore.QSize(55, 30)
-
-SIZE_BASE_REGISTER_OBJECT_DATA = QtCore.QSize(200, 30)
-
-SIZE_BASE_REGISTER_PROTOCOL_INFO = QtCore.QSize(100, 30)
-
-SIZE_ICON = QtCore.QSize(40, 40)
-
-CONTENTS_MARGINS_ALL_OBJECTS = QtCore.QMargins(5, 5, 5, 5)
-
-CONTENTS_MARGINS_NULLS = QtCore.QMargins(0, 0, 0, 0)
-
-CONTENTS_MARGINS_CALCS = QtCore.QMargins(10, 30, 10, 10)
