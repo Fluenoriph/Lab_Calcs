@@ -2,8 +2,6 @@ from PyQt6 import QtCore
 
 
 data_library = {
-    "Главное меню": ("Файл", "Вид", "Помощь", "Выход"),   # может и убрать отсюда
-
     "Справка": "1.  Расчет единичного измерения массовой концентрации взвешенных веществ в атмосферном воздухе.\n"
                      "РД 52.04.896-2020 «Массовая концентрация взвешенных веществ в пробах атмосферного воздуха. "
                      "Методика измерений гравиметрическим методом»\n\n2.  Расчет единичного измерения массовой "
@@ -23,23 +21,25 @@ data_library = {
 
     "Светлая тема": {
         "Главный стиль": "* {font: 13px arial, sans-serif; background-color: #fff5ee;} "
-                         "QMenuBar {color: #1b1116; background-color: #fffafa;}",
+                         "QMenuBar, QMenu {color: #1b1116; background-color: #c7fcec;}",
         "Стиль селектора": "border-style: hidden; border-radius: 9px; background-color: #c7fcec; color: #1b1116;",
-        "Цвет названий калькуляторов": "color: #151719;",
-        "Стиль области ввода": "* {color: #18171c;} QLineEdit {background-color: #1cd3a2; color: #414a4c;}",
-        "Стиль поля результатов": "border-style: hidden; border-radius: 5px; background-color: #6699cc; color: #f7f5f6;"
+        "Цвет названий калькуляторов": "color: #1e213d;",
+        "Стиль области ввода": "* {color: #151719;} QLineEdit {background-color: #1cd3a2; color: #4d4234;}",
+        "Стиль поля результатов": "border-style: hidden; border-radius: 5px; background-color: #6699cc; color: #4d1933;"
     },
 
     "Темная тема": {
         "Главный стиль": "* {font: 13px arial, sans-serif; background-color: #fcfcee;} "
-                         "QMenuBar {color: red; background-color: #18171c;}",
+                         "QMenuBar, QMenu {color: red; background-color: #18171c;}",
         "Стиль селектора": "border-style: hidden; border-radius: 9px; background-color: red; color: blue;",
         "Цвет названий калькуляторов": "color: blue;",
         "Стиль области ввода": "* {color: green;} QLineEdit {background-color: red; color: blue;}",
         "Стиль поля результатов": "border-style: hidden; border-radius: 5px; background-color: #181454; color: ;"
     },
 
-    "Размеры зоны выбора": QtCore.QSize(150, 488),
+    "Размеры зоны выбора": QtCore.QSize(150, 493),
+
+    "Размеры кнопок": QtCore.QSize(40, 40),
 
     "Позиция левый-центр": QtCore.Qt.AlignmentFlag.AlignCenter | QtCore.Qt.AlignmentFlag.AlignLeft,
 
@@ -86,10 +86,10 @@ data_library = {
             "Размеры поля ввода": QtCore.QSize(40, 30)
         },
 
-        "Размеры": QtCore.QSize(600, 470),
+        "Размеры базовые": QtCore.QSize(600, 470),
         "Размеры поля ввода": QtCore.QSize(80, 30),
         "Размеры поля результатов": QtCore.QSize(550, 70),
-        "Отступы калькулятора": QtCore.QMargins(10, 30, 10, 10)
+        "Отступы": QtCore.QMargins(10, 30, 10, 10)
     },
 
     "Журналы": {
