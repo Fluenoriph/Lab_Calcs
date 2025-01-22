@@ -17,7 +17,7 @@ class InputValueField(QtWidgets.QLineEdit):
         self.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.setFrame(True)
         self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
-        self.setStyleSheet("border-style: hidden; border-radius: 5px;")
+        #self.setStyleSheet("border-style: hidden; border-radius: 5px;")
 
     def check_entry_value(self):
         return self.textEdited.connect(partial(self.validate_entry_text,

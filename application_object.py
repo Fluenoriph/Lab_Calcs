@@ -182,28 +182,23 @@ class CalculatorObjectsController(QtWidgets.QWidget):
         return data
 
     @staticmethod
-    def create_noise_calc_data_to_save(bands, source, background, delta, correct):     # переделать запись в файл !!!!!!!
+    def create_noise_calc_data_to_save(bands, source, background, delta, correct):
         data = []
-        for i in range(10):
+        r = range(10)
 
-            data.append(bands[i])
+        for i in r:
+            data.append(bands[i] + '|*|')
+        data.append(ct.data_library["Отчет"][5])
+
+        for j in (source, background, delta, correct):
+            for i in r:
+                data.append(j[i].text() + '   ')
             data.append('\n')
 
-            data.append(str(source[i].get_entry_value()))
-            data.append('\n')
-
-            data.append(str(background[i].get_entry_value()))
-            data.append('\n')
-
-            data.append(delta[i].text())
-            data.append('\n')
-
-            data.append(correct[i].text())
-            #data.append(ct.data_library["Отчет"][5])
         return data
 
     def save_to_desktop(self, file, data):
-        message = ct.data_library["Отчет"][4] + file
+        message = f"{ct.data_library["Отчет"][4]} \'{file[1:]}\'"
         file_path = get_desktop() + file
         QtWidgets.QMessageBox.information(self, " ", message)
         with open (file_path, "a", encoding="utf-8") as txt:
@@ -288,11 +283,18 @@ class ApplicationType(QtWidgets.QWidget):
         self.activateWindow()
 
         self.box = QtWidgets.QGridLayout(self)
-        self.box.setHorizontalSpacing(10)
+        self.box.setHorizontalSpacing(5)
         self.box.setVerticalSpacing(15)
         self.box.setContentsMargins(0, 0, 0, 0)
         self.data_dict_names = list(ct.data_library.keys())
         self.menu_area = self.create_main_menu()
+        self.change_style = QtGui.QAction("Сменить тему", self.menu_area)
+        self.change_style.setCheckable(True)
+        #self.change_style.toggle()
+        self.change_style.toggled.connect(self.change_app_style)
+
+        #self.change_style.setChecked(True)
+        self.menu_area.addAction(self.change_style)
         self.selector_area = self.create_selector_panel()
         self.registers = RegisterObjectsController(self)
         self.calculators = CalculatorObjectsController(self)
@@ -302,8 +304,8 @@ class ApplicationType(QtWidgets.QWidget):
         self.box.addWidget(self.calculators, 1, 2, 1, 1, ct.data_library["Позиция левый-верхний"])
         self.box.setColumnMinimumWidth(0, 1)
         self.calcs_list = (self.calculators.air_calc, self.calculators.work_area_calc, self.calculators.flow_calc,
-                           self.calculators.noise_calc)
-
+                           self.calculators.noise_calc, self.registers.base_register_area,
+                           self.registers.physical_register_options, self.registers.radiation_control_register_options)
         self.set_app_style(list(ct.data_library["Светлая тема"].values()))
         self.show()
 
@@ -311,13 +313,13 @@ class ApplicationType(QtWidgets.QWidget):
         self.setStyleSheet(style_list[0])
         self.selector_area.setStyleSheet(style_list[1])
         self.calculators.calcs_area.setStyleSheet(style_list[2])
+        self.registers.options_area.setStyleSheet(style_list[2])
 
         for _ in self.calcs_list:
             _.setStyleSheet(style_list[3])
-            if self.calcs_list.index(_) == 3:
-                _.set_result_field_style(style_list[4])
-            else:
-                _.result_area.setStyleSheet(style_list[4])
+        for _ in self.calcs_list[0:3]:
+            _.result_area.setStyleSheet(style_list[4])
+        self.calculators.noise_calc.set_result_field_style(style_list[4])
 
     def create_main_menu(self):
         main_menu = QtWidgets.QMenuBar(self)
@@ -363,6 +365,14 @@ class ApplicationType(QtWidgets.QWidget):
         return selector_panel
 
     @QtCore.pyqtSlot()
+    def change_app_style(self):
+        match self.change_style.isChecked():
+            case True:
+                self.set_app_style(list(ct.data_library["Темная тема"].values()))
+            case False:
+                self.set_app_style(list(ct.data_library["Светлая тема"].values()))
+
+    @QtCore.pyqtSlot()
     def open_about_app_message(self):
         QtWidgets.QMessageBox.about(self, self.data_dict_names[1], ct.data_library["О программе"])
 
@@ -384,7 +394,7 @@ class ApplicationType(QtWidgets.QWidget):
 
     @QtCore.pyqtSlot()
     def click_on_selector_panel(self):
-        if self.selector_area.currentIndex() == self.selector_area.calculators_index:
+        if self.selector_area.currentIndex() == self.selector_area.calculators_index:     # match ???
             self.calculators_show_fixed()
         else:
             self.registers_show_fixed()

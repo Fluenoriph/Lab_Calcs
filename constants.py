@@ -23,9 +23,10 @@ data_library = {
         "Главный стиль": "* {font: 13px arial, sans-serif; background-color: #fff5ee;} "
                          "QMenuBar, QMenu {color: #1b1116; background-color: #c7fcec;}",
         "Стиль селектора": "border-style: hidden; border-radius: 9px; background-color: #c7fcec; color: #1b1116;",
-        "Цвет названий калькуляторов": "color: #1e213d;",
-        "Стиль области ввода": "* {color: #151719;} QLineEdit {background-color: #1cd3a2; color: #4d4234;}",
-        "Стиль поля результатов": "border-style: hidden; border-radius: 5px; background-color: #6699cc; color: #4d1933;"
+        "Цвет названий калькуляторов": "color: #781f19;",
+        "Стиль области ввода": "* {color: #151719;} QLineEdit, QDateEdit, QSpinBox {border-style: hidden; border-radius: "
+                               "5px; background-color: #1cd3a2; color: #4d4234;}",
+        "Стиль поля результатов": "border-style: hidden; border-radius: 5px; background-color: #6699cc; color: #641c34;"
     },
 
     "Темная тема": {
