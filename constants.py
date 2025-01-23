@@ -2,18 +2,25 @@ from PyQt6 import QtCore
 
 
 data_library = {
-    "Справка": "1.  Расчет единичного измерения массовой концентрации взвешенных веществ в атмосферном воздухе.\n"
-                     "РД 52.04.896-2020 «Массовая концентрация взвешенных веществ в пробах атмосферного воздуха. "
-                     "Методика измерений гравиметрическим методом»\n\n2.  Расчет единичного измерения массовой "
-                     "концентрации пыли (дисперсной фазы аэрозолей) в пробах воздуха рабочей зоны.\n"
-                     "МУК 4.1.2468-09 «Измерение массовых концентраций пыли в воздухе рабочей зоны предприятий "
-                     "горнорудной и нерудной промышленности»\n\n3.  Определение показателей эффективности вентиляции.\n"
-                     "МР 4.3.0212-20 «Контроль систем вентиляции»\n\n4.  Расчет поправок для учета влияния  "
-                     "фонового шума.\nМУК 4.3.3722-21 «Контроль уровня шума на территории жилой застройки, в жилых и "
-                     "общественных зданиях и помещениях»",
+    "Главное меню": ("Файл", "Выход", "Помощь", "Сменить тему"),
 
-    "О программе": "Лабораторные калькуляторы 2.1.0 Beta\n\nFree software\n\n"
-                                     "(C) Иван Богданов, 2025. Все права защищены\n\nfluenoriph@gmail.com",
+    "Справка": "1.  Расчет единичного измерения массовой концентрации взвешенных веществ в атмосферном воздухе.\n"
+                    "РД 52.04.896-2020 «Массовая концентрация взвешенных веществ в пробах атмосферного воздуха. "
+                    "Методика измерений гравиметрическим методом»\n\n"
+               "2.  Расчет единичного измерения массовой концентрации пыли (дисперсной фазы аэрозолей) в пробах воздуха "
+                    "рабочей зоны.\n"
+                    "МУК 4.1.2468-09 «Измерение массовых концентраций пыли в воздухе рабочей зоны предприятий "
+                    "горнорудной и нерудной промышленности»\n\n"
+               "3.  Определение показателей эффективности вентиляции.\n"
+                    "МР 4.3.0212-20 «Контроль систем вентиляции»\n\n"
+               "4.  Расчет поправок для учета влияния фонового шума.\n"
+                    "МУК 4.3.3722-21 «Контроль уровня шума на территории жилой застройки, в жилых и общественных "
+                    "зданиях и помещениях»",
+
+    "О программе": "Calculators 2.1.0 Beta\n\n"
+                   "Free software\n\n"
+                   "(C) Иван Богданов, 2025. Все права защищены\n"
+                   "fluenoriph@gmail.com, fluenoriph@yandex.ru",
 
     "Отчет": ("\\air_calc_result_log.txt", "\\work_zone_calc_result_log.txt", "\\ventilation_calc_result_log.txt",
               "\\noise_calc_result_log.txt", "Данные рассчета будут сохранены\nна рабочий стол в файл ",
@@ -23,19 +30,20 @@ data_library = {
         "Главный стиль": "* {font: 13px arial, sans-serif; background-color: #fff5ee;} "
                          "QMenuBar, QMenu {color: #1b1116; background-color: #c7fcec;}",
         "Стиль селектора": "border-style: hidden; border-radius: 9px; background-color: #c7fcec; color: #1b1116;",
-        "Цвет названий калькуляторов": "color: #781f19;",
+        "Цвет названий калькуляторов": "* {color: #781f19;} QTabWidget {background-color: #fff5ee;}",
         "Стиль области ввода": "* {color: #151719;} QLineEdit, QDateEdit, QSpinBox {border-style: hidden; border-radius: "
                                "5px; background-color: #1cd3a2; color: #4d4234;}",
         "Стиль поля результатов": "border-style: hidden; border-radius: 5px; background-color: #6699cc; color: #641c34;"
     },
 
     "Темная тема": {
-        "Главный стиль": "* {font: 13px arial, sans-serif; background-color: #fcfcee;} "
-                         "QMenuBar, QMenu {color: red; background-color: #18171c;}",
-        "Стиль селектора": "border-style: hidden; border-radius: 9px; background-color: red; color: blue;",
-        "Цвет названий калькуляторов": "color: blue;",
-        "Стиль области ввода": "* {color: green;} QLineEdit {background-color: red; color: blue;}",
-        "Стиль поля результатов": "border-style: hidden; border-radius: 5px; background-color: #181454; color: ;"
+        "Главный стиль": "* {font: 13px arial, sans-serif; background-color: #26252d;} "
+                         "QMenuBar, QMenu {color: #c9c0bb; background-color: #151719;} QMessageBox QWidget {color: #c9c0bb;}",
+        "Стиль селектора": "border-style: hidden; border-radius: 9px; background-color: #151719; color: #c9c0bb;",
+        "Цвет названий калькуляторов": "* {color: #cc5500;} QTabWidget {background-color: #26252d;}",
+        "Стиль области ввода": "* {color: #01796f;} QLineEdit, QDateEdit, QSpinBox {border-style: hidden; border-radius: "
+                               "5px; background-color: #343e40; color: #4169e1;}",
+        "Стиль поля результатов": "border-style: hidden; border-radius: 5px; background-color: #0e1824; color: #baacc7;"
     },
 
     "Размеры зоны выбора": QtCore.QSize(150, 493),
@@ -49,6 +57,8 @@ data_library = {
     "Позиция левый-верхний": QtCore.Qt.AlignmentFlag.AlignTop | QtCore.Qt.AlignmentFlag.AlignLeft,
 
     "Позиция нижний-центр": QtCore.Qt.AlignmentFlag.AlignBottom | QtCore.Qt.AlignmentFlag.AlignCenter,
+
+    "Отступы контроллеров": QtCore.QMargins(15, 15, 15, 15),
 
     "Калькуляторы": {
         "Пыль в атмосф. воздухе": {

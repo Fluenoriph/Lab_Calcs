@@ -9,10 +9,8 @@ from calculators_objects import (AtmosphericAirDust, WorkAreaAirDust, Ventilatio
 class RegisterObjectsController(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
-        #self.setFixedSize()
-
         self.box = QtWidgets.QGridLayout(self)
-        #self.box.setContentsMargins(constants.CONTENTS_MARGINS_ALL_OBJECTS)
+        self.box.setContentsMargins(ct.data_library["Отступы контроллеров"])
         self.box.setSpacing(40)
         self.icon_ok = QtGui.QIcon('images/ok.ico')
         self.icon_clear = QtGui.QIcon('images/clear.ico')
@@ -23,6 +21,7 @@ class RegisterObjectsController(QtWidgets.QWidget):
         self.options_area.setDocumentMode(True)
         self.options_area.setCurrentIndex(0)
         self.options_area.setUsesScrollButtons(False)
+        self.options_area.setTabShape(QtWidgets.QTabWidget.TabShape.Triangular)
         self.options_area.currentChanged.connect(self.clear_protocol_number_entry_field)
         self.physical_register_options = PhysicalFactorsOptions()
         self.radiation_control_register_options = RadiationControlOptions()
@@ -119,11 +118,9 @@ class RegisterObjectsController(QtWidgets.QWidget):
 class CalculatorObjectsController(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
-        #self.setFixedSize(900, 400)
-
         self.box = QtWidgets.QGridLayout(self)
         self.box.setSpacing(15)
-        #self.box.setContentsMargins(15, 15, 15, 15)
+        self.box.setContentsMargins(ct.data_library["Отступы контроллеров"])
         self.icon_ok = QtGui.QIcon('images/ok.ico')
         self.icon_clear = QtGui.QIcon('images/clear.ico')
         self.icon_save = QtGui.QIcon('images/save.ico')
@@ -132,6 +129,7 @@ class CalculatorObjectsController(QtWidgets.QWidget):
         self.calcs_area.setCurrentIndex(0)
         self.calcs_area.setDocumentMode(True)
         self.calcs_area.setUsesScrollButtons(False)
+        self.calcs_area.setTabShape(QtWidgets.QTabWidget.TabShape.Triangular)
         self.air_calc = AtmosphericAirDust()
         self.work_area_calc = WorkAreaAirDust()
         self.flow_calc = VentilationEfficiency()
@@ -189,7 +187,6 @@ class CalculatorObjectsController(QtWidgets.QWidget):
         for i in r:
             data.append(bands[i] + '|*|')
         data.append(ct.data_library["Отчет"][5])
-
         for j in (source, background, delta, correct):
             for i in r:
                 data.append(j[i].text() + '   ')
@@ -242,28 +239,26 @@ class CalculatorObjectsController(QtWidgets.QWidget):
             case 0:
                 if self.air_calc.result_area.text() != "":
                     air_calc_data = self.create_data_to_save(ct.data_library["Калькуляторы"]["Пыль в атмосф. воздухе"]
-                                                             ["Параметры"], self.air_calc.entry_objects,
-                                                             self.air_calc.result_area)
+                                    ["Параметры"], self.air_calc.entry_objects, self.air_calc.result_area)
                     self.save_to_desktop(ct.data_library["Отчет"][0], air_calc_data)
                 else: pass
             case 1:
                 if self.work_area_calc.result_area.text() != "":
-                    work_area_calc_data = self.create_data_to_save(ct.data_library["Калькуляторы"]["Пыль в воздухе раб. зоны"]
-                                                             ["Параметры"], self.work_area_calc.entry_objects,
+                    work_area_calc_data = self.create_data_to_save(ct.data_library["Калькуляторы"]
+                                          ["Пыль в воздухе раб. зоны"]["Параметры"], self.work_area_calc.entry_objects,
                                                                    self.work_area_calc.result_area)
                     self.save_to_desktop(ct.data_library["Отчет"][1], work_area_calc_data)
                 else: pass
             case 2:
                 if self.flow_calc.result_area.text() != "":
                     flow_calc_data = self.create_data_to_save(ct.data_library["Калькуляторы"]["Эффектив. вентиляции"]
-                                                             ["Параметры"], self.flow_calc.entry_objects,
-                                                              self.flow_calc.result_area)
+                                     ["Параметры"], self.flow_calc.entry_objects, self.flow_calc.result_area)
                     self.save_to_desktop(ct.data_library["Отчет"][2], flow_calc_data)
                 else: pass
             case 3:
                 if self.noise_calc.delta_result_area[0].text() != "":
-                    noise_calc_data = self.create_noise_calc_data_to_save(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]
-                                                             ["Параметры"], self.noise_calc.entry_objects_source,
+                    noise_calc_data = self.create_noise_calc_data_to_save(ct.data_library["Калькуляторы"]
+                                      ["Учет влияния фонового шума"]["Параметры"], self.noise_calc.entry_objects_source,
                                       self.noise_calc.entry_objects_background, self.noise_calc.delta_result_area,
                                                                           self.noise_calc.correct_result_area)
                     self.save_to_desktop(ct.data_library["Отчет"][3], noise_calc_data)
@@ -273,7 +268,7 @@ class CalculatorObjectsController(QtWidgets.QWidget):
 class ApplicationType(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Лабораторная система")
+        self.setWindowTitle("Калькуляторы")
         self.resize(1015, 550)
         self.move(self.width() * -2, 0)
         screen_size = self.screen().availableSize()
@@ -288,13 +283,6 @@ class ApplicationType(QtWidgets.QWidget):
         self.box.setContentsMargins(0, 0, 0, 0)
         self.data_dict_names = list(ct.data_library.keys())
         self.menu_area = self.create_main_menu()
-        self.change_style = QtGui.QAction("Сменить тему", self.menu_area)
-        self.change_style.setCheckable(True)
-        #self.change_style.toggle()
-        self.change_style.toggled.connect(self.change_app_style)
-
-        #self.change_style.setChecked(True)
-        self.menu_area.addAction(self.change_style)
         self.selector_area = self.create_selector_panel()
         self.registers = RegisterObjectsController(self)
         self.calculators = CalculatorObjectsController(self)
@@ -324,23 +312,27 @@ class ApplicationType(QtWidgets.QWidget):
     def create_main_menu(self):
         main_menu = QtWidgets.QMenuBar(self)
         main_menu.setFixedHeight(20)
-        main_menu.submenu_file = QtWidgets.QMenu("Файл", main_menu)
-        main_menu.submenu_help = QtWidgets.QMenu("Помощь", main_menu)
+        main_menu.submenu_file = QtWidgets.QMenu(ct.data_library["Главное меню"][0], main_menu)
+        main_menu.submenu_help = QtWidgets.QMenu(ct.data_library["Главное меню"][2], main_menu)
+        main_menu.change_style = QtGui.QAction(ct.data_library["Главное меню"][3], main_menu)
+        main_menu.change_style.setCheckable(True)
+        main_menu.change_style.toggled.connect(self.change_app_style)
         main_menu.addMenu(main_menu.submenu_file)
         main_menu.addMenu(main_menu.submenu_help)
-        main_menu.set_calculators_act = QtGui.QAction(self.data_dict_names[11], main_menu.submenu_file)
+        main_menu.addAction(main_menu.change_style)
+        main_menu.set_calculators_act = QtGui.QAction(self.data_dict_names[13], main_menu.submenu_file)
         main_menu.set_calculators_act.triggered.connect(self.calculators_show_fixed)
-        main_menu.set_registers_act = QtGui.QAction(self.data_dict_names[12], main_menu.submenu_file)
+        main_menu.set_registers_act = QtGui.QAction(self.data_dict_names[14], main_menu.submenu_file)
         main_menu.set_registers_act.triggered.connect(self.registers_show_fixed)
-        main_menu.exit_act = QtGui.QAction("Выход", main_menu.submenu_file)
+        main_menu.exit_act = QtGui.QAction(ct.data_library["Главное меню"][1], main_menu.submenu_file)
         main_menu.exit_act.triggered.connect(sys.exit)
         main_menu.submenu_file.addAction(main_menu.set_registers_act)
         main_menu.submenu_file.addAction(main_menu.set_calculators_act)
         main_menu.submenu_file.addSeparator()
         main_menu.submenu_file.addAction(main_menu.exit_act)
-        main_menu.help_link = QtGui.QAction(self.data_dict_names[0], main_menu.submenu_help)
+        main_menu.help_link = QtGui.QAction(self.data_dict_names[1], main_menu.submenu_help)
         main_menu.help_link.triggered.connect(self.open_help_message)
-        main_menu.about = QtGui.QAction(self.data_dict_names[1], main_menu.submenu_help)
+        main_menu.about = QtGui.QAction(self.data_dict_names[2], main_menu.submenu_help)
         main_menu.about.triggered.connect(self.open_about_app_message)
         main_menu.submenu_help.addAction(main_menu.help_link)
         main_menu.submenu_help.addSeparator()
@@ -352,10 +344,10 @@ class ApplicationType(QtWidgets.QWidget):
         selector_panel.setFixedSize(ct.data_library["Размеры зоны выбора"])
         selector_panel.setSpacing(10)
         selector_panel.setFrameStyle(QtWidgets.QFrame.Shape.NoFrame)
-        selector_panel.names = (self.data_dict_names[11], self.data_dict_names[12])
+        selector_panel.names = (self.data_dict_names[13], self.data_dict_names[14])
         selector_panel.model_type = QtCore.QStringListModel(selector_panel.names)
         selector_panel.setModel(selector_panel.model_type)
-        selector_panel.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.NoSelection)
+        selector_panel.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
         selector_panel.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         selector_panel.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
         selector_panel.setTabKeyNavigation(True)
@@ -366,7 +358,7 @@ class ApplicationType(QtWidgets.QWidget):
 
     @QtCore.pyqtSlot()
     def change_app_style(self):
-        match self.change_style.isChecked():
+        match self.menu_area.change_style.isChecked():
             case True:
                 self.set_app_style(list(ct.data_library["Темная тема"].values()))
             case False:
@@ -374,11 +366,11 @@ class ApplicationType(QtWidgets.QWidget):
 
     @QtCore.pyqtSlot()
     def open_about_app_message(self):
-        QtWidgets.QMessageBox.about(self, self.data_dict_names[1], ct.data_library["О программе"])
+        QtWidgets.QMessageBox.about(self, self.data_dict_names[2], ct.data_library["О программе"])
 
     @QtCore.pyqtSlot()
     def open_help_message(self):
-        QtWidgets.QMessageBox.information(self, self.data_dict_names[0], ct.data_library["Справка"])
+        QtWidgets.QMessageBox.information(self, self.data_dict_names[1], ct.data_library["Справка"])
 
     @QtCore.pyqtSlot()
     def calculators_show_fixed(self):
@@ -394,10 +386,11 @@ class ApplicationType(QtWidgets.QWidget):
 
     @QtCore.pyqtSlot()
     def click_on_selector_panel(self):
-        if self.selector_area.currentIndex() == self.selector_area.calculators_index:     # match ???
-            self.calculators_show_fixed()
-        else:
-            self.registers_show_fixed()
+        match self.selector_area.currentIndex():
+            case self.selector_area.calculators_index:
+                self.calculators_show_fixed()
+            case self.selector_area.registers_index:
+                self.registers_show_fixed()
 
 
 if __name__ == "__main__":

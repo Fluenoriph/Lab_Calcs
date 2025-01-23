@@ -15,9 +15,7 @@ class InputValueField(QtWidgets.QLineEdit):
         super().__init__(parent)
         self.value = value
         self.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.setFrame(True)
         self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
-        #self.setStyleSheet("border-style: hidden; border-radius: 5px;")
 
     def check_entry_value(self):
         return self.textEdited.connect(partial(self.validate_entry_text,
@@ -48,8 +46,6 @@ class AbstractInputZone(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.box = QtWidgets.QGridLayout(self)
-        #self.box.setVerticalSpacing(5)
-        #self.box.setHorizontalSpacing(40)
         self.box.setContentsMargins(ct.data_library["Калькуляторы"]["Отступы"])
 
     def create_title_objects(self, title_list, column_count):
@@ -282,8 +278,6 @@ class NoiseLevelsWithBackground(AbstractInputZone):
     def __init__(self, delta_result = None, correct_result = None):
         super().__init__()
         self.setFixedSize(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Размеры"])
-        #self.box.setHorizontalSpacing(15)
-        #self.box.setVerticalSpacing(5)
         self.box.setContentsMargins(ct.data_library["Калькуляторы"]["Отступы"])
         self.delta_result = delta_result
         self.correct_result = correct_result
@@ -420,7 +414,6 @@ class BaseRegister(AbstractInputZone):
 class PhysicalFactorsOptions(AbstractInputZone):
     def __init__(self):
         super().__init__()
-        #self.setFixedSize(300, 400)
         self.box.setHorizontalSpacing(10)
         self.box.setVerticalSpacing(10)
         self.create_title_objects(ct.data_library["Журналы"]["Физические факторы"]["Параметры"], 0)
