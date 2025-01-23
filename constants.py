@@ -40,7 +40,7 @@ data_library = {
         "Главный стиль": "* {font: 13px arial, sans-serif; background-color: #26252d;} "
                          "QMenuBar, QMenu {color: #c9c0bb; background-color: #151719;} QMessageBox QWidget {color: #c9c0bb;}",
         "Стиль селектора": "border-style: hidden; border-radius: 9px; background-color: #151719; color: #c9c0bb;",
-        "Цвет названий калькуляторов": "* {color: #cc5500;} QTabWidget {background-color: #26252d;}",
+        "Цвет названий калькуляторов": "* {color: #fdbdba;} QTabWidget {background-color: #26252d;}",
         "Стиль области ввода": "* {color: #01796f;} QLineEdit, QDateEdit, QSpinBox {border-style: hidden; border-radius: "
                                "5px; background-color: #343e40; color: #4169e1;}",
         "Стиль поля результатов": "border-style: hidden; border-radius: 5px; background-color: #0e1824; color: #baacc7;"

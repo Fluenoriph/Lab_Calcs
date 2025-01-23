@@ -175,7 +175,7 @@ class CalculatorObjectsController(QtWidgets.QWidget):
     def create_data_to_save(title_names, entry_fields, result):
         data = []
         for i in range(len(title_names)):
-            data.append(title_names[i] + ': ' + str(entry_fields[i].get_entry_value()) + '\n')
+            data.append(title_names[i] + ': ' + entry_fields[i].text() + '\n')
         data.append(result.text() + ct.data_library["Отчет"][5])
         return data
 
@@ -195,7 +195,7 @@ class CalculatorObjectsController(QtWidgets.QWidget):
         return data
 
     def save_to_desktop(self, file, data):
-        message = f"{ct.data_library["Отчет"][4]} \'{file[1:]}\'"
+        message = f"{ct.data_library["Отчет"][4]}\'{file[1:]}\'"
         file_path = get_desktop() + file
         QtWidgets.QMessageBox.information(self, " ", message)
         with open (file_path, "a", encoding="utf-8") as txt:
@@ -395,6 +395,6 @@ class ApplicationType(QtWidgets.QWidget):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    # app.setWindowIcon(QtGui.QIcon("images/calc_type.ico"))
-    app_type = ApplicationType()
+    app.setWindowIcon(QtGui.QIcon("images/calc_logo.ico"))
+    app_calcs = ApplicationType()
     sys.exit(app.exec())
