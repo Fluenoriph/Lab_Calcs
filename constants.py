@@ -39,9 +39,10 @@ data_library = {
                          "QPushButton:focus {background: blue;} "
                                                   
                          "QMessageBox QWidget {color: #1b1116;} "
-                         "QMessageBox QPushButton {border-radius: 4px; padding: 6px 12px 4px 12px; "
-                         "background: red;}",
-                         
+                         "QMessageBox .QPushButton {border-radius: 4px; padding: 6px 12px 4px 12px; "
+                         "background: red;} "
+                         "QMessageBox .QPushButton:pressed {background: blue;}",
+
         "Стиль селектора": "* {outline: 0; border-radius: 9px; background: #c7fcec; color: #1b1116;} "
                            
                            "QListView::item {border-radius: 3px; padding: 2px;} "
@@ -61,22 +62,23 @@ data_library = {
 
     "Темная тема": {
         "Главный стиль": "* {border-style: none; background: #fff5ee; font: 13px arial, sans-serif;} "
-
+                         
                          "QMenuBar, QMenu {background: #c7fcec; color: #1b1116;} "
                          "QMenuBar::item:selected {background: red;} "
                          "QMenu::item:selected {background: red;} "
-
+                                                                         
                          "QPushButton {border-radius: 11px; padding: 3px;} "
                          "QPushButton:hover {background: blue;} "
                          "QPushButton:pressed {background: red;} "
                          "QPushButton:focus {background: blue;} "
-
+                                                  
                          "QMessageBox QWidget {color: #1b1116;} "
-                         "QMessageBox QPushButton {border-radius: 4px; padding: 6px 12px 4px 12px; "
-                         "background: red;}",
+                         "QMessageBox .QPushButton {border-radius: 4px; padding: 6px 12px 4px 12px; "
+                         "background: red;} "
+                         "QMessageBox .QPushButton:pressed {background: blue;}",
 
         "Стиль селектора": "* {outline: 0; border-radius: 9px; background: #c7fcec; color: #1b1116;} "
-
+                           
                            "QListView::item {border-radius: 3px; padding: 2px;} "
                            "QListView::item:hover {background: red;} "
                            "QListView::item:selected {background: blue;}",
