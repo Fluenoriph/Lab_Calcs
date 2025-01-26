@@ -381,7 +381,7 @@ class BaseRegister(AbstractInputZone):
         self.administrator_completer = QtWidgets.QCompleter(ct.data_library["Журналы"]["Основной регистратор"]["Сотрудники"], self)
         self.entry_objects_others[4].setCompleter(self.administrator_completer)
         self.connection_with_database = QtSql.QSqlDatabase.addDatabase('QSQLITE')
-        self.connection_with_database.setDatabaseName('register_data.db')
+        #self.connection_with_database.setDatabaseName()
 
     '''def ready_insert_to_protocol_table(self):
         query = QtSql.QSqlQuery()

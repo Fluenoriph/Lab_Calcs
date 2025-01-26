@@ -291,21 +291,23 @@ class ApplicationType(QtWidgets.QWidget):
         self.box.addWidget(self.selector_area, 1, 1, 1, 1, ct.data_library["Позиция левый-верхний"])
         self.box.addWidget(self.calculators, 1, 2, 1, 1, ct.data_library["Позиция левый-верхний"])
         self.box.setColumnMinimumWidth(0, 1)
-        self.calcs_list = (self.calculators.air_calc, self.calculators.work_area_calc, self.calculators.flow_calc,
-                           self.calculators.noise_calc, self.registers.base_register_area,
-                           self.registers.physical_register_options, self.registers.radiation_control_register_options)
-        self.set_app_style(list(ct.data_library["Светлая тема"].values()))
+
+        self.set_style(list(ct.data_library["Светлая тема"].values()))
         self.show()
 
-    def set_app_style(self, style_list):
+    def set_style(self, style_list):
+        calcs_list = (self.calculators.air_calc, self.calculators.work_area_calc, self.calculators.flow_calc,
+                           self.calculators.noise_calc, self.registers.base_register_area,
+                           self.registers.physical_register_options, self.registers.radiation_control_register_options)
+
         self.setStyleSheet(style_list[0])
         self.selector_area.setStyleSheet(style_list[1])
         self.calculators.calcs_area.setStyleSheet(style_list[2])
         self.registers.options_area.setStyleSheet(style_list[2])
 
-        for _ in self.calcs_list:
+        for _ in calcs_list:
             _.setStyleSheet(style_list[3])
-        for _ in self.calcs_list[0:3]:
+        for _ in calcs_list[0:3]:
             _.result_area.setStyleSheet(style_list[4])
         self.calculators.noise_calc.set_result_field_style(style_list[4])
 
@@ -360,9 +362,9 @@ class ApplicationType(QtWidgets.QWidget):
     def change_app_style(self):
         match self.menu_area.change_style.isChecked():
             case True:
-                self.set_app_style(list(ct.data_library["Темная тема"].values()))
+                self.set_style(list(ct.data_library["Темная тема"].values()))
             case False:
-                self.set_app_style(list(ct.data_library["Светлая тема"].values()))
+                self.set_style(list(ct.data_library["Светлая тема"].values()))
 
     @QtCore.pyqtSlot()
     def open_about_app_message(self):
