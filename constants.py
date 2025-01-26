@@ -26,73 +26,11 @@ data_library = {
               "\\noise_calc_result_log.txt", "Данные рассчета будут сохранены\nна рабочий стол в файл ",
               "\n----------------------------------------------------------------------\n"),
 
-    "Светлая тема": {
-        "Главный стиль": "* {border-style: none; background: #fff5ee; font: 13px arial, sans-serif;} "
-                         
-                         "QMenuBar, QMenu {background: #c7fcec; color: #1b1116;} "
-                         "QMenuBar::item:selected {background: red;} "
-                         "QMenu::item:selected {background: red;} "
-                                                                         
-                         "QPushButton {border-radius: 11px; padding: 3px;} "
-                         "QPushButton:hover {background: blue;} "
-                         "QPushButton:pressed {background: red;} "
-                         "QPushButton:focus {background: blue;} "
-                                                  
-                         "QMessageBox QWidget {color: #1b1116;} "
-                         "QMessageBox .QPushButton {border-radius: 4px; padding: 6px 12px 4px 12px; "
-                         "background: red;} "
-                         "QMessageBox .QPushButton:pressed {background: blue;}",
+    "Цвета светлой темы": ("#fff5ee;", "#c7fcec;", "#1b1116;", "#08e8de;", "#f8f32b;", "#781f19;", "#151719;",
+                           "#1cd3a2;", "#4d4234;", "#33ff33;", "#6699cc;", "#641c34;"),
 
-        "Стиль селектора": "* {outline: 0; border-radius: 9px; background: #c7fcec; color: #1b1116;} "
-                           
-                           "QListView::item {border-radius: 3px; padding: 2px;} "
-                           "QListView::item:hover {background: red;} "
-                           "QListView::item:selected {background: blue;}",
-
-        "Стиль контроллера": "* {color: #781f19;} ",
-
-        "Стиль области ввода": "QLabel {color: #151719;} "
-                               "QLineEdit, QDateEdit, QSpinBox {border-radius: 5px; background: #1cd3a2; color: #4d4234;} "
-                               "QLineEdit:focus {background: green;} "
-                               "QDateEdit:focus {background: green;} "
-                               "QSpinBox:focus {background: green;}",
-
-        "Стиль поля результатов": "border-radius: 5px; background: #6699cc; color: #641c34;"
-    },
-
-    "Темная тема": {
-        "Главный стиль": "* {border-style: none; background: #fff5ee; font: 13px arial, sans-serif;} "
-                         
-                         "QMenuBar, QMenu {background: #c7fcec; color: #1b1116;} "
-                         "QMenuBar::item:selected {background: red;} "
-                         "QMenu::item:selected {background: red;} "
-                                                                         
-                         "QPushButton {border-radius: 11px; padding: 3px;} "
-                         "QPushButton:hover {background: blue;} "
-                         "QPushButton:pressed {background: red;} "
-                         "QPushButton:focus {background: blue;} "
-                                                  
-                         "QMessageBox QWidget {color: #1b1116;} "
-                         "QMessageBox .QPushButton {border-radius: 4px; padding: 6px 12px 4px 12px; "
-                         "background: red;} "
-                         "QMessageBox .QPushButton:pressed {background: blue;}",
-
-        "Стиль селектора": "* {outline: 0; border-radius: 9px; background: #c7fcec; color: #1b1116;} "
-                           
-                           "QListView::item {border-radius: 3px; padding: 2px;} "
-                           "QListView::item:hover {background: red;} "
-                           "QListView::item:selected {background: blue;}",
-
-        "Стиль контроллера": "* {color: #781f19;} ",
-
-        "Стиль области ввода": "QLabel {color: #151719;} "
-                               "QLineEdit, QDateEdit, QSpinBox {border-radius: 5px; background: #1cd3a2; color: #4d4234;} "
-                               "QLineEdit:focus {background: green;} "
-                               "QDateEdit:focus {background: green;} "
-                               "QSpinBox:focus {background: green;}",
-
-        "Стиль поля результатов": "border-radius: 5px; background: #6699cc; color: #641c34;"
-    },
+    "Цвета темной темы": ("#26252d;", "#151719;", "#c9c0bb;", "#002137;", "#03c03c;", "#8a9597;", "#01796f;",
+                          "#343e40;", "#4169e1;", "#022027;", "#0e1824;", "#baacc7;"),
 
     "Размеры зоны выбора": QtCore.QSize(150, 493),
 
@@ -190,14 +128,3 @@ data_library = {
         "Размеры поля ввода факторов": QtCore.QSize(55, 30)
     }
 }
-
-
-
-'''"Главный стиль": "* {font: 13px arial, sans-serif; background-color: #26252d;} "
-                         "QMenuBar, QMenu {color: #c9c0bb; background-color: #151719;} QMessageBox QWidget {color: #c9c0bb;}",
-
-        "Стиль селектора": "border-style: hidden; border-radius: 9px; background-color: #151719; color: #c9c0bb;",
-        "Цвет названий калькуляторов": "* {color: #fdbdba;} QTabWidget {background-color: #26252d;}",
-        "Стиль области ввода": "* {color: #01796f;} QLineEdit, QDateEdit, QSpinBox {border-style: hidden; border-radius: "
-                               "5px; background-color: #343e40; color: #4169e1;}",
-        "Стиль поля результатов": "border-style: hidden; border-radius: 5px; background-color: #0e1824; color: #baacc7;"'''

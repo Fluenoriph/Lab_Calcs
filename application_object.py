@@ -43,7 +43,6 @@ class RegisterObjectsController(QtWidgets.QWidget):
         i = 0
         for _ in (self.save, self.clear):
             _.setIconSize(ct.data_library["Размеры кнопок"])
-            _.setFlat(True)
             _.setAutoDefault(True)
             self.box.addWidget(_, 5, i, alignment=ct.data_library["Позиция левый-верхний"])
             i += 1
@@ -160,7 +159,6 @@ class CalculatorObjectsController(QtWidgets.QWidget):
         i = 0
         for _ in (self.calculate, self.clear, self.save):
             _.setIconSize(ct.data_library["Размеры кнопок"])
-            _.setFlat(True)
             _.setAutoDefault(True)
             self.box.addWidget(_, i, 1, alignment=ct.data_library["Позиция нижний-центр"])
             i += 1
@@ -291,25 +289,48 @@ class ApplicationType(QtWidgets.QWidget):
         self.box.addWidget(self.selector_area, 1, 1, 1, 1, ct.data_library["Позиция левый-верхний"])
         self.box.addWidget(self.calculators, 1, 2, 1, 1, ct.data_library["Позиция левый-верхний"])
         self.box.setColumnMinimumWidth(0, 1)
-
-        self.set_style(list(ct.data_library["Светлая тема"].values()))
+        self.set_style(ct.data_library["Цвета светлой темы"])
         self.show()
 
-    def set_style(self, style_list):
+    def set_style(self, colors):
         calcs_list = (self.calculators.air_calc, self.calculators.work_area_calc, self.calculators.flow_calc,
                            self.calculators.noise_calc, self.registers.base_register_area,
                            self.registers.physical_register_options, self.registers.radiation_control_register_options)
 
-        self.setStyleSheet(style_list[0])
-        self.selector_area.setStyleSheet(style_list[1])
-        self.calculators.calcs_area.setStyleSheet(style_list[2])
-        self.registers.options_area.setStyleSheet(style_list[2])
+        self.setStyleSheet("* {outline: 0; border-style: none; background: "+colors[0]+" font: 13px arial, sans-serif; "
+                                                                                       "color: "+colors[2]+"} "
+                         
+                           "QMenuBar, QMenu {background: "+colors[1]+"} "
+                           "QMenuBar::item:selected {background: "+colors[3]+"} "
+                           "QMenu::item:selected {background: "+colors[3]+"} "
+                                                                         
+                           "QPushButton {border-radius: 11px; padding: 3px;} "
+                           "QPushButton:hover {background: "+colors[3]+"} "
+                           "QPushButton:pressed {background: "+colors[4]+"} "                                     
+                          
+                           "QMessageBox .QPushButton {border-radius: 5px; padding: 6px 16px 6px 16px; "
+                           "background: "+colors[3]+"} "
+                           "QMessageBox .QPushButton:pressed {background: "+colors[4]+"}")
+
+        self.selector_area.setStyleSheet("* {border-radius: 9px; background: "+colors[1]+"} "
+                                         
+                                         "QListView::item {border-radius: 5px; padding: 2px;} "
+                                         "QListView::item:hover {background: "+colors[3]+"} "
+                                         "QListView::item:selected {background: "+colors[3]+" color: "+colors[4]+"}")
+
+        for _ in (self.calculators.calcs_area, self.registers.options_area):
+            _.setStyleSheet("* {color: "+colors[5]+"}")
 
         for _ in calcs_list:
-            _.setStyleSheet(style_list[3])
+            _.setStyleSheet("QLabel {color: "+colors[6]+"} "
+                            "QLineEdit, QDateEdit, QSpinBox {border-radius: 5px; background: "+colors[7]+" color: "+colors[8]+"} "
+                            "QLineEdit:focus {background: "+colors[9]+"} "
+                            "QDateEdit:focus {background: "+colors[9]+"} "
+                            "QSpinBox:focus {background: "+colors[9]+"}")
+
         for _ in calcs_list[0:3]:
-            _.result_area.setStyleSheet(style_list[4])
-        self.calculators.noise_calc.set_result_field_style(style_list[4])
+            _.result_area.setStyleSheet("border-radius: 9px; background: "+colors[10]+" color: "+colors[11])
+        self.calculators.noise_calc.set_result_field_style("border-radius: 5px; background: "+colors[10]+" color: "+colors[11])
 
     def create_main_menu(self):
         main_menu = QtWidgets.QMenuBar(self)
@@ -352,7 +373,6 @@ class ApplicationType(QtWidgets.QWidget):
         selector_panel.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
         selector_panel.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         selector_panel.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
-        selector_panel.setTabKeyNavigation(True)
         selector_panel.calculators_index = selector_panel.model_type.index(0, 0)
         selector_panel.registers_index = selector_panel.model_type.index(1, 0)
         selector_panel.clicked.connect(self.click_on_selector_panel)
@@ -362,9 +382,9 @@ class ApplicationType(QtWidgets.QWidget):
     def change_app_style(self):
         match self.menu_area.change_style.isChecked():
             case True:
-                self.set_style(list(ct.data_library["Темная тема"].values()))
+                self.set_style(ct.data_library["Цвета темной темы"])
             case False:
-                self.set_style(list(ct.data_library["Светлая тема"].values()))
+                self.set_style(ct.data_library["Цвета светлой темы"])
 
     @QtCore.pyqtSlot()
     def open_about_app_message(self):
