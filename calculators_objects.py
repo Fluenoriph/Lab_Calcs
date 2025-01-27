@@ -122,52 +122,55 @@ class AbstractInputZone(QtWidgets.QWidget):
 
 
 class AtmosphericAirDust(AbstractInputZone):
-    def __init__(self, result_string=None, ):
+    def __init__(self):
         super().__init__()
         self.setFixedSize(ct.data_library["Калькуляторы"]["Размеры базовые"])
-        self.box.setVerticalSpacing(20)
-        self.box.setHorizontalSpacing(50)
-        self.box.setContentsMargins(ct.data_library["Калькуляторы"]["Отступы"])
-        self.result_string = result_string
+
+        self.result_type = self.set_result_variant()
         self.titles = self.set_title_names()
         self.create_title_objects(self.titles, 0)
         self.entry_objects = self.create_entry_objects(5, row_count=0, column_count=1)
+        self.result_area = self.create_result_field()
+
         self.set_size_entry_objects(self.entry_objects, ct.data_library["Калькуляторы"]["Размеры поля ввода"])
         self.set_max_length(self.entry_objects, max_len=10)
         self.set_checking_value(self.entry_objects)
-        self.result_area = self.create_result_field()
+
+        self.box.setVerticalSpacing(20)
+        self.box.setHorizontalSpacing(50)
+        self.box.setContentsMargins(ct.data_library["Калькуляторы"]["Отступы"])
+
+    def check_pressure_unit(self):
+        if self.entry_objects[2].get_entry_value() < 640:
+            return self.entry_objects[2].get_entry_value() * 7.5
+        else:
+            return self.entry_objects[2].get_entry_value()
+
+    def calculate_concentrate(self):
+        normal_volume = ((self.entry_objects[0].get_entry_value() * self.result_type[3] * self.check_pressure_unit())
+                         / ((273 + self.entry_objects[1].get_entry_value()) * 760))
+
+        return (((self.entry_objects[4].get_entry_value() * 1000) -
+                        (self.entry_objects[3].get_entry_value() * 1000)) * 1000) / normal_volume
 
     def calculate(self):
-        volume = self.entry_objects[0].get_entry_value() / 1000
-        temperature = self.entry_objects[1].get_entry_value()
-
-        if self.entry_objects[2].get_entry_value() < 640:
-            pressure = self.entry_objects[2].get_entry_value() * 7.5
+        if self.calculate_concentrate() < self.result_type[4]:
+            result_string = self.result_type[1]
+        elif self.calculate_concentrate() > self.result_type[5]:
+            result_string = self.result_type[2]
         else:
-            pressure = self.entry_objects[2].get_entry_value()
+            result_string = (f"{self.result_type[0]} {locale.format_string("%0.2f", Decimal(self.calculate_concentrate()).quantize(Decimal(".01"), rounding=ROUND_HALF_UP))} ± "
+                             f"{locale.format_string("%0.2f", Decimal(self.result_type[6] * self.calculate_concentrate()).quantize(Decimal(".01"), rounding=ROUND_HALF_UP))} мг/м³")
 
-        mass_before = self.entry_objects[3].get_entry_value() * 1000
-        mass_after = self.entry_objects[4].get_entry_value() * 1000
-        normal_volume = (volume * 273 * pressure) / ((273 + temperature) * 760)
-        concentrate = (mass_after - mass_before) / normal_volume
-        result = Decimal(concentrate).quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
-
-        if concentrate < 0.15:
-            self.result_string = ct.data_library["Калькуляторы"]["Пыль в атмосф. воздухе"]["Результаты"][1]
-        elif concentrate > 10.0:
-            self.result_string = ct.data_library["Калькуляторы"]["Пыль в атмосф. воздухе"]["Результаты"][2]
-        else:
-            delta = 0.110 * concentrate
-            result_delta = Decimal(delta).quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
-
-            self.result_string = (f"{ct.data_library["Калькуляторы"]["Пыль в атмосф. воздухе"]["Результаты"][0]} "
-                           f"{locale.format_string("%0.2f", result)} ± {locale.format_string("%0.2f", result_delta)} "
-                           f"мг/м³")
-        self.result_area.setText(self.result_string)
+        self.result_area.setText(result_string)
 
     @staticmethod
     def set_title_names():
         return ct.data_library["Калькуляторы"]["Пыль в атмосф. воздухе"]["Параметры"]
+
+    @staticmethod
+    def set_result_variant():
+        return ct.data_library["Калькуляторы"]["Пыль в атмосф. воздухе"]["Результаты"]
 
     @staticmethod
     def set_checking_value(entry_objects_list):
@@ -182,105 +185,72 @@ class WorkAreaAirDust(AtmosphericAirDust):
     def __init__(self):
         super().__init__()
 
-    def calculate(self):
-        volume = self.entry_objects[0].get_entry_value()
-        temperature = self.entry_objects[1].get_entry_value()
-
-        if self.entry_objects[2].get_entry_value() < 640:
-            pressure = self.entry_objects[2].get_entry_value() * 7.5
-        else:
-            pressure = self.entry_objects[2].get_entry_value()
-
-        mass_before = self.entry_objects[3].get_entry_value() * 1000
-        mass_after = self.entry_objects[4].get_entry_value() * 1000
-        normal_volume = (volume * 293 * pressure) / ((273 + temperature) * 760)
-        concentrate = (mass_after - mass_before) * 1000 / normal_volume
-        result = Decimal(concentrate).quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
-
-        if concentrate < 1.0:
-            self.result_string = ct.data_library["Калькуляторы"]["Пыль в воздухе раб. зоны"]["Результаты"][1]
-        elif concentrate > 250.0:
-            self.result_string = ct.data_library["Калькуляторы"]["Пыль в воздухе раб. зоны"]["Результаты"][2]
-        else:
-            delta = 0.24 * concentrate
-            result_delta = Decimal(delta).quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
-
-            self.result_string = (f"{ct.data_library["Калькуляторы"]["Пыль в воздухе раб. зоны"]["Результаты"][0]} "
-                           f"{locale.format_string("%0.2f", result)} ± {locale.format_string("%0.2f", result_delta)} "
-                           f"мг/м³")
-        self.result_area.setText(self.result_string)
-
     @staticmethod
     def set_title_names():
         return ct.data_library["Калькуляторы"]["Пыль в воздухе раб. зоны"]["Параметры"]
 
+    @staticmethod
+    def set_result_variant():
+        return ct.data_library["Калькуляторы"]["Пыль в воздухе раб. зоны"]["Результаты"]
+
 
 class VentilationEfficiency(AbstractInputZone):
-    def __init__(self, hole_square = None, result_string = None):
+    def __init__(self):
         super().__init__()
         self.setFixedSize(ct.data_library["Калькуляторы"]["Размеры базовые"])
-        self.box.setVerticalSpacing(20)
-        self.box.setHorizontalSpacing(50)
-        self.box.setContentsMargins(ct.data_library["Калькуляторы"]["Отступы"])
-        self.hole_square = hole_square
-        self.result_string = result_string
+
         self.create_title_objects(ct.data_library["Калькуляторы"]["Эффектив. вентиляции"]["Параметры"], 0)
         self.entry_objects = self.create_entry_objects(6, row_count=0, column_count=1)
+        self.result_area = self.create_result_field()
+
         self.set_size_entry_objects(self.entry_objects[0:3], ct.data_library["Калькуляторы"]["Размеры поля ввода"])
         self.set_size_entry_objects(self.entry_objects[3:6], ct.data_library["Калькуляторы"]["Эффектив. вентиляции"]
         ["Размеры поля ввода параметров отверстия"])
         self.set_max_length(self.entry_objects, max_len=7)
         self.set_checking_value(self.entry_objects)
         self.set_hole_type()
-        self.result_area = self.create_result_field()
+
+        self.box.setVerticalSpacing(20)
+        self.box.setHorizontalSpacing(50)
+        self.box.setContentsMargins(ct.data_library["Калькуляторы"]["Отступы"])
 
     def set_hole_type(self):
         self.entry_objects[3].textEdited.connect(self.lock_rectangle_entry_objects)
         self.entry_objects[4].textEdited.connect(self.lock_circle_entry_object)
         self.entry_objects[5].textEdited.connect(self.lock_circle_entry_object)
 
-    def calculate(self):
-        room_square = self.entry_objects[0].get_entry_value()
-        room_height = self.entry_objects[1].get_entry_value()
-        flow_speed = self.entry_objects[2].get_entry_value()
-
+    def calculate_hole_square(self):
         if self.entry_objects[3].get_entry_value():
-            diameter = self.entry_objects[3].get_entry_value() / 100
-            self.hole_square = (math.pi * pow(diameter, 2)) / 4
+            return (math.pi * pow(self.entry_objects[3].get_entry_value() / 100, 2)) / 4
         else:
-            width = self.entry_objects[4].get_entry_value() / 100
-            height = self.entry_objects[5].get_entry_value() / 100
-            self.hole_square = width * height
+            return (self.entry_objects[4].get_entry_value() / 100) * (self.entry_objects[5].get_entry_value() / 100)
 
-        room_volume = room_square * room_height
-        perfomance = flow_speed * self.hole_square * 3600
-        per_in_hour = perfomance / room_volume
-        perfomance_result = Decimal(perfomance).quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
-        per_in_hour_result = Decimal(per_in_hour).quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
+    def calculate(self):
+        perfomance = self.entry_objects[2].get_entry_value() * self.calculate_hole_square() * 3600
+        per_in_hour = perfomance / (self.entry_objects[0].get_entry_value() * self.entry_objects[1].get_entry_value())
 
-        self.result_string = (f"{ct.data_library["Калькуляторы"]["Эффектив. вентиляции"]["Результаты"][0]} "
-                              f"{locale.format_string("%0.1f", perfomance_result)} "
+        self.result_area.setText(f"{ct.data_library["Калькуляторы"]["Эффектив. вентиляции"]["Результаты"][0]} "
+                              f"{locale.format_string("%0.1f", Decimal(perfomance).quantize(Decimal(".01"), rounding=ROUND_HALF_UP))} "
                        f"м³/ч\n\n{ct.data_library["Калькуляторы"]["Эффектив. вентиляции"]["Результаты"][1]} "
-                       f"{locale.format_string("%0.1f", per_in_hour_result)} раз/ч")
-        self.result_area.setText(self.result_string)
+                       f"{locale.format_string("%0.1f", Decimal(per_in_hour).quantize(Decimal(".01"), rounding=ROUND_HALF_UP))} раз/ч")
 
     @QtCore.pyqtSlot()
     def lock_rectangle_entry_objects(self):
-        self.entry_objects[4].clear()
-        self.entry_objects[5].clear()
+        for _ in self.entry_objects[4:6]:
+            _.clear()
+            _.value = None
 
     @QtCore.pyqtSlot()
     def lock_circle_entry_object(self):
         self.entry_objects[3].clear()
+        self.entry_objects[3].value = None
 
 
 class NoiseLevelsWithBackground(AbstractInputZone):
-    def __init__(self, delta_result = None, correct_result = None):
+    def __init__(self):
         super().__init__()
         self.setFixedSize(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Размеры"])
-        self.box.setContentsMargins(ct.data_library["Калькуляторы"]["Отступы"])
-        self.delta_result = delta_result
-        self.correct_result = correct_result
+
         self.create_title_objects(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Параметры"], 1)
         self.create_title_objects(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Результаты"], 0)
         self.entry_objects_source = self.create_entry_objects(10, 1, 1,
@@ -288,14 +258,16 @@ class NoiseLevelsWithBackground(AbstractInputZone):
         self.entry_objects_background = self.create_entry_objects(10, 2, 1,
                                                                   InputValueField, ct.data_library["Позиция центр"])
         self.entry_objects = self.entry_objects_source + self.entry_objects_background
+        self.result_area = self.create_result_field()
+        self.delta_result_area = self.result_area[0:10]
+        self.correct_result_area = self.result_area[10:20]
+
         self.set_size_entry_objects(self.entry_objects, ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]
         ["Размеры поля ввода"])
         self.set_max_length(self.entry_objects, max_len=5)
         self.set_checking_value(self.entry_objects)
-        self.result_area = self.create_result_field()
-        self.set_result_field_properties(self.result_area)
-        self.delta_result_area = self.result_area[0:10]
-        self.correct_result_area = self.result_area[10:20]
+
+        self.box.setContentsMargins(ct.data_library["Калькуляторы"]["Отступы"])
 
     def create_result_field(self):
         result_objects = []
@@ -312,49 +284,45 @@ class NoiseLevelsWithBackground(AbstractInputZone):
             result_objects.append(object_correct)
             self.box.addWidget(object_correct, 4, j, ct.data_library["Позиция центр"])
             j += 1
-
-        return tuple(result_objects)
-
-    def set_result_field_style(self, style):
-        for _ in self.result_area:
-            _.setStyleSheet(style)
-
-    def calculate(self):
-        for i in range(10):
-            self.delta_result = (self.entry_objects_source[i].get_entry_value() -
-                                 self.entry_objects_background[i].get_entry_value())
-
-            if self.delta_result < 3.0:
-                self.correct_result = self.entry_objects_source[i].get_entry_value()
-            elif 3.0 <= self.delta_result <= 3.4:
-                self.correct_result = self.entry_objects_source[i].get_entry_value() - 2.8
-            elif 3.5 <= self.delta_result <= 3.9:
-                self.correct_result = self.entry_objects_source[i].get_entry_value() - 2.4
-            elif 4.0 <= self.delta_result <= 4.4:
-                self.correct_result = self.entry_objects_source[i].get_entry_value() - 2.0
-            elif 4.5 <= self.delta_result <= 4.9:
-                self.correct_result = self.entry_objects_source[i].get_entry_value() - 1.8
-            elif 5.0 <= self.delta_result <= 5.9:
-                self.correct_result = self.entry_objects_source[i].get_entry_value() - 1.4
-            elif 6.0 <= self.delta_result <= 6.9:
-                self.correct_result = self.entry_objects_source[i].get_entry_value() - 1.1
-            elif 7.0 <= self.delta_result <= 7.9:
-                self.correct_result = self.entry_objects_source[i].get_entry_value() - 0.9
-            elif 8.0 <= self.delta_result <= 8.9:
-                self.correct_result = self.entry_objects_source[i].get_entry_value() - 0.7
-            elif 9.0 <= self.delta_result <= 9.9:
-                self.correct_result = self.entry_objects_source[i].get_entry_value() - 0.5
-            elif self.delta_result >= 10.0:
-                self.correct_result = self.entry_objects_source[i].get_entry_value() * 0
-
-            self.delta_result_area[i].setText(locale.format_string("%0.1f", self.delta_result))
-            self.correct_result_area[i].setText(locale.format_string("%0.1f", self.correct_result))
-
-    @staticmethod
-    def set_result_field_properties(result_objects):
         for _ in result_objects:
             _.setFixedSize(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Размеры поля ввода"])
             _.setAlignment(ct.data_library["Позиция центр"])
+
+        return tuple(result_objects)
+
+    def calculate(self):
+        for i in range(10):
+            delta_result = (self.entry_objects_source[i].get_entry_value() -
+                                 self.entry_objects_background[i].get_entry_value())
+
+            self.delta_result_area[i].setText(locale.format_string("%0.1f", delta_result))
+            self.correct_result_area[i].setText(locale.format_string("%0.1f", self.correcting_result(delta_result,
+                                                                    self.entry_objects_source[i].get_entry_value())))
+
+    @staticmethod
+    def correcting_result(delta, source_level):
+        if delta < 3.0:
+            return source_level
+        elif 3.0 <= delta <= 3.4:
+            return source_level - 2.8
+        elif 3.5 <= delta <= 3.9:
+            return source_level - 2.4
+        elif 4.0 <= delta <= 4.4:
+            return source_level - 2.0
+        elif 4.5 <= delta <= 4.9:
+            return source_level - 1.8
+        elif 5.0 <= delta <= 5.9:
+            return source_level - 1.4
+        elif 6.0 <= delta <= 6.9:
+            return source_level - 1.1
+        elif 7.0 <= delta <= 7.9:
+            return source_level - 0.9
+        elif 8.0 <= delta <= 8.9:
+            return source_level - 0.7
+        elif 9.0 <= delta <= 9.9:
+            return source_level - 0.5
+        else:
+            return source_level * 0
 
 
 class BaseRegister(AbstractInputZone):

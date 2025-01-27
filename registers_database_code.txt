@@ -1,32 +1,22 @@
-CREATE TABLE protocols (
-   	number TEXT PRIMARY KEY UNIQUE NOT NULL CHECK (number != ''),
+CREATE TABLE protocol (
+    id INTEGER AUTOINCREMENT,
+   	number TEXT UNIQUE NOT NULL CHECK (number != ''),
+	date_of_research TEXT NULL,
 	protocol_date TEXT NULL,
 	work_type TEXT NULL,
+	object_name TEXT NOT NULL CHECK (name != ''),
+    object_address TEXT NOT NULL CHECK (address != ''),
 	employee TEXT NULL,
+	PRIMARY KEY (id, number)
 	);
 
-PRAGMA foreign_keys = ON;
-CREATE TABLE dates_of_research (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	current_date TEXT NULL,
-	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
-	);
 
-PRAGMA foreign_keys = ON;
-CREATE TABLE objects_names (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	name TEXT NOT NULL CHECK (name != ''),
-	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
-	);
 
-PRAGMA foreign_keys = ON;
-CREATE TABLE objects_addresses (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	address TEXT NOT NULL CHECK (address != ''),
-	FOREIGN KEY (id) REFERENCES protocols(number) ON UPDATE CASCADE
-	);
 
-PRAGMA foreign_keys = ON;
+
+
+
+
 CREATE TABLE microclimate (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	ok_standart INTEGER NULL,

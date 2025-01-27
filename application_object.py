@@ -9,34 +9,40 @@ from calculators_objects import (AtmosphericAirDust, WorkAreaAirDust, Ventilatio
 class RegisterObjectsController(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
-        self.box = QtWidgets.QGridLayout(self)
-        self.box.setContentsMargins(ct.data_library["Отступы контроллеров"])
-        self.box.setSpacing(40)
+        self.register_names = list(ct.data_library["Журналы"].keys())
+
         self.icon_ok = QtGui.QIcon('images/ok.ico')
         self.icon_clear = QtGui.QIcon('images/clear.ico')
         self.icon_save = QtGui.QIcon('images/save.ico')
-        self.register_names = list(ct.data_library["Журналы"].keys())
+
         self.base_register_area = BaseRegister()
+        self.physical_register_options = PhysicalFactorsOptions()
+        self.radiation_control_register_options = RadiationControlOptions()
+
         self.options_area = QtWidgets.QTabWidget(self)
         self.options_area.setDocumentMode(True)
         self.options_area.setCurrentIndex(0)
         self.options_area.setUsesScrollButtons(False)
         self.options_area.setTabShape(QtWidgets.QTabWidget.TabShape.Triangular)
         self.options_area.currentChanged.connect(self.clear_protocol_number_entry_field)
-        self.physical_register_options = PhysicalFactorsOptions()
-        self.radiation_control_register_options = RadiationControlOptions()
         self.options_area.addTab(self.physical_register_options, self.register_names[1])
         self.options_area.addTab(self.radiation_control_register_options, self.register_names[2])
+
         self.save = QtWidgets.QPushButton(self)
         self.save.clicked.connect(self.select_insert_command)
         self.save.setIcon(self.icon_save)
         self.save.setToolTip("Сохранить протокол")
         self.save.setToolTipDuration(3000)
+
         self.clear = QtWidgets.QPushButton(self)
         self.clear.clicked.connect(self.clear_registers_values)
         self.clear.setIcon(self.icon_clear)
         self.clear.setToolTip("Очистить все журналы")
         self.clear.setToolTipDuration(3000)
+
+        self.box = QtWidgets.QGridLayout(self)
+        self.box.setContentsMargins(ct.data_library["Отступы контроллеров"])
+        self.box.setSpacing(40)
         self.box.addWidget(self.base_register_area, 0, 0, 5, 5, alignment=ct.data_library["Позиция левый-верхний"])
         self.box.addWidget(self.options_area, 0, 5, 5, 3, alignment=ct.data_library["Позиция левый-верхний"])
 
@@ -117,37 +123,44 @@ class RegisterObjectsController(QtWidgets.QWidget):
 class CalculatorObjectsController(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
-        self.box = QtWidgets.QGridLayout(self)
-        self.box.setSpacing(15)
-        self.box.setContentsMargins(ct.data_library["Отступы контроллеров"])
+        self.calc_names = list(ct.data_library["Калькуляторы"].keys())
+
         self.icon_ok = QtGui.QIcon('images/ok.ico')
         self.icon_clear = QtGui.QIcon('images/clear.ico')
         self.icon_save = QtGui.QIcon('images/save.ico')
-        self.calc_names = list(ct.data_library["Калькуляторы"].keys())
+
         self.calcs_area = QtWidgets.QTabWidget(self)
         self.calcs_area.setCurrentIndex(0)
         self.calcs_area.setDocumentMode(True)
         self.calcs_area.setUsesScrollButtons(False)
         self.calcs_area.setTabShape(QtWidgets.QTabWidget.TabShape.Triangular)
+
         self.air_calc = AtmosphericAirDust()
         self.work_area_calc = WorkAreaAirDust()
         self.flow_calc = VentilationEfficiency()
         self.noise_calc = NoiseLevelsWithBackground()
+
         self.calculate = QtWidgets.QPushButton(self)
         self.calculate.clicked.connect(self.calculating)
         self.calculate.setIcon(self.icon_ok)
         self.calculate.setToolTip("Вычислить")
         self.calculate.setToolTipDuration(3000)
+
         self.clear = QtWidgets.QPushButton(self)
         self.clear.clicked.connect(self.clear_calculator)
         self.clear.setIcon(self.icon_clear)
         self.clear.setToolTip("Очистить всё")
         self.clear.setToolTipDuration(3000)
+
         self.save = QtWidgets.QPushButton(self)
         self.save.clicked.connect(self.saving)
         self.save.setIcon(self.icon_save)
         self.save.setToolTip("Сохранить в файл")
         self.save.setToolTipDuration(3000)
+
+        self.box = QtWidgets.QGridLayout(self)
+        self.box.setSpacing(15)
+        self.box.setContentsMargins(ct.data_library["Отступы контроллеров"])
 
         j = 0
         for _ in (self.air_calc, self.work_area_calc, self.flow_calc, self.noise_calc):
@@ -266,6 +279,11 @@ class CalculatorObjectsController(QtWidgets.QWidget):
 class ApplicationType(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+        QtWidgets.QApplication.setOrganizationName("Ivan Bogdanov")
+        QtWidgets.QApplication.setApplicationName("Calculators 2.1.0 Beta")
+        settings = QtCore.QSettings(self)
+        settings.setValue("Theme", self.set_style(ct.data_library["Цвета светлой темы"]))
+
         self.setWindowTitle("Калькуляторы")
         self.resize(1015, 550)
         self.move(self.width() * -2, 0)
@@ -275,27 +293,34 @@ class ApplicationType(QtWidgets.QWidget):
         self.move(x, y)
         self.activateWindow()
 
-        self.box = QtWidgets.QGridLayout(self)
-        self.box.setHorizontalSpacing(5)
-        self.box.setVerticalSpacing(15)
-        self.box.setContentsMargins(0, 0, 0, 0)
+
+
         self.data_dict_names = list(ct.data_library.keys())
+
         self.menu_area = self.create_main_menu()
         self.selector_area = self.create_selector_panel()
         self.registers = RegisterObjectsController(self)
         self.calculators = CalculatorObjectsController(self)
         self.registers.close()
+        #self.set_style(ct.data_library["Цвета светлой темы"])
+
+        self.box = QtWidgets.QGridLayout(self)
+        self.box.setHorizontalSpacing(5)
+        self.box.setVerticalSpacing(15)
+        self.box.setContentsMargins(0, 0, 0, 0)
         self.box.addWidget(self.menu_area, 0, 0, 1, 4)
         self.box.addWidget(self.selector_area, 1, 1, 1, 1, ct.data_library["Позиция левый-верхний"])
         self.box.addWidget(self.calculators, 1, 2, 1, 1, ct.data_library["Позиция левый-верхний"])
         self.box.setColumnMinimumWidth(0, 1)
-        self.set_style(ct.data_library["Цвета светлой темы"])
+
         self.show()
 
     def set_style(self, colors):
         calcs_list = (self.calculators.air_calc, self.calculators.work_area_calc, self.calculators.flow_calc,
                            self.calculators.noise_calc, self.registers.base_register_area,
                            self.registers.physical_register_options, self.registers.radiation_control_register_options)
+
+        result_area_style = lambda r: "border-radius: "+r+" background: "+colors[10]+" color: "+colors[11]
 
         self.setStyleSheet("* {outline: 0; border-style: none; background: "+colors[0]+" font: 13px arial, sans-serif; "
                                                                                        "color: "+colors[2]+"} "
@@ -304,7 +329,7 @@ class ApplicationType(QtWidgets.QWidget):
                            "QMenuBar::item:selected {background: "+colors[3]+"} "
                            "QMenu::item:selected {background: "+colors[3]+"} "
                                                                          
-                           "QPushButton {border-radius: 11px; padding: 3px;} "
+                           "QPushButton {border-radius: 9px; padding: 3px;} "
                            "QPushButton:hover {background: "+colors[3]+"} "
                            "QPushButton:pressed {background: "+colors[4]+"} "                                     
                           
@@ -329,37 +354,46 @@ class ApplicationType(QtWidgets.QWidget):
                             "QSpinBox:focus {background: "+colors[9]+"}")
 
         for _ in calcs_list[0:3]:
-            _.result_area.setStyleSheet("border-radius: 9px; background: "+colors[10]+" color: "+colors[11])
-        self.calculators.noise_calc.set_result_field_style("border-radius: 5px; background: "+colors[10]+" color: "+colors[11])
+            _.result_area.setStyleSheet(result_area_style("9px;"))
+        for _ in self.calculators.noise_calc.result_area:
+            _.setStyleSheet(result_area_style("5px;"))
 
     def create_main_menu(self):
         main_menu = QtWidgets.QMenuBar(self)
         main_menu.setFixedHeight(20)
+
         main_menu.submenu_file = QtWidgets.QMenu(ct.data_library["Главное меню"][0], main_menu)
         main_menu.submenu_help = QtWidgets.QMenu(ct.data_library["Главное меню"][2], main_menu)
         main_menu.change_style = QtGui.QAction(ct.data_library["Главное меню"][3], main_menu)
         main_menu.change_style.setCheckable(True)
         main_menu.change_style.toggled.connect(self.change_app_style)
+
         main_menu.addMenu(main_menu.submenu_file)
         main_menu.addMenu(main_menu.submenu_help)
         main_menu.addAction(main_menu.change_style)
+
         main_menu.set_calculators_act = QtGui.QAction(self.data_dict_names[13], main_menu.submenu_file)
         main_menu.set_calculators_act.triggered.connect(self.calculators_show_fixed)
         main_menu.set_registers_act = QtGui.QAction(self.data_dict_names[14], main_menu.submenu_file)
         main_menu.set_registers_act.triggered.connect(self.registers_show_fixed)
         main_menu.exit_act = QtGui.QAction(ct.data_library["Главное меню"][1], main_menu.submenu_file)
         main_menu.exit_act.triggered.connect(sys.exit)
+
         main_menu.submenu_file.addAction(main_menu.set_registers_act)
         main_menu.submenu_file.addAction(main_menu.set_calculators_act)
         main_menu.submenu_file.addSeparator()
         main_menu.submenu_file.addAction(main_menu.exit_act)
+
         main_menu.help_link = QtGui.QAction(self.data_dict_names[1], main_menu.submenu_help)
         main_menu.help_link.triggered.connect(self.open_help_message)
+
         main_menu.about = QtGui.QAction(self.data_dict_names[2], main_menu.submenu_help)
         main_menu.about.triggered.connect(self.open_about_app_message)
+
         main_menu.submenu_help.addAction(main_menu.help_link)
         main_menu.submenu_help.addSeparator()
         main_menu.submenu_help.addAction(main_menu.about)
+
         return main_menu
 
     def create_selector_panel(self):
@@ -367,15 +401,19 @@ class ApplicationType(QtWidgets.QWidget):
         selector_panel.setFixedSize(ct.data_library["Размеры зоны выбора"])
         selector_panel.setSpacing(10)
         selector_panel.setFrameStyle(QtWidgets.QFrame.Shape.NoFrame)
+
         selector_panel.names = (self.data_dict_names[13], self.data_dict_names[14])
         selector_panel.model_type = QtCore.QStringListModel(selector_panel.names)
         selector_panel.setModel(selector_panel.model_type)
+
         selector_panel.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
         selector_panel.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         selector_panel.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
+
         selector_panel.calculators_index = selector_panel.model_type.index(0, 0)
         selector_panel.registers_index = selector_panel.model_type.index(1, 0)
         selector_panel.clicked.connect(self.click_on_selector_panel)
+
         return selector_panel
 
     @QtCore.pyqtSlot()
