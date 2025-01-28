@@ -46,12 +46,11 @@ class RegisterObjectsController(QtWidgets.QWidget):
         self.box.addWidget(self.base_register_area, 0, 0, 5, 5, alignment=ct.data_library["Позиция левый-верхний"])
         self.box.addWidget(self.options_area, 0, 5, 5, 3, alignment=ct.data_library["Позиция левый-верхний"])
 
-        i = 0
-        for _ in (self.save, self.clear):
-            _.setIconSize(ct.data_library["Размеры кнопок"])
-            _.setAutoDefault(True)
-            self.box.addWidget(_, 5, i, alignment=ct.data_library["Позиция левый-верхний"])
-            i += 1
+        self.buttons = (self.save, self.clear)
+        for i, j in enumerate(self.buttons):
+            j.setIconSize(ct.data_library["Размеры кнопок"])
+            j.setAutoDefault(True)
+            self.box.addWidget(j, 5, i, alignment=ct.data_library["Позиция левый-верхний"])
 
     def save_physical_protocol(self):
         self.base_register_area.connection_with_database.open()
@@ -162,19 +161,16 @@ class CalculatorObjectsController(QtWidgets.QWidget):
         self.box.setSpacing(15)
         self.box.setContentsMargins(ct.data_library["Отступы контроллеров"])
 
-        j = 0
-        for _ in (self.air_calc, self.work_area_calc, self.flow_calc, self.noise_calc):
-            self.calcs_area.addTab(_, self.calc_names[j])
-            j += 1
-
+        self.calcs = (self.air_calc, self.work_area_calc, self.flow_calc, self.noise_calc)
+        for i, j in enumerate(self.calcs):
+            self.calcs_area.addTab(j, self.calc_names[i])
         self.box.addWidget(self.calcs_area, 0, 0, 6, 1, alignment=ct.data_library["Позиция левый-верхний"])
 
-        i = 0
-        for _ in (self.calculate, self.clear, self.save):
-            _.setIconSize(ct.data_library["Размеры кнопок"])
-            _.setAutoDefault(True)
-            self.box.addWidget(_, i, 1, alignment=ct.data_library["Позиция нижний-центр"])
-            i += 1
+        self.buttons = (self.calculate, self.clear, self.save)
+        for i, j in enumerate(self.buttons):
+            j.setIconSize(ct.data_library["Размеры кнопок"])
+            j.setAutoDefault(True)
+            self.box.addWidget(j, i, 1, alignment=ct.data_library["Позиция нижний-центр"])
 
     @staticmethod
     def clear_entry_fields(entry_objects):
@@ -282,7 +278,6 @@ class ApplicationType(QtWidgets.QWidget):
         QtWidgets.QApplication.setOrganizationName("Ivan Bogdanov")
         QtWidgets.QApplication.setApplicationName("Calculators 2.1.0 Beta")
         settings = QtCore.QSettings(self)
-        settings.setValue("Theme", self.set_style(ct.data_library["Цвета светлой темы"]))
 
         self.setWindowTitle("Калькуляторы")
         self.resize(1015, 550)
@@ -293,8 +288,6 @@ class ApplicationType(QtWidgets.QWidget):
         self.move(x, y)
         self.activateWindow()
 
-
-
         self.data_dict_names = list(ct.data_library.keys())
 
         self.menu_area = self.create_main_menu()
@@ -302,7 +295,15 @@ class ApplicationType(QtWidgets.QWidget):
         self.registers = RegisterObjectsController(self)
         self.calculators = CalculatorObjectsController(self)
         self.registers.close()
-        #self.set_style(ct.data_library["Цвета светлой темы"])
+        self.set_style(ct.data_library["Цвета светлой темы"])
+
+        settings.beginWriteArray("Light Style")
+        for i, el in enumerate(ct.data_library["Цвета светлой темы"]):
+            settings.setArrayIndex(i)
+            settings.setValue("Color", el)
+
+        settings.endArray()
+        settings.sync()
 
         self.box = QtWidgets.QGridLayout(self)
         self.box.setHorizontalSpacing(5)
@@ -312,12 +313,10 @@ class ApplicationType(QtWidgets.QWidget):
         self.box.addWidget(self.selector_area, 1, 1, 1, 1, ct.data_library["Позиция левый-верхний"])
         self.box.addWidget(self.calculators, 1, 2, 1, 1, ct.data_library["Позиция левый-верхний"])
         self.box.setColumnMinimumWidth(0, 1)
-
         self.show()
 
     def set_style(self, colors):
-        calcs_list = (self.calculators.air_calc, self.calculators.work_area_calc, self.calculators.flow_calc,
-                           self.calculators.noise_calc, self.registers.base_register_area,
+        calcs_list = self.calculators.calcs + (self.registers.base_register_area,
                            self.registers.physical_register_options, self.registers.radiation_control_register_options)
 
         result_area_style = lambda r: "border-radius: "+r+" background: "+colors[10]+" color: "+colors[11]
