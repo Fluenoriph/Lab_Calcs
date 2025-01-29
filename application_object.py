@@ -2,8 +2,8 @@ from PyQt6 import QtWidgets, QtCore, QtGui
 import sys
 from winpath import get_desktop
 import constants as ct
-from calculators_objects import (AtmosphericAirDust, WorkAreaAirDust, VentilationEfficiency, NoiseLevelsWithBackground,
-                                 BaseRegister, PhysicalFactorsOptions, RadiationControlOptions)
+from calculators_objects import (AtmosphericAirDust, VentilationEfficiency, NoiseLevelsWithBackground,
+                                 BaseRegister, FactorsRegister)
 
 
 class RegisterObjectsController(QtWidgets.QWidget):
@@ -16,26 +16,26 @@ class RegisterObjectsController(QtWidgets.QWidget):
         self.icon_save = QtGui.QIcon('images/save.ico')
 
         self.base_register_area = BaseRegister()
-        self.physical_register_options = PhysicalFactorsOptions()
-        self.radiation_control_register_options = RadiationControlOptions()
+        self.physical_register_options = FactorsRegister()
+        self.radiation_control_register_options = FactorsRegister(ct.data_library["Журналы"]["Радиационные факторы"])
 
         self.options_area = QtWidgets.QTabWidget(self)
         self.options_area.setDocumentMode(True)
         self.options_area.setCurrentIndex(0)
         self.options_area.setUsesScrollButtons(False)
         self.options_area.setTabShape(QtWidgets.QTabWidget.TabShape.Triangular)
-        self.options_area.currentChanged.connect(self.clear_protocol_number_entry_field)
+        #self.options_area.currentChanged.connect(self.clear_protocol_number_entry_field)
         self.options_area.addTab(self.physical_register_options, self.register_names[1])
         self.options_area.addTab(self.radiation_control_register_options, self.register_names[2])
 
         self.save = QtWidgets.QPushButton(self)
-        self.save.clicked.connect(self.select_insert_command)
+        #self.save.clicked.connect(self.select_insert_command)
         self.save.setIcon(self.icon_save)
         self.save.setToolTip("Сохранить протокол")
         self.save.setToolTipDuration(3000)
 
         self.clear = QtWidgets.QPushButton(self)
-        self.clear.clicked.connect(self.clear_registers_values)
+        #self.clear.clicked.connect(self.clear_registers_values)
         self.clear.setIcon(self.icon_clear)
         self.clear.setToolTip("Очистить все журналы")
         self.clear.setToolTipDuration(3000)
@@ -52,10 +52,10 @@ class RegisterObjectsController(QtWidgets.QWidget):
             j.setAutoDefault(True)
             self.box.addWidget(j, 5, i, alignment=ct.data_library["Позиция левый-верхний"])
 
-    def save_physical_protocol(self):
+'''def save_physical_protocol(self):
         self.base_register_area.connection_with_database.open()
 
-        '''queries_list = (self.base_register_area.ready_insert_to_protocol_table(),
+        queries_list = (self.base_register_area.ready_insert_to_protocol_table(),
                         self.base_register_area.ready_insert_to_dates_of_research_table(),
                         self.base_register_area.ready_insert_to_objects_names_table(),
                         self.base_register_area.ready_insert_to_objects_addresses_table(),
@@ -67,13 +67,13 @@ class RegisterObjectsController(QtWidgets.QWidget):
                         self.physical_register_options.ready_insert_to_aeroionics_table(),
                         self.physical_register_options.ready_insert_to_ventilation_table())
 
-        self.check_read_to_database(queries_list)'''
+        self.check_read_to_database(queries_list)
         self.base_register_area.connection_with_database.close()
 
     def save_radiation_protocol(self):
         self.base_register_area.connection_with_database.open()
 
-        '''queries_list = (self.base_register_area.ready_insert_to_protocol_table(),
+        queries_list = (self.base_register_area.ready_insert_to_protocol_table(),
                         self.base_register_area.ready_insert_to_dates_of_research_table(),
                         self.base_register_area.ready_insert_to_objects_names_table(),
                         self.base_register_area.ready_insert_to_objects_addresses_table(),
@@ -82,7 +82,7 @@ class RegisterObjectsController(QtWidgets.QWidget):
                         self.radiation_control_register_options.ready_insert_to_eeva_table(),
                         self.radiation_control_register_options.ready_insert_to_radon_flux_density_table())
 
-        self.check_read_to_database(queries_list)'''
+        self.check_read_to_database(queries_list)
         self.base_register_area.connection_with_database.close()
 
     def check_read_to_database(self, queries):
@@ -116,7 +116,7 @@ class RegisterObjectsController(QtWidgets.QWidget):
 
     @QtCore.pyqtSlot()
     def clear_protocol_number_entry_field(self):
-        self.base_register_area.entry_objects_others[0].clear()
+        self.base_register_area.entry_objects_others[0].clear()'''
 
 
 class CalculatorObjectsController(QtWidgets.QWidget):
@@ -135,7 +135,7 @@ class CalculatorObjectsController(QtWidgets.QWidget):
         self.calcs_area.setTabShape(QtWidgets.QTabWidget.TabShape.Triangular)
 
         self.air_calc = AtmosphericAirDust()
-        self.work_area_calc = WorkAreaAirDust()
+        self.work_area_calc = AtmosphericAirDust(ct.data_library["Калькуляторы"]["Пыль в воздухе раб. зоны"])
         self.flow_calc = VentilationEfficiency()
         self.noise_calc = NoiseLevelsWithBackground()
 
