@@ -7,23 +7,21 @@ from decimal import Decimal, ROUND_HALF_UP
 locale.setlocale(locale.LC_ALL, "ru")
 
 
-class InputValueField(QtWidgets.QLineEdit):
-    ALL_VALUES_CHECK_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,]+"))
-    TEMPERATURE_CHECK_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9\\.,\\-]+"))
+class InputValue(QtWidgets.QLineEdit):
+    ALL_VALUES_CHECK_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9,.]+"))
+    TEMPERATURE_CHECK_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9,-.]+"))
 
-    def __init__(self, parent, value=None):
-        super().__init__(parent)
+    def __init__(self, value=None):
+        super().__init__()
         self.value = value
         self.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
 
     def check_entry_value(self):
-        return self.textEdited.connect(partial(self.validate_entry_text,
-                                               InputValueField.ALL_VALUES_CHECK_RE_STRING))
+        return self.textEdited.connect(partial(self.validate_entry_text,self.ALL_VALUES_CHECK_RE_STRING))
 
     def check_temperature_entry_value(self):
-        return self.editingFinished.connect(partial(self.validate_entry_text,
-                                                    InputValueField.TEMPERATURE_CHECK_RE_STRING))
+        return self.textEdited.connect(partial(self.validate_entry_text,self.TEMPERATURE_CHECK_RE_STRING))
 
     @QtCore.pyqtSlot()
     def validate_entry_text(self, validator):
@@ -73,7 +71,7 @@ class AbstractInputZone(QtWidgets.QWidget):
         row_i = column_start = 1
         row_start = 0
         range_value = self.box.rowCount()
-        entry_type = InputValueField
+        entry_type = InputValue
         position = ct.data_library["Позиция левый-центр"]
 
         match positioning_flag:
@@ -126,23 +124,20 @@ class AbstractInputZone(QtWidgets.QWidget):
 
     @staticmethod
     def set_size_fields(fields_list, size):
-        for _ in fields_list:
-            _.setFixedSize(size)
+        #for _ in fields_list:
+        [_.setFixedSize(size) for _ in fields_list]
 
     @staticmethod
     def set_max_length(entry_objects_list, max_len):
-        for _ in entry_objects_list:
-            _.setMaxLength(max_len)
+        [_.setMaxLength(max_len) for _ in entry_objects_list]
 
     @staticmethod
     def set_checking_value(entry_objects_list):
-        for _ in entry_objects_list:
-            _.check_entry_value()
+        [_.check_entry_value() for _ in entry_objects_list]
 
     @staticmethod
     def set_range_value(entry_objects_list):
-        for _ in entry_objects_list:
-            _.setRange(0, 9999)
+       [_.setRange(0, 9999) for _ in entry_objects_list]
 
 
 class AtmosphericAirDust(AbstractInputZone):
@@ -185,7 +180,7 @@ class AtmosphericAirDust(AbstractInputZone):
         self.result_area.setText(result_string)
 
     @staticmethod
-    def set_checking_value(entry_objects_list):
+    def set_checking_value(entry_objects_list):     # refactor ????
         for _ in entry_objects_list:
             if entry_objects_list.index(_) == 1:
                 _.check_temperature_entry_value()
@@ -250,9 +245,9 @@ class NoiseLevelsWithBackground(AbstractInputZone):
         self.create_title_objects(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][10:15])
 
         self.row_start = 1
-        self.entry_objects_source = self.create_fields(InputValueField)
+        self.entry_objects_source = self.create_fields(InputValue)
         self.row_start += 1
-        self.entry_objects_background = self.create_fields(InputValueField)
+        self.entry_objects_background = self.create_fields(InputValue)
         self.entry_objects = self.entry_objects_source + self.entry_objects_background
         self.set_size_fields(self.entry_objects, ct.data_library["Размеры полей шум"])
         self.set_checking_value(self.entry_objects)
@@ -312,7 +307,7 @@ class NoiseLevelsWithBackground(AbstractInputZone):
             return source_level * 0
 
 
-class BaseRegister(AbstractInputZone):
+class MainRegister(AbstractInputZone):
     def __init__(self):
         super().__init__()
         self.visual_date = QtCore.QDate(2025, 1, 1)
