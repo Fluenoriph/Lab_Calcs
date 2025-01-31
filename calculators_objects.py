@@ -2,14 +2,15 @@ from PyQt6 import QtWidgets, QtCore, QtGui, QtSql
 import constants as ct
 import math
 import locale
+import re
 from functools import partial
 from decimal import Decimal, ROUND_HALF_UP
 locale.setlocale(locale.LC_ALL, "ru")
 
 
 class InputValue(QtWidgets.QLineEdit):
-    ALL_VALUES_CHECK_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9,.]+"))
-    TEMPERATURE_CHECK_RE_STRING = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[0-9,-.]+"))
+    ALL_VALUES_RE = re.compile(r"^\d*,?\.?\d*$")
+    TEMPERATURE_RE = re.compile(r"^\-?\d*,?\.?\d*$")
 
     def __init__(self, value=None):
         super().__init__()
@@ -18,64 +19,63 @@ class InputValue(QtWidgets.QLineEdit):
         self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
 
     def check_entry_value(self):
-        return self.textEdited.connect(partial(self.validate_entry_text,self.ALL_VALUES_CHECK_RE_STRING))
+        return self.textEdited.connect(partial(self.validate_entry_text,self.ALL_VALUES_RE))
 
     def check_temperature_entry_value(self):
-        return self.textEdited.connect(partial(self.validate_entry_text,self.TEMPERATURE_CHECK_RE_STRING))
+        return self.textEdited.connect(partial(self.validate_entry_text,self.TEMPERATURE_RE))
 
     @QtCore.pyqtSlot()
     def validate_entry_text(self, validator):
-        self.setValidator(validator)
-        if self.hasAcceptableInput():
+        if validator.search(self.text()):
             self.value = self.text()
             self.value = self.value.replace(",", ".")
-            try:
-                self.value = float(self.value)
-            except ValueError:
-                self.clear()
         else:
             self.clear()
 
     def get_entry_value(self):
-        return self.value
+        return float(self.value)
 
 
 class AbstractInputZone(QtWidgets.QWidget):
-    NOISE_TYPE = "Horisontal"
-    MAIN_REG_TYPE = "Any entry types"
-    FACTORS_TYPE = "SpinBox Type"
+    AIR_TYPE = 1
+    NOISE_TYPE = 2
+    MAIN_REG_TYPE = 3
+    FACTORS_TYPE = 4
 
     def __init__(self):
         super().__init__()
         self.box = QtWidgets.QGridLayout(self)
         self.box.setContentsMargins(ct.data_library["Отступы калькулятора"])
 
-    def create_title_objects(self, title_list, positioning_flag="Basic"):
-        row_start = column_i = column_start = 0
-        row_i = 1
-        position = ct.data_library["Позиция левый-центр"]
-
-        if positioning_flag == "Horisontal":
-            row_i = 0
-            column_i = column_start = 1
-            position = ct.data_library["Позиция нижний-центр"]
+    def create_title_objects(self, title_list, positioning_flag=AIR_TYPE):
+        match positioning_flag:
+            case 1:
+                row_start = column_i = column_start = 0
+                row_i = 1
+                position = ct.data_library["Позиция левый-центр"]
+            case 2:
+                row_i = row_start = 0
+                column_i = column_start = 1
+                position = ct.data_library["Позиция нижний-центр"]
+            case _:
+                return
 
         for n in range(len(title_list)):
             self.box.addWidget(QtWidgets.QLabel(title_list[n], self), row_start, column_start, position)
             row_start += row_i
             column_start += column_i
 
-    def create_entry_objects(self, positioning_flag="Basic"):
+    def create_entry_objects(self, positioning_flag=AIR_TYPE):
         entry_objects = []
 
-        row_i = column_start = 1
-        row_start = 0
-        range_value = self.box.rowCount()
-        entry_type = InputValue
-        position = ct.data_library["Позиция левый-центр"]
-
         match positioning_flag:
-            case "Any entry types":
+            case 1:
+                column_start = 1
+                row_start = 0
+                range_value = self.box.rowCount()
+                entry_type = InputValue
+            case 3:
+                column_start = 1
                 entry_type = QtWidgets.QLineEdit
                 number = entry_type
                 first_date = last_date = QtWidgets.QDateEdit
@@ -83,23 +83,24 @@ class AbstractInputZone(QtWidgets.QWidget):
                 s = (number, first_date, last_date)
                 for i, j in enumerate(s):
                     entry_objects.append(j)
-                    self.box.addWidget(j(self), i, 1, position)
+                    self.box.addWidget(j(self), i, 1, ct.data_library["Позиция левый-центр"])
                 row_start = 3
-                range_value -= 3
-
-            case "SpinBox Type":
+                range_value = self.box.rowCount() - 3
+            case 4:
                 entry_type = QtWidgets.QSpinBox
                 row_start = 1
                 column_start = self.box.columnCount()
-                range_value -= 1
+                range_value = self.box.rowCount() - 1
+            case _:
+                return
 
         for _ in range(range_value):
             entry_object = entry_type(self)
             entry_objects.append(entry_object)
-            self.box.addWidget(entry_object, row_start, column_start, position)
-            row_start += row_i
+            self.box.addWidget(entry_object, row_start, column_start, ct.data_library["Позиция левый-центр"])
+            row_start += 1
 
-        return tuple(entry_objects)
+        return entry_objects
 
     def create_result_field(self):
         result_field = QtWidgets.QLabel(self)
@@ -108,11 +109,8 @@ class AbstractInputZone(QtWidgets.QWidget):
         result_field.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByKeyboard |
                                      QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
 
-        row_count = self.box.rowCount()
-        self.box.setRowMinimumHeight(row_count, 30)
-
-        row_count += 2
-        self.box.addWidget(result_field, row_count, 0, 1, 2, ct.data_library["Позиция левый-верхний"])
+        self.box.setRowMinimumHeight(self.box.rowCount(), 30)
+        self.box.addWidget(result_field, self.box.rowCount(), 0, 1, 2, ct.data_library["Позиция левый-верхний"])
 
         return result_field
 
@@ -123,8 +121,13 @@ class AbstractInputZone(QtWidgets.QWidget):
         self.box.setContentsMargins(ct.data_library["Отступы калькулятора"])
 
     @staticmethod
+    def clear_fields(entry_objects):
+        for _ in entry_objects:
+            _.clear()
+            _.value = None
+
+    @staticmethod
     def set_size_fields(fields_list, size):
-        #for _ in fields_list:
         [_.setFixedSize(size) for _ in fields_list]
 
     @staticmethod
@@ -162,11 +165,10 @@ class AtmosphericAirDust(AbstractInputZone):
             return self.entry_objects[2].get_entry_value()
 
     def calculate_concentrate(self):
-        normal_volume = ((self.entry_objects[0].get_entry_value() * self.parameters[8] * self.check_pressure_unit())
-                         / ((273 + self.entry_objects[1].get_entry_value()) * 760))
-
-        return (((self.entry_objects[4].get_entry_value() * 1000) -
-                        (self.entry_objects[3].get_entry_value() * 1000)) * 1000) / normal_volume
+        return ((((self.entry_objects[4].get_entry_value() * 1000) -
+                        (self.entry_objects[3].get_entry_value() * 1000)) * 1000)
+                / (((self.entry_objects[0].get_entry_value() * self.parameters[8] * self.check_pressure_unit())
+                         / ((273 + self.entry_objects[1].get_entry_value()) * 760))))
 
     def calculate(self):
         if self.calculate_concentrate() < self.parameters[9]:
@@ -180,7 +182,7 @@ class AtmosphericAirDust(AbstractInputZone):
         self.result_area.setText(result_string)
 
     @staticmethod
-    def set_checking_value(entry_objects_list):     # refactor ????
+    def set_checking_value(entry_objects_list):
         for _ in entry_objects_list:
             if entry_objects_list.index(_) == 1:
                 _.check_temperature_entry_value()
@@ -267,10 +269,12 @@ class NoiseLevelsWithBackground(AbstractInputZone):
 
         for i in range(1, 11):
             field = field_type(self)
+            if field_type == QtWidgets.QLabel:
+                field.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
             result_objects.append(field)
             self.box.addWidget(field, self.row_start, i, ct.data_library["Позиция центр"])
 
-        return tuple(result_objects)
+        return result_objects
 
     def calculate(self):
         for i in range(10):

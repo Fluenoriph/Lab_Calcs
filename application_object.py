@@ -3,7 +3,7 @@ import sys
 from winpath import get_desktop
 import constants as ct
 from calculators_objects import (AtmosphericAirDust, VentilationEfficiency, NoiseLevelsWithBackground, MainRegister,
-                                 FactorsRegister)
+                                 FactorsRegister, AbstractInputZone)
 
 
 class BaseAbstractController(QtWidgets.QWidget):
@@ -26,7 +26,6 @@ class BaseAbstractController(QtWidgets.QWidget):
         match calc_variant:
             case 1:
                 names = list(ct.data_library["Калькуляторы"].keys())
-
             case 2:
                 temp = list(ct.data_library["Журналы"].keys())
                 names = temp[1:3]
@@ -36,8 +35,7 @@ class BaseAbstractController(QtWidgets.QWidget):
         for i, j in enumerate(calcs_list):
             area.addTab(j, names[i])
 
-        column_start = self.box.columnCount()
-        self.box.addWidget(area, 0, column_start, 8, 1, alignment=self.POSITION)
+        self.box.addWidget(area, 0, self.box.columnCount(), 8, 1, alignment=self.POSITION)
         return area
 
     def create_control_buttons(self, calc_variant):
@@ -79,10 +77,11 @@ class RegistersController(BaseAbstractController):
         self.box.addWidget(self.registers[0], 0, 0, 11, 2, alignment=self.POSITION)
 
         self.options_zone = self.create_calcs(self.REGISTERS, self.registers[1:])
+        #self.options_zone.currentChanged.connect(self.clear_protocol_number)
 
         self.controls = self.create_control_buttons(self.REGISTERS)
 
-        #self.options_area.currentChanged.connect(self.clear_protocol_number_entry_field)
+
 
 
 
@@ -149,7 +148,7 @@ class RegistersController(BaseAbstractController):
             _.clear()
 
     @QtCore.pyqtSlot()
-    def clear_protocol_number_entry_field(self):
+    def clear_protocol_number(self):
         self.base_register_area.entry_objects_others[0].clear()'''
 
 
@@ -162,110 +161,100 @@ class CalculatorsController(BaseAbstractController):
         self.calcs_zone = self.create_calcs(self.CALCS, self.calcs)
 
         self.controls = self.create_control_buttons(self.CALCS)
-
-        #self.calculate.clicked.connect(self.calculating)
-
-
-
-    @staticmethod
-    def clear_entry_fields(entry_objects):
-        for _ in entry_objects:
-            _.clear()
-            _.value = None
+        self.controls[0].clicked.connect(self.calculating)
+        self.controls[1].clicked.connect(self.clearing)
+        self.controls[2].clicked.connect(self.saving)
 
     @staticmethod
-    def create_data_to_save(title_names, entry_fields, result):     # list generator !!!!
+    def create_data_to_save(title_names, entry_fields, result):
         data = []
-        for i in range(len(title_names)):
-            data.append(title_names[i] + ': ' + entry_fields[i].text() + '\n')
+
+        for i, j in enumerate(title_names):
+            data.append(j + ': ' + entry_fields[i].text() + '\n')
+
         data.append(result.text() + ct.data_library["Отчет"][5])
         return data
 
     @staticmethod
     def create_noise_calc_data_to_save(bands, source, background, delta, correct):
         data = []
-        r = range(10)
 
-        for i in r:
-            data.append(bands[i] + '|*|')
-
+        [data.append(i + '|*|') for i in bands]
         data.append(ct.data_library["Отчет"][5])
+
         for j in (source, background, delta, correct):
-            for i in r:
-                data.append(j[i].text() + '   ')
+            [data.append(i.text() + '   ') for i in j]
             data.append('\n')
 
+        data.append('\n')
         return data
 
     def save_to_desktop(self, file, data):
-        message = f"{ct.data_library["Отчет"][4]}\'{file[1:]}\'"
-        file_path = get_desktop() + file
-        QtWidgets.QMessageBox.information(self, " ", message)
-        with open (file_path, "a", encoding="utf-8") as txt:
+        QtWidgets.QMessageBox.information(self, " ", f"{ct.data_library["Отчет"][4]}\'{file[1:]}\'")
+        with open (get_desktop() + file, "a", encoding="utf-8") as txt:
             txt.writelines(data)
 
-    '''@QtCore.pyqtSlot()
+    @QtCore.pyqtSlot()
     def calculating(self):
-        try:
-            match self.calcs_area.currentIndex():
+        #try:
+            match self.calcs_zone.currentIndex():
                 case 0:
-                    self.air_calc.calculate()
+                    self.calcs[0].calculate()
                 case 1:
-                    self.work_area_calc.calculate()
+                    self.calcs[1].calculate()
                 case 2:
-                    self.flow_calc.calculate()
+                    self.calcs[2].calculate()
                 case 3:
-                    self.noise_calc.calculate()
-        except TypeError:
-            pass
+                    self.calcs[3].calculate()
+        #except TypeError:
+            #pass
 
     @QtCore.pyqtSlot()
-    def clear_calculator(self):
-        match self.calcs_area.currentIndex():
+    def clearing(self):
+        match self.calcs_zone.currentIndex():
             case 0:
-                self.clear_entry_fields(self.air_calc.entry_objects)
-                self.air_calc.result_area.clear()
+                self.calcs[0].entry_objects.append(self.calcs[0].result_area)
+                AbstractInputZone.clear_fields(self.calcs[0].entry_objects)
             case 1:
-                self.clear_entry_fields(self.work_area_calc.entry_objects)
-                self.work_area_calc.result_area.clear()
+                self.calcs[1].entry_objects.append(self.calcs[1].result_area)
+                AbstractInputZone.clear_fields(self.calcs[1].entry_objects)
             case 2:
-                self.clear_entry_fields(self.flow_calc.entry_objects)
-                self.flow_calc.result_area.clear()
+                self.calcs[2].entry_objects.append(self.calcs[2].result_area)
+                AbstractInputZone.clear_fields(self.calcs[2].entry_objects)
             case 3:
-                self.clear_entry_fields(self.noise_calc.entry_objects)
-                for result_object in self.noise_calc.result_area:
-                    result_object.clear()
+                self.calcs[3].entry_objects.extend(self.calcs[3].result_area)
+                AbstractInputZone.clear_fields(self.calcs[3].entry_objects)
 
     @QtCore.pyqtSlot()
     def saving(self):
-        match self.calcs_area.currentIndex():
+        match self.calcs_zone.currentIndex():
             case 0:
-                if self.air_calc.result_area.text() != "":
+                if self.calcs[0].result_area.text() != "":
                     air_calc_data = self.create_data_to_save(ct.data_library["Калькуляторы"]["Пыль в атмосф. воздухе"]
-                                    ["Параметры"], self.air_calc.entry_objects, self.air_calc.result_area)
+                                    [0:5], self.calcs[0].entry_objects, self.calcs[0].result_area)
                     self.save_to_desktop(ct.data_library["Отчет"][0], air_calc_data)
                 else: pass
             case 1:
-                if self.work_area_calc.result_area.text() != "":
+                if self.calcs[1].result_area.text() != "":
                     work_area_calc_data = self.create_data_to_save(ct.data_library["Калькуляторы"]
-                                          ["Пыль в воздухе раб. зоны"]["Параметры"], self.work_area_calc.entry_objects,
-                                                                   self.work_area_calc.result_area)
+                                          ["Пыль в воздухе раб. зоны"][0:5], self.calcs[1].entry_objects,
+                                                                   self.calcs[1].result_area)
                     self.save_to_desktop(ct.data_library["Отчет"][1], work_area_calc_data)
                 else: pass
             case 2:
-                if self.flow_calc.result_area.text() != "":
+                if self.calcs[2].result_area.text() != "":
                     flow_calc_data = self.create_data_to_save(ct.data_library["Калькуляторы"]["Эффектив. вентиляции"]
-                                     ["Параметры"], self.flow_calc.entry_objects, self.flow_calc.result_area)
+                                     [0:6], self.calcs[2].entry_objects, self.calcs[2].result_area)
                     self.save_to_desktop(ct.data_library["Отчет"][2], flow_calc_data)
                 else: pass
             case 3:
-                if self.noise_calc.delta_result_area[0].text() != "":
+                if self.calcs[3].delta_result_area[0].text() != "":
                     noise_calc_data = self.create_noise_calc_data_to_save(ct.data_library["Калькуляторы"]
-                                      ["Учет влияния фонового шума"]["Параметры"], self.noise_calc.entry_objects_source,
-                                      self.noise_calc.entry_objects_background, self.noise_calc.delta_result_area,
-                                                                          self.noise_calc.correct_result_area)
+                                      ["Учет влияния фонового шума"][0:10], self.calcs[3].entry_objects_source,
+                                      self.calcs[3].entry_objects_background, self.calcs[3].delta_result_area,
+                                                                          self.calcs[3].correct_result_area)
                     self.save_to_desktop(ct.data_library["Отчет"][3], noise_calc_data)
-                else: pass'''
+                else: pass
 
 
 class ApplicationType(QtWidgets.QWidget):
@@ -316,7 +305,6 @@ class ApplicationType(QtWidgets.QWidget):
 
     def set_style(self, colors):
         calcs_list = self.calculators_area.calcs + self.registers_area.registers
-
         result_area_style = lambda r: "border-radius: "+r+" background: "+colors[10]+" color: "+colors[11]
 
         self.setStyleSheet("* {outline: 0; border-style: none; background: "+colors[0]+" font: 13px arial, sans-serif; "
@@ -340,20 +328,16 @@ class ApplicationType(QtWidgets.QWidget):
                                          "QListView::item:hover {background: "+colors[3]+"} "
                                          "QListView::item:selected {background: "+colors[3]+" color: "+colors[4]+"}")
 
-        for _ in (self.calculators_area.calcs_zone, self.registers_area.options_zone):
-            _.setStyleSheet("* {color: "+colors[5]+"}")
+        [_.setStyleSheet("* {color: "+colors[5]+"}") for _ in (self.calculators_area.calcs_zone, self.registers_area.options_zone)]
 
-        for _ in calcs_list:
-            _.setStyleSheet("QLabel {color: "+colors[6]+"} "
+        [_.setStyleSheet("QLabel {color: "+colors[6]+"} "
                             "QLineEdit, QDateEdit, QSpinBox {border-radius: 5px; background: "+colors[7]+" color: "+colors[8]+"} "
                             "QLineEdit:focus {background: "+colors[9]+"} "
                             "QDateEdit:focus {background: "+colors[9]+"} "
-                            "QSpinBox:focus {background: "+colors[9]+"}")
+                            "QSpinBox:focus {background: "+colors[9]+"}") for _ in calcs_list]
 
-        for _ in calcs_list[0:3]:
-            _.result_area.setStyleSheet(result_area_style("9px;"))
-        for _ in self.calculators_area.calcs[3].result_area:
-            _.setStyleSheet(result_area_style("5px;"))
+        [_.result_area.setStyleSheet(result_area_style("9px;")) for _ in calcs_list[0:3]]
+        [_.setStyleSheet(result_area_style("5px;")) for _ in self.calculators_area.calcs[3].result_area]
 
     def create_main_menu(self):
         main_menu = QtWidgets.QMenuBar(self)
