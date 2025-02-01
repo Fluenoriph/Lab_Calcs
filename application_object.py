@@ -152,6 +152,11 @@ class RegistersController(BaseAbstractController):
 
 
 class CalculatorsController(BaseAbstractController):
+    AIR = 0
+    WORK_ZONE = 1
+    FLOW = 2
+    NOISE = 3
+
     def __init__(self):
         super().__init__()
         self.calcs = (AtmosphericAirDust(), AtmosphericAirDust(ct.data_library["Калькуляторы"]["Пыль в воздухе раб. зоны"]),
@@ -164,20 +169,64 @@ class CalculatorsController(BaseAbstractController):
         self.controls[1].clicked.connect(self.clearing)
         self.controls[2].clicked.connect(self.saving)
 
-    def save_to_desktop(self, file, data):
-        QtWidgets.QMessageBox.information(self, " ", f"{ct.data_library["Отчет"][4]}\'{file[1:]}\'")
-        with open (get_desktop() + file, "a", encoding="utf-8") as txt:
+    def ready_to_calculate(self, calc_index):
+        if calc_index == 2:
+
+
+
+        if AbstractInputZone.check_fields(self.calcs[calc_index].entry_objects):
+            self.calcs[calc_index].calculate()
+        else:
+            pass
+
+    def ready_to_save(self, calc_index):
+        if calc_index == 0 or calc_index == 1 or calc_index == 2:
+            result = self.calcs[calc_index].result_area
+        elif calc_index == 3:
+            result = self.calcs[3].correct_result_area[0]
+        else:
+            return
+
+        if result != "":
+            self.save_on_desktop(calc_index)
+        else:
+            pass
+
+    def save_on_desktop(self, calc_index):
+        data = []
+
+        if calc_index == 0 or calc_index == 1 or calc_index == 2:
+            for i, j in enumerate(self.calcs[calc_index].titles):
+                data.append(j + ': ' + self.calcs[calc_index].entry_objects[i].text() + '\n')
+            data.append(self.calcs[calc_index].result_area.text() + ct.data_library["Отчет"][5])
+
+        elif calc_index == 3:
+            [data.append(i + '|*|') for i in ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][0:10]]
+            data.append(ct.data_library["Отчет"][5])
+
+            for j in (self.calcs[3].entry_objects_source, self.calcs[3].entry_objects_background,
+                      self.calcs[3].delta_result_area, self.calcs[3].correct_result_area):
+                [data.append(i.text() + '   ') for i in j]
+                data.append('\n')
+            data.append('\n')
+
+        else:
+            return
+
+        QtWidgets.QMessageBox.information(self, " ",
+                                          f"{ct.data_library["Отчет"][4]}\'{ct.data_library["Отчет"][calc_index][1:]}\'")
+        with open(get_desktop() + ct.data_library["Отчет"][calc_index], "a", encoding="utf-8") as txt:
             txt.writelines(data)
 
     @QtCore.pyqtSlot()
     def calculating(self):
         match self.calcs_zone.currentIndex():
             case 0:
-                self.ready_to_calculate(self.calcs[0])
+                self.ready_to_calculate(self.AIR)
             case 1:
-                self.ready_to_calculate(self.calcs[1])
+                self.ready_to_calculate(self.WORK_ZONE)
             case 2:
-                self.ready_to_calculate(self.calcs[2])
+                self.ready_to_calculate(self.FLOW)
             case 3:
                 self.calcs[3].calculate()
 
@@ -185,86 +234,29 @@ class CalculatorsController(BaseAbstractController):
     def clearing(self):
         match self.calcs_zone.currentIndex():
             case 0:
-                self.calcs[0].entry_objects.append(self.calcs[0].result_area)
                 AbstractInputZone.clear_fields(self.calcs[0].entry_objects)
+                self.calcs[0].result_area.clear()
             case 1:
-                self.calcs[1].entry_objects.append(self.calcs[1].result_area)
                 AbstractInputZone.clear_fields(self.calcs[1].entry_objects)
+                self.calcs[1].result_area.clear()
             case 2:
-                self.calcs[2].entry_objects.append(self.calcs[2].result_area)
                 AbstractInputZone.clear_fields(self.calcs[2].entry_objects)
+                self.calcs[2].result_area.clear()
             case 3:
-                self.calcs[3].entry_objects.extend(self.calcs[3].result_area)
                 AbstractInputZone.clear_fields(self.calcs[3].entry_objects)
+                AbstractInputZone.clear_fields(self.calcs[3].result_area)
 
     @QtCore.pyqtSlot()
-    def saving(self):                                # Refactor !!
+    def saving(self):
         match self.calcs_zone.currentIndex():
             case 0:
-                if self.calcs[0].result_area.text() != "":
-                    air_calc_data = self.create_data_to_save(ct.data_library["Калькуляторы"]["Пыль в атмосф. воздухе"]
-                                    [0:5], self.calcs[0].entry_objects, self.calcs[0].result_area)
-                    self.save_to_desktop(ct.data_library["Отчет"][0], air_calc_data)
-                else: pass
+                self.ready_to_save(self.AIR)
             case 1:
-                if self.calcs[1].result_area.text() != "":
-                    work_area_calc_data = self.create_data_to_save(ct.data_library["Калькуляторы"]
-                                          ["Пыль в воздухе раб. зоны"][0:5], self.calcs[1].entry_objects,
-                                                                   self.calcs[1].result_area)
-                    self.save_to_desktop(ct.data_library["Отчет"][1], work_area_calc_data)
-                else: pass
+                self.ready_to_save(self.WORK_ZONE)
             case 2:
-                if self.calcs[2].result_area.text() != "":
-                    flow_calc_data = self.create_data_to_save(ct.data_library["Калькуляторы"]["Эффектив. вентиляции"]
-                                     [0:6], self.calcs[2].entry_objects, self.calcs[2].result_area)
-                    self.save_to_desktop(ct.data_library["Отчет"][2], flow_calc_data)
-                else: pass
+                self.ready_to_save(self.FLOW)
             case 3:
-                if self.calcs[3].delta_result_area[0].text() != "":
-                    noise_calc_data = self.create_noise_calc_data_to_save(ct.data_library["Калькуляторы"]
-                                      ["Учет влияния фонового шума"][0:10], self.calcs[3].entry_objects_source,
-                                      self.calcs[3].entry_objects_background, self.calcs[3].delta_result_area,
-                                                                          self.calcs[3].correct_result_area)
-                    self.save_to_desktop(ct.data_library["Отчет"][3], noise_calc_data)
-                else: pass
-
-    @staticmethod
-    def ready_to_calculate(calc):
-        if AbstractInputZone.check_all_parameters(calc.entry_objects):
-            calc.calculate()
-        else:
-            pass
-
-    @staticmethod
-    def ready_to_save():
-
-
-
-
-
-    @staticmethod
-    def create_data_to_save(title_names, entry_fields, result):
-        data = []
-
-        for i, j in enumerate(title_names):
-            data.append(j + ': ' + entry_fields[i].text() + '\n')
-
-        data.append(result.text() + ct.data_library["Отчет"][5])
-        return data
-
-    @staticmethod
-    def create_noise_calc_data_to_save(bands, source, background, delta, correct):
-        data = []
-
-        [data.append(i + '|*|') for i in bands]
-        data.append(ct.data_library["Отчет"][5])
-
-        for j in (source, background, delta, correct):
-            [data.append(i.text() + '   ') for i in j]
-            data.append('\n')
-
-        data.append('\n')
-        return data
+                self.ready_to_save(self.NOISE)
 
 
 class ApplicationType(QtWidgets.QWidget):

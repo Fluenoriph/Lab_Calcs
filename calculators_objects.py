@@ -122,19 +122,6 @@ class AbstractInputZone(QtWidgets.QWidget):
         self.box.setContentsMargins(ct.data_library["Отступы калькулятора"])
 
     @staticmethod
-    def check_all_parameters(entry_objects):
-        for _ in entry_objects:
-            if _.text() == "":
-                return False
-        return True
-
-    @staticmethod
-    def clear_fields(entry_objects):
-        for _ in entry_objects:
-            _.clear()
-            _.value = None    # ?????
-
-    @staticmethod
     def set_size_fields(fields_list, size):
         [_.setFixedSize(size) for _ in fields_list]
 
@@ -150,6 +137,22 @@ class AbstractInputZone(QtWidgets.QWidget):
     def set_range_value(entry_objects_list):
        [_.setRange(0, 9999) for _ in entry_objects_list]
 
+    @staticmethod
+    def check_fields(fields):
+        for _ in fields:
+            if _.text() == "":
+                return False
+        return True
+
+    @staticmethod
+    def clear_fields(fields):
+        for _ in fields:
+            if type(_) == QtWidgets.QLabel:
+                _.clear()
+            else:
+                _.clear()
+                _.value = None
+
 
 class AtmosphericAirDust(AbstractInputZone):
     def __init__(self, parameters = ct.data_library["Калькуляторы"]["Пыль в атмосф. воздухе"]):
@@ -157,7 +160,8 @@ class AtmosphericAirDust(AbstractInputZone):
         self.parameters = parameters
         self.set_widget_parameters()
 
-        self.create_title_objects(self.parameters[0:5])
+        self.titles = self.parameters[0:5]
+        self.create_title_objects(self.titles)
 
         self.entry_objects = self.create_entry_objects()
         self.set_size_fields(self.entry_objects, ct.data_library["Размеры поля ввода"])
@@ -203,7 +207,8 @@ class VentilationEfficiency(AbstractInputZone):
         super().__init__()
         self.set_widget_parameters()
 
-        self.create_title_objects(ct.data_library["Калькуляторы"]["Эффектив. вентиляции"][0:6])
+        self.titles = ct.data_library["Калькуляторы"]["Эффектив. вентиляции"][0:6]
+        self.create_title_objects(self.titles)
 
         self.entry_objects = self.create_entry_objects()
         self.set_size_fields(self.entry_objects[0:3], ct.data_library["Размеры поля ввода"])
