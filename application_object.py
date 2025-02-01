@@ -9,7 +9,6 @@ from calculators_objects import (AtmosphericAirDust, VentilationEfficiency, Nois
 class BaseAbstractController(QtWidgets.QWidget):
     CALCS = 1
     REGISTERS = 2
-    POSITION = ct.data_library["Позиция левый-верхний"]
 
     def __init__(self):
         super().__init__()
@@ -35,7 +34,7 @@ class BaseAbstractController(QtWidgets.QWidget):
         for i, j in enumerate(calcs_list):
             area.addTab(j, names[i])
 
-        self.box.addWidget(area, 0, self.box.columnCount(), 8, 1, alignment=self.POSITION)
+        self.box.addWidget(area, 0, self.box.columnCount(), 8, 1, alignment=ct.data_library["Позиция левый-верхний"])
         return area
 
     def create_control_buttons(self, calc_variant):
@@ -64,7 +63,7 @@ class BaseAbstractController(QtWidgets.QWidget):
             button.setIconSize(ct.data_library["Размеры кнопок"])
             button.setAutoDefault(True)
             buttons.append(button)
-            self.box.addWidget(button, row_start, column_start, self.POSITION)
+            self.box.addWidget(button, row_start, column_start, ct.data_library["Позиция левый-верхний"])
             row_start += 1
 
         return buttons
@@ -74,7 +73,7 @@ class RegistersController(BaseAbstractController):
     def __init__(self):
         super().__init__()
         self.registers = (MainRegister(), FactorsRegister(), FactorsRegister(ct.data_library["Журналы"]["Радиационные факторы"]))
-        self.box.addWidget(self.registers[0], 0, 0, 11, 2, alignment=self.POSITION)
+        self.box.addWidget(self.registers[0], 0, 0, 11, 2, alignment=ct.data_library["Позиция левый-верхний"])
 
         self.options_zone = self.create_calcs(self.REGISTERS, self.registers[1:])
         #self.options_zone.currentChanged.connect(self.clear_protocol_number)
@@ -165,30 +164,6 @@ class CalculatorsController(BaseAbstractController):
         self.controls[1].clicked.connect(self.clearing)
         self.controls[2].clicked.connect(self.saving)
 
-    @staticmethod
-    def create_data_to_save(title_names, entry_fields, result):
-        data = []
-
-        for i, j in enumerate(title_names):
-            data.append(j + ': ' + entry_fields[i].text() + '\n')
-
-        data.append(result.text() + ct.data_library["Отчет"][5])
-        return data
-
-    @staticmethod
-    def create_noise_calc_data_to_save(bands, source, background, delta, correct):
-        data = []
-
-        [data.append(i + '|*|') for i in bands]
-        data.append(ct.data_library["Отчет"][5])
-
-        for j in (source, background, delta, correct):
-            [data.append(i.text() + '   ') for i in j]
-            data.append('\n')
-
-        data.append('\n')
-        return data
-
     def save_to_desktop(self, file, data):
         QtWidgets.QMessageBox.information(self, " ", f"{ct.data_library["Отчет"][4]}\'{file[1:]}\'")
         with open (get_desktop() + file, "a", encoding="utf-8") as txt:
@@ -196,18 +171,15 @@ class CalculatorsController(BaseAbstractController):
 
     @QtCore.pyqtSlot()
     def calculating(self):
-        #try:
-            match self.calcs_zone.currentIndex():
-                case 0:
-                    self.calcs[0].calculate()
-                case 1:
-                    self.calcs[1].calculate()
-                case 2:
-                    self.calcs[2].calculate()
-                case 3:
-                    self.calcs[3].calculate()
-        #except TypeError:
-            #pass
+        match self.calcs_zone.currentIndex():
+            case 0:
+                self.ready_to_calculate(self.calcs[0])
+            case 1:
+                self.ready_to_calculate(self.calcs[1])
+            case 2:
+                self.ready_to_calculate(self.calcs[2])
+            case 3:
+                self.calcs[3].calculate()
 
     @QtCore.pyqtSlot()
     def clearing(self):
@@ -226,7 +198,7 @@ class CalculatorsController(BaseAbstractController):
                 AbstractInputZone.clear_fields(self.calcs[3].entry_objects)
 
     @QtCore.pyqtSlot()
-    def saving(self):
+    def saving(self):                                # Refactor !!
         match self.calcs_zone.currentIndex():
             case 0:
                 if self.calcs[0].result_area.text() != "":
@@ -255,6 +227,44 @@ class CalculatorsController(BaseAbstractController):
                                                                           self.calcs[3].correct_result_area)
                     self.save_to_desktop(ct.data_library["Отчет"][3], noise_calc_data)
                 else: pass
+
+    @staticmethod
+    def ready_to_calculate(calc):
+        if AbstractInputZone.check_all_parameters(calc.entry_objects):
+            calc.calculate()
+        else:
+            pass
+
+    @staticmethod
+    def ready_to_save():
+
+
+
+
+
+    @staticmethod
+    def create_data_to_save(title_names, entry_fields, result):
+        data = []
+
+        for i, j in enumerate(title_names):
+            data.append(j + ': ' + entry_fields[i].text() + '\n')
+
+        data.append(result.text() + ct.data_library["Отчет"][5])
+        return data
+
+    @staticmethod
+    def create_noise_calc_data_to_save(bands, source, background, delta, correct):
+        data = []
+
+        [data.append(i + '|*|') for i in bands]
+        data.append(ct.data_library["Отчет"][5])
+
+        for j in (source, background, delta, correct):
+            [data.append(i.text() + '   ') for i in j]
+            data.append('\n')
+
+        data.append('\n')
+        return data
 
 
 class ApplicationType(QtWidgets.QWidget):

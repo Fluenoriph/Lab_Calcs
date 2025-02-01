@@ -3,6 +3,7 @@ import constants as ct
 import math
 import locale
 import re
+import itertools
 from functools import partial
 from decimal import Decimal, ROUND_HALF_UP
 locale.setlocale(locale.LC_ALL, "ru")
@@ -121,10 +122,17 @@ class AbstractInputZone(QtWidgets.QWidget):
         self.box.setContentsMargins(ct.data_library["Отступы калькулятора"])
 
     @staticmethod
+    def check_all_parameters(entry_objects):
+        for _ in entry_objects:
+            if _.text() == "":
+                return False
+        return True
+
+    @staticmethod
     def clear_fields(entry_objects):
         for _ in entry_objects:
             _.clear()
-            _.value = None
+            _.value = None    # ?????
 
     @staticmethod
     def set_size_fields(fields_list, size):
@@ -278,12 +286,15 @@ class NoiseLevelsWithBackground(AbstractInputZone):
 
     def calculate(self):
         for i in range(10):
-            delta = (self.entry_objects_source[i].get_entry_value() -
-                                 self.entry_objects_background[i].get_entry_value())
+            if self.entry_objects_source[i].text() != "" and self.entry_objects_background[i].text() != "":
+                delta = (self.entry_objects_source[i].get_entry_value() -
+                                    self.entry_objects_background[i].get_entry_value())
 
-            self.delta_result_area[i].setText(locale.format_string("%0.1f", delta))
-            self.correct_result_area[i].setText(locale.format_string("%0.1f", self.correcting_result(delta,
+                self.delta_result_area[i].setText(locale.format_string("%0.1f", delta))
+                self.correct_result_area[i].setText(locale.format_string("%0.1f", self.correcting_result(delta,
                                                                     self.entry_objects_source[i].get_entry_value())))
+            else:
+                pass
 
     @staticmethod
     def correcting_result(delta_level, source_level):
