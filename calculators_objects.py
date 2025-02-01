@@ -215,17 +215,22 @@ class VentilationEfficiency(AbstractInputZone):
         self.set_size_fields(self.entry_objects[3:6], ct.data_library["Размеры поля ввода вент. отвер."])
         self.set_max_length(self.entry_objects, max_len=7)
         self.set_checking_value(self.entry_objects)
-        self.set_hole_type()
-
-        self.result_area = self.create_result_field()
-
-    def set_hole_type(self):
         self.entry_objects[3].textEdited.connect(self.lock_rectangle_entry_objects)
         self.entry_objects[4].textEdited.connect(self.lock_circle_entry_object)
         self.entry_objects[5].textEdited.connect(self.lock_circle_entry_object)
 
+        self.result_area = self.create_result_field()
+
+    def set_hole_checks(self):
+        if self.entry_objects[3].text() != "" and self.entry_objects[4].text() == "" and self.entry_objects[5].text() == "":
+            return True
+        elif self.entry_objects[3].text() == "" and self.entry_objects[4].text() != "" and self.entry_objects[5].text() != "":
+            return True
+        else:
+            return False
+
     def calculate_hole_square(self):
-        if self.entry_objects[3].get_entry_value():
+        if self.entry_objects[3].text() != "":
             return (math.pi * pow(self.entry_objects[3].get_entry_value() / 100, 2)) / 4
         else:
             return (self.entry_objects[4].get_entry_value() / 100) * (self.entry_objects[5].get_entry_value() / 100)
@@ -333,20 +338,26 @@ class MainRegister(AbstractInputZone):
         self.visual_date = QtCore.QDate(2025, 1, 1)
 
         self.create_title_objects(ct.data_library["Журналы"]["Основной регистратор"][0:11])
-        self.create_entry_objects(self.MAIN_REG_TYPE)
+        self.entry_objects = self.create_entry_objects(self.MAIN_REG_TYPE)
 
-        '''self.set_size_entry_objects(self.entry_objects_dates, ct.data_library["Размеры поля ввода инфо. протокола"])
-        self.set_size_entry_objects(self.entry_objects_others[0:2], ct.data_library["Размеры поля ввода инфо. протокола"])
-        self.set_size_entry_objects(self.entry_objects_others[2:4], ct.data_library["Размеры поля ввода инфо. объекта"])
+        #[_.setDate(self.visual_date) for _ in self.entry_objects[1:3]]
+        #self.set_size_fields(self.entry_objects[0:3], ct.data_library["Размеры поля ввода инфо. протокола"])
+        #self.entry_objects[0].setMaxLength(10)
 
-        self.entry_objects_others[4].setFixedSize(120, 30)
-        self.entry_objects_others[0].setMaxLength(10)
-        self.work_type_completer = QtWidgets.QCompleter(ct.data_library["Журналы"]["Основной регистратор"]["Тип"], self)
-        self.entry_objects_others[1].setCompleter(self.work_type_completer)
-        self.administrator_completer = QtWidgets.QCompleter(ct.data_library["Журналы"]["Основной регистратор"]["Сотрудники"], self)
-        self.entry_objects_others[4].setCompleter(self.administrator_completer)
-        self.connection_with_database = QtSql.QSqlDatabase.addDatabase('QSQLITE')
-        #self.connection_with_database.setDatabaseName()'''
+        #self.set_size_fields(self.entry_objects_others[2:4], ct.data_library["Размеры поля ввода инфо. объекта"])
+
+        #self.entry_objects_others[4].setFixedSize(120, 30)
+
+
+
+        self.work_type_completer = QtWidgets.QCompleter(ct.data_library["Журналы"]["Основной регистратор"][11:17], self)
+        #self.entry_objects_others[1].setCompleter(self.work_type_completer)
+
+        self.administrator_completer = QtWidgets.QCompleter(ct.data_library["Журналы"]["Основной регистратор"][17:21], self)
+        #self.entry_objects_others[4].setCompleter(self.administrator_completer)
+
+        #self.connection_with_database = QtSql.QSqlDatabase.addDatabase('QSQLITE')
+        #self.connection_with_database.setDatabaseName()
 
         self.box.setVerticalSpacing(15)
         self.box.setHorizontalSpacing(30)

@@ -3,7 +3,7 @@ import sys
 from winpath import get_desktop
 import constants as ct
 from calculators_objects import (AtmosphericAirDust, VentilationEfficiency, NoiseLevelsWithBackground, MainRegister,
-                                 FactorsRegister, AbstractInputZone)
+                                 FactorsRegister, AbstractInputZone as az)
 
 
 class BaseAbstractController(QtWidgets.QWidget):
@@ -170,22 +170,24 @@ class CalculatorsController(BaseAbstractController):
         self.controls[2].clicked.connect(self.saving)
 
     def ready_to_calculate(self, calc_index):
-        if calc_index == 2:
+        match calc_index:
+            case 2:
+                if az.check_fields(self.calcs[2].entry_objects[0:3]) and self.calcs[2].set_hole_checks():
+                    self.calcs[2].calculate()
+                else:
+                    pass
 
-
-
-        if AbstractInputZone.check_fields(self.calcs[calc_index].entry_objects):
-            self.calcs[calc_index].calculate()
-        else:
-            pass
+            case _:
+                if az.check_fields(self.calcs[calc_index].entry_objects):
+                    self.calcs[calc_index].calculate()
+                else:
+                    pass
 
     def ready_to_save(self, calc_index):
-        if calc_index == 0 or calc_index == 1 or calc_index == 2:
-            result = self.calcs[calc_index].result_area
-        elif calc_index == 3:
-            result = self.calcs[3].correct_result_area[0]
+        if calc_index != 3:
+            result = self.calcs[calc_index].result_area.text()
         else:
-            return
+            result = self.calcs[3].correct_result_area[0].text()
 
         if result != "":
             self.save_on_desktop(calc_index)
@@ -195,12 +197,12 @@ class CalculatorsController(BaseAbstractController):
     def save_on_desktop(self, calc_index):
         data = []
 
-        if calc_index == 0 or calc_index == 1 or calc_index == 2:
+        if calc_index != 3:
             for i, j in enumerate(self.calcs[calc_index].titles):
                 data.append(j + ': ' + self.calcs[calc_index].entry_objects[i].text() + '\n')
-            data.append(self.calcs[calc_index].result_area.text() + ct.data_library["Отчет"][5])
+            data.append('\n' + self.calcs[calc_index].result_area.text() + ct.data_library["Отчет"][5])
 
-        elif calc_index == 3:
+        else:
             [data.append(i + '|*|') for i in ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][0:10]]
             data.append(ct.data_library["Отчет"][5])
 
@@ -209,9 +211,6 @@ class CalculatorsController(BaseAbstractController):
                 [data.append(i.text() + '   ') for i in j]
                 data.append('\n')
             data.append('\n')
-
-        else:
-            return
 
         QtWidgets.QMessageBox.information(self, " ",
                                           f"{ct.data_library["Отчет"][4]}\'{ct.data_library["Отчет"][calc_index][1:]}\'")
@@ -234,17 +233,17 @@ class CalculatorsController(BaseAbstractController):
     def clearing(self):
         match self.calcs_zone.currentIndex():
             case 0:
-                AbstractInputZone.clear_fields(self.calcs[0].entry_objects)
+                az.clear_fields(self.calcs[0].entry_objects)
                 self.calcs[0].result_area.clear()
             case 1:
-                AbstractInputZone.clear_fields(self.calcs[1].entry_objects)
+                az.clear_fields(self.calcs[1].entry_objects)
                 self.calcs[1].result_area.clear()
             case 2:
-                AbstractInputZone.clear_fields(self.calcs[2].entry_objects)
+                az.clear_fields(self.calcs[2].entry_objects)
                 self.calcs[2].result_area.clear()
             case 3:
-                AbstractInputZone.clear_fields(self.calcs[3].entry_objects)
-                AbstractInputZone.clear_fields(self.calcs[3].result_area)
+                az.clear_fields(self.calcs[3].entry_objects)
+                az.clear_fields(self.calcs[3].result_area)
 
     @QtCore.pyqtSlot()
     def saving(self):
@@ -355,9 +354,9 @@ class ApplicationType(QtWidgets.QWidget):
         main_menu.addMenu(main_menu.submenu_help)
         main_menu.addAction(main_menu.change_style)
 
-        main_menu.set_calculators_act = QtGui.QAction(self.data_dict_names[13], main_menu.submenu_file)
+        main_menu.set_calculators_act = QtGui.QAction(self.data_dict_names[24], main_menu.submenu_file)
         main_menu.set_calculators_act.triggered.connect(self.calculators_show_fixed)
-        main_menu.set_registers_act = QtGui.QAction(self.data_dict_names[14], main_menu.submenu_file)
+        main_menu.set_registers_act = QtGui.QAction(self.data_dict_names[25], main_menu.submenu_file)
         main_menu.set_registers_act.triggered.connect(self.registers_show_fixed)
         main_menu.exit_act = QtGui.QAction(ct.data_library["Главное меню"][1], main_menu.submenu_file)
         main_menu.exit_act.triggered.connect(sys.exit)
@@ -385,7 +384,7 @@ class ApplicationType(QtWidgets.QWidget):
         selector_panel.setSpacing(10)
         selector_panel.setFrameStyle(QtWidgets.QFrame.Shape.NoFrame)
 
-        selector_panel.names = (self.data_dict_names[13], self.data_dict_names[14])
+        selector_panel.names = (self.data_dict_names[24], self.data_dict_names[25])
         selector_panel.model_type = QtCore.QStringListModel(selector_panel.names)
         selector_panel.setModel(selector_panel.model_type)
 
