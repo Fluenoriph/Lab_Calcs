@@ -7,29 +7,23 @@ from calculators_objects import (AtmosphericAirDust, VentilationEfficiency, Nois
 
 
 class BaseAbstractController(QtWidgets.QWidget):
-    CALCS = 1
-    REGISTERS = 2
-
     def __init__(self):
         super().__init__()
         self.box = QtWidgets.QGridLayout(self)
         self.box.setContentsMargins(ct.data_library["Отступы контроллеров"])
 
-    def create_calcs(self, calc_variant, calcs_list):
+    def create_calcs(self, calcs_list, calc_variant=True):
         area = QtWidgets.QTabWidget(self)
         area.setCurrentIndex(0)
         area.setDocumentMode(True)
         area.setUsesScrollButtons(False)
         area.setTabShape(QtWidgets.QTabWidget.TabShape.Triangular)
 
-        match calc_variant:
-            case 1:
-                names = list(ct.data_library["Калькуляторы"].keys())
-            case 2:
-                temp = list(ct.data_library["Журналы"].keys())
-                names = temp[1:3]
-            case _:
-                return
+        if calc_variant:
+            names = list(ct.data_library["Калькуляторы"].keys())
+        else:
+            temp = list(ct.data_library["Журналы"].keys())
+            names = temp[1:3]
 
         for i, j in enumerate(calcs_list):
             area.addTab(j, names[i])
@@ -37,23 +31,20 @@ class BaseAbstractController(QtWidgets.QWidget):
         self.box.addWidget(area, 0, self.box.columnCount(), 8, 1, alignment=ct.data_library["Позиция левый-верхний"])
         return area
 
-    def create_control_buttons(self, calc_variant):
+    def create_control_buttons(self, calc_variant=True):
         buttons = []
         row_start = 1
         column_start = self.box.columnCount()
 
-        match calc_variant:
-            case 1:
-                r = range(3)
-                icons = ct.data_library["Иконки"][0:3]
-                tooltips = ct.data_library["Иконки"][4:7]
-            case 2:
-                r = range(2)
-                icons = list(ct.data_library["Иконки"][1:3])
-                icons.reverse()
-                tooltips = ct.data_library["Иконки"][7:9]
-            case _:
-                return
+        if calc_variant:
+            r = range(3)
+            icons = ct.data_library["Иконки"][0:3]
+            tooltips = ct.data_library["Иконки"][4:7]
+        else:
+            r = range(2)
+            icons = list(ct.data_library["Иконки"][1:3])
+            icons.reverse()
+            tooltips = ct.data_library["Иконки"][7:9]
 
         for i in r:
             button = QtWidgets.QPushButton(self)
@@ -75,10 +66,10 @@ class RegistersController(BaseAbstractController):
         self.registers = (MainRegister(), FactorsRegister(), FactorsRegister(ct.data_library["Журналы"]["Радиационные факторы"]))
         self.box.addWidget(self.registers[0], 0, 0, 11, 2, alignment=ct.data_library["Позиция левый-верхний"])
 
-        self.options_zone = self.create_calcs(self.REGISTERS, self.registers[1:])
+        self.options_zone = self.create_calcs(self.registers[1:], False)
         #self.options_zone.currentChanged.connect(self.clear_protocol_number)
 
-        self.controls = self.create_control_buttons(self.REGISTERS)
+        self.controls = self.create_control_buttons(False)
 
 
 
@@ -162,14 +153,14 @@ class CalculatorsController(BaseAbstractController):
         self.calcs = (AtmosphericAirDust(), AtmosphericAirDust(ct.data_library["Калькуляторы"]["Пыль в воздухе раб. зоны"]),
                       VentilationEfficiency(), NoiseLevelsWithBackground())
 
-        self.calcs_zone = self.create_calcs(self.CALCS, self.calcs)
+        self.calcs_zone = self.create_calcs(self.calcs)
 
-        self.controls = self.create_control_buttons(self.CALCS)
+        self.controls = self.create_control_buttons()
         self.controls[0].clicked.connect(self.calculating)
         self.controls[1].clicked.connect(self.clearing)
         self.controls[2].clicked.connect(self.saving)
 
-    def ready_to_calculate(self, calc_index):
+    def ready_to_calculate(self, calc_index=True):
         match calc_index:
             case 2:
                 if az.check_fields(self.calcs[2].entry_objects[0:3]) and self.calcs[2].set_hole_checks():
@@ -438,5 +429,6 @@ class ApplicationType(QtWidgets.QWidget):
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon(ct.data_library["Иконки"][3]))
+    #print(type(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][16]))
     app_calcs = ApplicationType()
     sys.exit(app.exec())

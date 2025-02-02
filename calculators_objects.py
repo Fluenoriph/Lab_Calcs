@@ -10,31 +10,37 @@ locale.setlocale(locale.LC_ALL, "ru")
 
 
 class InputValue(QtWidgets.QLineEdit):
-    ALL_VALUES_RE = re.compile(r"^\d*,?\.?\d*$")
-    TEMPERATURE_RE = re.compile(r"^\-?\d*,?\.?\d*$")
-
     def __init__(self, value=None):
         super().__init__()
         self.value = value
         self.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
 
-    def check_entry_value(self):
-        return self.textEdited.connect(partial(self.validate_entry_text,self.ALL_VALUES_RE))
-
-    def check_temperature_entry_value(self):
-        return self.textEdited.connect(partial(self.validate_entry_text,self.TEMPERATURE_RE))
-
-    @QtCore.pyqtSlot()
-    def validate_entry_text(self, validator):
-        if validator.search(self.text()):
-            self.value = self.text()
-            self.value = self.value.replace(",", ".")
+    def check_entry_value(self, value_type=True):
+        if value_type:
+            self.textEdited.connect(partial(self.validate_entry_text,re.compile(r"^\d+([.]|,)?\d*$")))
         else:
-            self.clear()
+            self.textEdited.connect(partial(self.validate_entry_text,re.compile(r"^(-?|\d)\d*([.]|,)?\d*$")))
+            self.editingFinished.connect(self.clear_none_value)
 
     def get_entry_value(self):
         return float(self.value)
+
+    @QtCore.pyqtSlot()
+    def validate_entry_text(self, validator):
+        if validator.findall(self.text()):
+            if self.text().find(",") != -1:
+                self.value = self.text().replace(",", ".")
+            else:
+                self.value = self.text()
+        else:
+            self.clear()
+
+    @QtCore.pyqtSlot()
+    def clear_none_value(self):
+        for _ in ("-", ".", ","):
+            if self.text() == _:
+                self.clear()
 
 
 class AbstractInputZone(QtWidgets.QWidget):
@@ -48,21 +54,18 @@ class AbstractInputZone(QtWidgets.QWidget):
         self.box = QtWidgets.QGridLayout(self)
         self.box.setContentsMargins(ct.data_library["Отступы калькулятора"])
 
-    def create_title_objects(self, title_list, positioning_flag=AIR_TYPE):
-        match positioning_flag:
-            case 1:
-                row_start = column_i = column_start = 0
-                row_i = 1
-                position = ct.data_library["Позиция левый-центр"]
-            case 2:
-                row_i = row_start = 0
-                column_i = column_start = 1
-                position = ct.data_library["Позиция нижний-центр"]
-            case _:
-                return
+    def create_title_objects(self, title_list, positioning_flag=True):
+        if positioning_flag:
+            row_start = column_i = column_start = 0
+            row_i = 1
+            position = ct.data_library["Позиция левый-центр"]
+        else:
+            row_i = row_start = 0
+            column_i = column_start = 1
+            position = ct.data_library["Позиция нижний-центр"]
 
-        for n in range(len(title_list)):
-            self.box.addWidget(QtWidgets.QLabel(title_list[n], self), row_start, column_start, position)
+        for _ in title_list:
+            self.box.addWidget(QtWidgets.QLabel(_, self), row_start, column_start, position)
             row_start += row_i
             column_start += column_i
 
@@ -71,27 +74,28 @@ class AbstractInputZone(QtWidgets.QWidget):
 
         match positioning_flag:
             case 1:
-                column_start = 1
                 row_start = 0
+                column_start = 1
                 range_value = self.box.rowCount()
                 entry_type = InputValue
             case 3:
-                column_start = 1
-                entry_type = QtWidgets.QLineEdit
-                number = entry_type
-                first_date = last_date = QtWidgets.QDateEdit
+                for _ in range(3):
+                    if _ == 0:
+                        field = QtWidgets.QLineEdit(self)
+                    else:
+                        field = QtWidgets.QDateEdit(self)
+                    entry_objects.append(field)
+                    self.box.addWidget(field, _, 1, ct.data_library["Позиция левый-центр"])
 
-                s = (number, first_date, last_date)
-                for i, j in enumerate(s):
-                    entry_objects.append(j)
-                    self.box.addWidget(j(self), i, 1, ct.data_library["Позиция левый-центр"])
                 row_start = 3
+                column_start = 1
                 range_value = self.box.rowCount() - 3
+                entry_type = QtWidgets.QLineEdit
             case 4:
-                entry_type = QtWidgets.QSpinBox
                 row_start = 1
                 column_start = self.box.columnCount()
                 range_value = self.box.rowCount() - 1
+                entry_type = QtWidgets.QSpinBox
             case _:
                 return
 
@@ -126,16 +130,23 @@ class AbstractInputZone(QtWidgets.QWidget):
         [_.setFixedSize(size) for _ in fields_list]
 
     @staticmethod
-    def set_max_length(entry_objects_list, max_len):
-        [_.setMaxLength(max_len) for _ in entry_objects_list]
+    def set_max_length(entry_objects, max_len):
+        [_.setMaxLength(max_len) for _ in entry_objects]
 
     @staticmethod
-    def set_checking_value(entry_objects_list):
-        [_.check_entry_value() for _ in entry_objects_list]
+    def set_checking_value(entry_objects, calc_type=True):
+        if calc_type:
+            [_.check_entry_value() for _ in entry_objects]
+        else:
+            for _ in entry_objects:
+                if entry_objects.index(_) != 1:
+                    _.check_entry_value()
+                else:
+                    _.check_entry_value(False)
 
     @staticmethod
-    def set_range_value(entry_objects_list):
-       [_.setRange(0, 9999) for _ in entry_objects_list]
+    def set_range_value(entry_objects):
+       [_.setRange(0, 9999) for _ in entry_objects]
 
     @staticmethod
     def check_fields(fields):
@@ -166,7 +177,7 @@ class AtmosphericAirDust(AbstractInputZone):
         self.entry_objects = self.create_entry_objects()
         self.set_size_fields(self.entry_objects, ct.data_library["Размеры поля ввода"])
         self.set_max_length(self.entry_objects, max_len=10)
-        self.set_checking_value(self.entry_objects)
+        self.set_checking_value(self.entry_objects, False)
 
         self.result_area = self.create_result_field()
 
@@ -192,14 +203,6 @@ class AtmosphericAirDust(AbstractInputZone):
                              f"{locale.format_string("%0.2f", Decimal(self.parameters[11] * self.calculate_concentrate()).quantize(Decimal(".01"), rounding=ROUND_HALF_UP))} мг/м³")
 
         self.result_area.setText(result_string)
-
-    @staticmethod
-    def set_checking_value(entry_objects_list):
-        for _ in entry_objects_list:
-            if entry_objects_list.index(_) == 1:
-                _.check_temperature_entry_value()
-            else:
-                _.check_entry_value()
 
 
 class VentilationEfficiency(AbstractInputZone):
@@ -260,8 +263,9 @@ class NoiseLevelsWithBackground(AbstractInputZone):
     def __init__(self):
         super().__init__()
         self.setFixedSize(ct.data_library["Размеры калькулятора шум"])
+        self.box.setContentsMargins(ct.data_library["Отступы калькулятора"])
 
-        self.create_title_objects(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][0:10], self.NOISE_TYPE)
+        self.create_title_objects(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][0:10], False)
         self.create_title_objects(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][10:15])
 
         self.row_start = 1
@@ -280,87 +284,68 @@ class NoiseLevelsWithBackground(AbstractInputZone):
         self.result_area = self.delta_result_area + self.correct_result_area
         self.set_size_fields(self.result_area, ct.data_library["Размеры полей шум"])
 
-        self.box.setContentsMargins(ct.data_library["Отступы калькулятора"])
-
     def create_fields(self, field_type):
         result_objects = []
 
-        for i in range(1, 11):
+        for _ in range(1, 11):
             field = field_type(self)
             if field_type == QtWidgets.QLabel:
                 field.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
             result_objects.append(field)
-            self.box.addWidget(field, self.row_start, i, ct.data_library["Позиция центр"])
+            self.box.addWidget(field, self.row_start, _, ct.data_library["Позиция центр"])
 
         return result_objects
-
+    # check method !!!!
     def calculate(self):
-        for i in range(10):
-            if self.entry_objects_source[i].text() != "" and self.entry_objects_background[i].text() != "":
-                delta = (self.entry_objects_source[i].get_entry_value() -
-                                    self.entry_objects_background[i].get_entry_value())
+        for _ in range(10):
+            if self.entry_objects_source[_].text() != "" and self.entry_objects_background[_].text() != "":
+                result = self.correcting_with_background(self.entry_objects_source[_].get_entry_value(),
+                                                         self.entry_objects_background[_].get_entry_value())
 
-                self.delta_result_area[i].setText(locale.format_string("%0.1f", delta))
-                self.correct_result_area[i].setText(locale.format_string("%0.1f", self.correcting_result(delta,
-                                                                    self.entry_objects_source[i].get_entry_value())))
+                self.delta_result_area[_].setText(locale.format_string("%0.1f", result[0]))
+                self.correct_result_area[_].setText(locale.format_string("%0.1f", result[1]))
             else:
                 pass
 
     @staticmethod
-    def correcting_result(delta_level, source_level):
-        if delta_level < 3.0:
-            return source_level
-        elif 3.0 <= delta_level <= 3.4:
-            return source_level - 2.8
-        elif 3.5 <= delta_level <= 3.9:
-            return source_level - 2.4
-        elif 4.0 <= delta_level <= 4.4:
-            return source_level - 2.0
-        elif 4.5 <= delta_level <= 4.9:
-            return source_level - 1.8
-        elif 5.0 <= delta_level <= 5.9:
-            return source_level - 1.4
-        elif 6.0 <= delta_level <= 6.9:
-            return source_level - 1.1
-        elif 7.0 <= delta_level <= 7.9:
-            return source_level - 0.9
-        elif 8.0 <= delta_level <= 8.9:
-            return source_level - 0.7
-        elif 9.0 <= delta_level <= 9.9:
-            return source_level - 0.5
+    def correcting_with_background(source, back):
+        delta = source - back
+
+        if delta < 3.0:
+            return delta, source
+        elif delta > 10.0:
+            return delta, source * 0
         else:
-            return source_level * 0
+            for _ in ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][15:24]:
+                if _[0] <= delta <= _[1]:
+                    return delta, source - _[2]
 
 
 class MainRegister(AbstractInputZone):
     def __init__(self):
         super().__init__()
-        self.visual_date = QtCore.QDate(2025, 1, 1)
+        self.box.setVerticalSpacing(15)
+        self.box.setHorizontalSpacing(30)
 
         self.create_title_objects(ct.data_library["Журналы"]["Основной регистратор"][0:11])
         self.entry_objects = self.create_entry_objects(self.MAIN_REG_TYPE)
 
-        #[_.setDate(self.visual_date) for _ in self.entry_objects[1:3]]
-        #self.set_size_fields(self.entry_objects[0:3], ct.data_library["Размеры поля ввода инфо. протокола"])
-        #self.entry_objects[0].setMaxLength(10)
+        self.set_size_fields(self.entry_objects[0:3], ct.data_library["Размеры поля ввода инфо. протокола"])
+        self.set_size_fields(self.entry_objects[3:7], ct.data_library["Размеры поля ввода инфо. объекта"])
+        self.set_size_fields(self.entry_objects[7:10], ct.data_library["Размеры поля ввода инфо. протокола"])
+        self.entry_objects[10].setFixedSize(ct.data_library["Размеры поля ввода инфо. объекта"])
 
-        #self.set_size_fields(self.entry_objects_others[2:4], ct.data_library["Размеры поля ввода инфо. объекта"])
+        [_.setDate(ct.data_library["Текущий период"]) for _ in self.entry_objects[1:3]]
+        self.entry_objects[0].setMaxLength(10)
+        self.entry_objects[9].setCompleter(
+            QtWidgets.QCompleter(ct.data_library["Журналы"]["Основной регистратор"][17:21], self))
+        self.entry_objects[10].setCompleter(QtWidgets.QCompleter(ct.data_library["Журналы"]["Основной регистратор"][11:17], self))
 
-        #self.entry_objects_others[4].setFixedSize(120, 30)
-
-
-
-        self.work_type_completer = QtWidgets.QCompleter(ct.data_library["Журналы"]["Основной регистратор"][11:17], self)
-        #self.entry_objects_others[1].setCompleter(self.work_type_completer)
-
-        self.administrator_completer = QtWidgets.QCompleter(ct.data_library["Журналы"]["Основной регистратор"][17:21], self)
-        #self.entry_objects_others[4].setCompleter(self.administrator_completer)
 
         #self.connection_with_database = QtSql.QSqlDatabase.addDatabase('QSQLITE')
         #self.connection_with_database.setDatabaseName()
 
-        self.box.setVerticalSpacing(15)
-        self.box.setHorizontalSpacing(30)
+
 
     '''def ready_insert_to_protocol_table(self):
         query = QtSql.QSqlQuery()
@@ -394,6 +379,9 @@ class FactorsRegister(AbstractInputZone):
     def __init__(self, parameters = ct.data_library["Журналы"]["Физические факторы"]):
         super().__init__()
         self.parameters = parameters
+        self.box.setHorizontalSpacing(10)
+        self.box.setVerticalSpacing(10)
+
         self.create_title_objects(self.parameters)
         self.entry_objects_ok_standart = self.create_entry_objects(self.FACTORS_TYPE)
         self.entry_objects_no_standart = self.create_entry_objects(self.FACTORS_TYPE)
@@ -401,8 +389,7 @@ class FactorsRegister(AbstractInputZone):
         self.set_size_fields(self.entry_objects, ct.data_library["Размеры поля ввода факторов"])
         self.set_range_value(self.entry_objects)
 
-        self.box.setHorizontalSpacing(10)
-        self.box.setVerticalSpacing(10)
+
 
     '''def ready_insert_to_microclimate_table(self):
         query = QtSql.QSqlQuery()
