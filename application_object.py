@@ -15,9 +15,7 @@ class BaseAbstractController(QtWidgets.QWidget):
     def create_calcs(self, calcs_list, calc_variant=True):
         area = QtWidgets.QTabWidget(self)
         area.setCurrentIndex(0)
-        area.setDocumentMode(True)
         area.setUsesScrollButtons(False)
-        area.setTabShape(QtWidgets.QTabWidget.TabShape.Triangular)
 
         if calc_variant:
             names = list(ct.data_library["Калькуляторы"].keys())
@@ -64,15 +62,12 @@ class RegistersController(BaseAbstractController):
     def __init__(self):
         super().__init__()
         self.registers = (MainRegister(), FactorsRegister(), FactorsRegister(ct.data_library["Журналы"]["Радиационные факторы"]))
-        self.box.addWidget(self.registers[0], 0, 0, 11, 2, alignment=ct.data_library["Позиция левый-верхний"])
+        self.box.addWidget(self.registers[0], 0, 0, 7, 1, alignment=ct.data_library["Позиция левый-верхний"])
 
         self.options_zone = self.create_calcs(self.registers[1:], False)
         #self.options_zone.currentChanged.connect(self.clear_protocol_number)
 
         self.controls = self.create_control_buttons(False)
-
-
-
 
 
 '''def save_physical_protocol(self):
@@ -82,6 +77,7 @@ class RegistersController(BaseAbstractController):
                         self.base_register_area.ready_insert_to_dates_of_research_table(),
                         self.base_register_area.ready_insert_to_objects_names_table(),
                         self.base_register_area.ready_insert_to_objects_addresses_table(),
+                        
                         self.physical_register_options.ready_insert_to_microclimate_table(),
                         self.physical_register_options.ready_insert_to_light_table(),
                         self.physical_register_options.ready_insert_to_noise_table(),
@@ -100,6 +96,7 @@ class RegistersController(BaseAbstractController):
                         self.base_register_area.ready_insert_to_dates_of_research_table(),
                         self.base_register_area.ready_insert_to_objects_names_table(),
                         self.base_register_area.ready_insert_to_objects_addresses_table(),
+                        
                         self.radiation_control_register_options.ready_insert_to_gamma_radiation_table(),
                         self.radiation_control_register_options.ready_insert_to_radon_volume_activity_table(),
                         self.radiation_control_register_options.ready_insert_to_eeva_table(),
@@ -126,16 +123,7 @@ class RegistersController(BaseAbstractController):
             case 1:
                 self.save_radiation_protocol()
 
-    @QtCore.pyqtSlot()
-    def clear_registers_values(self):
-        for _ in self.base_register_area.entry_objects_dates:
-            _.clear()
-        for _ in self.base_register_area.entry_objects_others:
-            _.clear()
-        for _ in self.physical_register_options.entry_objects:
-            _.clear()
-        for _ in self.radiation_control_register_options.entry_objects:
-            _.clear()
+    
 
     @QtCore.pyqtSlot()
     def clear_protocol_number(self):
@@ -265,13 +253,17 @@ class ApplicationType(QtWidgets.QWidget):
         self.move(x, y)
         self.activateWindow()
 
+        self.box = QtWidgets.QGridLayout(self)
+        self.box.setHorizontalSpacing(5)
+        self.box.setVerticalSpacing(15)
+        self.box.setContentsMargins(0, 0, 0, 0)
+
         self.data_dict_names = list(ct.data_library.keys())
 
         self.menu_area = self.create_main_menu()
         self.selector_area = self.create_selector_panel()
         self.registers_area = RegistersController()
         self.calculators_area = CalculatorsController()
-        self.registers_area.close()
 
         self.set_style(ct.data_library["Цвета светлой темы"])
 
@@ -283,52 +275,72 @@ class ApplicationType(QtWidgets.QWidget):
         settings.endArray()
         settings.sync()
 
-        self.box = QtWidgets.QGridLayout(self)
-        self.box.setHorizontalSpacing(5)
-        self.box.setVerticalSpacing(15)
-        self.box.setContentsMargins(0, 0, 0, 0)
-
         self.box.addWidget(self.menu_area, 0, 0, 1, 4)
         self.box.addWidget(self.selector_area, 1, 1, 1, 1, ct.data_library["Позиция левый-верхний"])
         self.box.addWidget(self.calculators_area, 1, 2, 1, 1, ct.data_library["Позиция левый-верхний"])
 
         self.box.setColumnMinimumWidth(0, 1)
         self.show()
-
+    # refactor ????
     def set_style(self, colors):
-        calcs_list = self.calculators_area.calcs + self.registers_area.registers
-        result_area_style = lambda r: "border-radius: "+r+" background: "+colors[10]+" color: "+colors[11]
 
-        self.setStyleSheet("* {outline: 0; border-style: none; background: "+colors[0]+" font: 13px arial, sans-serif; "
-                                                                                       "color: "+colors[2]+"} "
+
+
+
+
+        self.setStyleSheet("* {outline: 0; border-style: none; background: " + colors[0] + " font: 13px arial, sans-serif;} "
                          
-                           "QMenuBar, QMenu {background: "+colors[1]+"} "
+                           "QMenuBar, QMenu {background: "+colors[3]+" color: "+colors[2]+"} "
+                                                                                          
+                                                                                          
+                                                                                          
+                                                                                          
                            "QMenuBar::item:selected {background: "+colors[3]+"} "
                            "QMenu::item:selected {background: "+colors[3]+"} "
                                                                          
                            "QPushButton {border-radius: 9px; padding: 3px;} "
+                                                                          
                            "QPushButton:hover {background: "+colors[3]+"} "
-                           "QPushButton:pressed {background: "+colors[4]+"} "                                     
-                          
+                           "QPushButton:pressed {background: "+colors[4]+"} "
+                           "QToolTip {background: "+colors[3]+" color: "+colors[2]+"} "
+                            # double search !!!!!!
+                           "QMessageBox QLabel {color: "+colors[2]+"} "
+                                                                   
                            "QMessageBox .QPushButton {border-radius: 5px; padding: 6px 16px 6px 16px; "
                            "background: "+colors[3]+"} "
-                           "QMessageBox .QPushButton:pressed {background: "+colors[4]+"}")
+                                                    
+                           "QMessageBox .QPushButton:pressed {background: "+colors[4]+"}"
 
-        self.selector_area.setStyleSheet("* {border-radius: 9px; background: "+colors[1]+"} "
-                                         
-                                         "QListView::item {border-radius: 5px; padding: 2px;} "
-                                         "QListView::item:hover {background: "+colors[3]+"} "
-                                         "QListView::item:selected {background: "+colors[3]+" color: "+colors[4]+"}")
+                           "QListView {border-radius: 9px; background: "+colors[1]+"} "
+                                                                                   
+                                                                                   
+                           "QListView::item {border-radius: 5px; padding: 2px; color: "+colors[2]+"} "
+                           "QListView::item:hover {background: "+colors[3]+"} "
+                           "QListView::item:selected {background: "+colors[3]+" color: "+colors[4]+"}"
+                          
+                           "QTabWidget:pane {border-style: none;} "
+                                                                                                   
+                           "QTabBar:tab {border-radius: 5px; padding: 5px; background: "+colors[10]+" color: "+colors[5]+"} "
+                                                                                                                         
+                           "QTabBar:tab::hover {background: "+colors[3]+"} "                                                                                      
+                           "QTabBar:tab::selected {background: "+colors[3]+" color: "+colors[4]+"} "                                                            
+                           
+                           "QLabel {color: "+colors[6]+"} "   
+                                                       
+                           "QLineEdit, QDateEdit, QSpinBox, QComboBox {border-radius: 5px; background: "+colors[7]+
+                           " color: "+colors[8]+"} "
+                                                # for on !!!!
+                           "QLineEdit:focus {background: "+colors[9]+"} "
+                           "QDateEdit:focus {background: "+colors[9]+"} "
+                           "QComboBox:selected {background: "+colors[9]+"} "
+                           "QSpinBox:focus {background: "+colors[9]+"}")
 
-        [_.setStyleSheet("* {color: "+colors[5]+"}") for _ in (self.calculators_area.calcs_zone, self.registers_area.options_zone)]
 
-        [_.setStyleSheet("QLabel {color: "+colors[6]+"} "
-                            "QLineEdit, QDateEdit, QSpinBox {border-radius: 5px; background: "+colors[7]+" color: "+colors[8]+"} "
-                            "QLineEdit:focus {background: "+colors[9]+"} "
-                            "QDateEdit:focus {background: "+colors[9]+"} "
-                            "QSpinBox:focus {background: "+colors[9]+"}") for _ in calcs_list]
 
-        [_.result_area.setStyleSheet(result_area_style("9px;")) for _ in calcs_list[0:3]]
+
+
+        result_area_style = lambda r: "border-radius: "+ r +" background: "+colors[10]+" color: "+colors[11]
+        [_.result_area.setStyleSheet(result_area_style("9px;")) for _ in self.calculators_area.calcs[:-1]]
         [_.setStyleSheet(result_area_style("5px;")) for _ in self.calculators_area.calcs[3].result_area]
 
     def create_main_menu(self):
@@ -385,7 +397,8 @@ class ApplicationType(QtWidgets.QWidget):
 
         selector_panel.calculators_index = selector_panel.model_type.index(0, 0)
         selector_panel.registers_index = selector_panel.model_type.index(1, 0)
-        selector_panel.clicked.connect(self.click_on_selector_panel)
+        selector_panel.clicked.connect(self.select_calcs_type)
+        selector_panel.setCurrentIndex(selector_panel.calculators_index)
 
         return selector_panel
 
@@ -418,7 +431,7 @@ class ApplicationType(QtWidgets.QWidget):
         self.registers_area.show()
 
     @QtCore.pyqtSlot()
-    def click_on_selector_panel(self):
+    def select_calcs_type(self):
         match self.selector_area.currentIndex():
             case self.selector_area.calculators_index:
                 self.calculators_show_fixed()
