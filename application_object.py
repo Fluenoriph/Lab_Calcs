@@ -281,71 +281,69 @@ class ApplicationType(QtWidgets.QWidget):
 
         self.box.setColumnMinimumWidth(0, 1)
         self.show()
-    # refactor ????
+
     def set_style(self, colors):
-
-
-
-
-
-        self.setStyleSheet("* {outline: 0; border-style: none; background: " + colors[0] + " font: 13px arial, sans-serif;} "
-                         
-                           "QMenuBar, QMenu {background: "+colors[3]+" color: "+colors[2]+"} "
-                                                                                          
-                                                                                          
-                                                                                          
-                                                                                          
-                           "QMenuBar::item:selected {background: "+colors[3]+"} "
-                           "QMenu::item:selected {background: "+colors[3]+"} "
+        x = ("* {outline: 0; border-style: none; background: "+colors[0]+" font: 13px arial, sans-serif;} "
                                                                          
-                           "QPushButton {border-radius: 9px; padding: 3px;} "
-                                                                          
+             "QMenuBar, QMenu {background: "+colors[0]+" color: "+colors[2]+"} QLabel {color: "+colors[6]+"} "   
+             "QTabBar:tab {border-radius: 5px; padding: 5px; background: "+colors[9]+" color: "+colors[5]+"} "                          
+             "QLineEdit, QDateEdit, QSpinBox, QComboBox {border-radius: 5px; background: "+colors[7]+" color: "+colors[8]+"} "
+             "QTabWidget:pane {border-style: none;} "
+             "QPushButton {border-radius: 9px; padding: 3px;} ")
+
+
+
+
+
+
+
+
+        self.setStyleSheet(
+
+
+
+
+
+
+
+
+
+                            "QMenuBar {border-bottom: 1px solid "+colors[2]+"} "
+                            "QMenu::separator {border-bottom: 1px solid "+colors[2]+"} "                                      
+                            "QToolTip {color: "+colors[2]+"} "
+                           "QMessageBox QLabel {color: "+colors[2]+"} "                                                
+                            "QListView::item {border-radius: 5px; padding: 2px; color: "+colors[2]+"} "                                        
+                            
+                            
+                            "QListView::item:hover {background: "+colors[3]+"} "                                                                                        
+                           "QMenuBar::item:selected {background: "+colors[3]+"} "
+                           "QMenu::item:selected {background: "+colors[3]+"} "                                                                                           
                            "QPushButton:hover {background: "+colors[3]+"} "
-                           "QPushButton:pressed {background: "+colors[4]+"} "
-                           "QToolTip {background: "+colors[3]+" color: "+colors[2]+"} "
-                            # double search !!!!!!
-                           "QMessageBox QLabel {color: "+colors[2]+"} "
-                                                                   
-                           "QMessageBox .QPushButton {border-radius: 5px; padding: 6px 16px 6px 16px; "
-                           "background: "+colors[3]+"} "
-                                                    
+                            "QMessageBox .QPushButton {border-radius: 5px; padding: 6px 16px 6px 16px; "
+                           "background: "+colors[3]+"} "                            
+                            "QTabBar:tab::hover {background: "+colors[3]+"} "       
+                                                                       
+                           "QPushButton:pressed {background: "+colors[4]+"} "                                                 
                            "QMessageBox .QPushButton:pressed {background: "+colors[4]+"}"
-
-                           "QListView {border-radius: 9px; background: "+colors[1]+"} "
-                                                                                   
-                                                                                   
-                           "QListView::item {border-radius: 5px; padding: 2px; color: "+colors[2]+"} "
-                           "QListView::item:hover {background: "+colors[3]+"} "
-                           "QListView::item:selected {background: "+colors[3]+" color: "+colors[4]+"}"
-                          
-                           "QTabWidget:pane {border-style: none;} "
-                                                                                                   
-                           "QTabBar:tab {border-radius: 5px; padding: 5px; background: "+colors[10]+" color: "+colors[5]+"} "
-                                                                                                                         
-                           "QTabBar:tab::hover {background: "+colors[3]+"} "                                                                                      
-                           "QTabBar:tab::selected {background: "+colors[3]+" color: "+colors[4]+"} "                                                            
-                           
-                           "QLabel {color: "+colors[6]+"} "   
-                                                       
-                           "QLineEdit, QDateEdit, QSpinBox, QComboBox {border-radius: 5px; background: "+colors[7]+
-                           " color: "+colors[8]+"} "
-                                                # for on !!!!
-                           "QLineEdit:focus {background: "+colors[9]+"} "
-                           "QDateEdit:focus {background: "+colors[9]+"} "
-                           "QComboBox:selected {background: "+colors[9]+"} "
-                           "QSpinBox:focus {background: "+colors[9]+"}")
-
-
-
-
-
-        result_area_style = lambda r: "border-radius: "+ r +" background: "+colors[10]+" color: "+colors[11]
-        [_.result_area.setStyleSheet(result_area_style("9px;")) for _ in self.calculators_area.calcs[:-1]]
-        [_.setStyleSheet(result_area_style("5px;")) for _ in self.calculators_area.calcs[3].result_area]
+                            
+                            "QListView::item:selected {background: "+colors[3]+" color: "+colors[4]+"}"                                                                    
+                           "QTabBar:tab::selected {background: "+colors[3]+" color: "+colors[4]+"} "   
+                                                                                                           
+                                                                               
+                                                                                                                                                        
+                                                                                    
+                           "QLabel#result_field {border-radius: 9px; background: "+colors[9]+" color: "+colors[10]+"} "
+                           "QLabel#result_field_noise {border-radius: 5px; background: "+colors[9]+" color: "+colors[10]+"} "         
+                                
+                            "QListView {border-radius: 9px; background: "+colors[1]+"} "             
+                           "QLineEdit:focus {background: "+colors[1]+"} "
+                           "QDateEdit:focus {background: "+colors[1]+"} "
+                           "QComboBox:selected {background: "+colors[1]+"} "
+                           "QSpinBox:focus {background: "+colors[1]+"}")
 
     def create_main_menu(self):
         main_menu = QtWidgets.QMenuBar(self)
-        main_menu.setFixedHeight(20)
+        main_menu.setFixedHeight(21)
 
         main_menu.submenu_file = QtWidgets.QMenu(ct.data_library["Главное меню"][0], main_menu)
         main_menu.submenu_help = QtWidgets.QMenu(ct.data_library["Главное меню"][2], main_menu)
