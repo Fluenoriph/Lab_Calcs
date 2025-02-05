@@ -138,7 +138,8 @@ class CalculatorsController(BaseAbstractController):
 
     def __init__(self):
         super().__init__()
-        self.calcs = (AtmosphericAirDust(), AtmosphericAirDust(ct.data_library["Калькуляторы"]["Пыль в воздухе раб. зоны"]),
+        self.calcs = (AtmosphericAirDust(), AtmosphericAirDust(ct.data_library["Калькуляторы"]["Пыль в воздухе раб. зоны"][0:5],
+                                                               ct.data_library["Калькуляторы"]["Пыль в воздухе раб. зоны"][5:11]),
                       VentilationEfficiency(), NoiseLevelsWithBackground())
 
         self.calcs_zone = self.create_calcs(self.calcs)
@@ -147,7 +148,7 @@ class CalculatorsController(BaseAbstractController):
         self.controls[0].clicked.connect(self.calculating)
         self.controls[1].clicked.connect(self.clearing)
         self.controls[2].clicked.connect(self.saving)
-
+   # delete flags !!!!
     def ready_to_calculate(self, calc_index=True):
         match calc_index:
             case 2:
@@ -221,8 +222,8 @@ class CalculatorsController(BaseAbstractController):
                 az.clear_fields(self.calcs[2].entry_objects)
                 self.calcs[2].result_area.clear()
             case 3:
-                az.clear_fields(self.calcs[3].entry_objects)
-                az.clear_fields(self.calcs[3].result_area)
+                [az.clear_fields(_) for _ in self.calcs[3].entry_objects[0:2]]
+                [j.clear() for i in self.calcs[3].entry_objects[2:5] for j in i]
 
     @QtCore.pyqtSlot()
     def saving(self):
