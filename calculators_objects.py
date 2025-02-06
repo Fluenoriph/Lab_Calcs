@@ -1,3 +1,4 @@
+from dataclasses import fields
 from operator import index
 
 from PyQt6 import QtWidgets, QtCore, QtGui, QtSql
@@ -5,7 +6,6 @@ import constants as ct
 import math
 import locale
 import re
-import itertools
 from functools import partial
 from decimal import Decimal, ROUND_HALF_UP
 locale.setlocale(locale.LC_ALL, "ru")
@@ -40,9 +40,7 @@ class InputValue(QtWidgets.QLineEdit):
 
     @QtCore.pyqtSlot()
     def clear_none_value(self):
-        for _ in ("-", ".", ","):
-            if self.text() == _:
-                self.clear()
+        return [self.clear() for _ in ("-", ".", ",") if self.text() == _]
 
 
 class AbstractInputZone(QtWidgets.QWidget):
@@ -52,9 +50,8 @@ class AbstractInputZone(QtWidgets.QWidget):
         self.sum = range(len(self.parameters))
         self.box = QtWidgets.QGridLayout(self)
         self.box.setContentsMargins(ct.data_library["Отступы калькулятора"])
-        self.entry_objects = []
 
-    def create_input_area(self):
+        self.entry_objects = []
         [self.box.addWidget(QtWidgets.QLabel(self.parameters[_], self), _, 0, ct.data_library["Позиция левый-центр"])
          for _ in self.sum]
 
@@ -80,27 +77,24 @@ class AbstractInputZone(QtWidgets.QWidget):
         self.box.setHorizontalSpacing(50)           # Abstract ???
 
     @staticmethod
-    def check_fields(fields):
-        for _ in fields:
+    def check_parameters(x):
+        for _ in x:
             if _.text() == "":
                 return False
-        return True
+            return True
 
     @staticmethod
-    def clear_fields(fields):
-        for _ in fields:
-            _.clear()
-            _.value = None
+    def reset_value(x):
+        x.value = None
 
 
 class AtmosphericAirDust(AbstractInputZone):
     def __init__(self, parameters = ct.data_library["Калькуляторы"]["Пыль в атмосф. воздухе"][0:5],
-                 results = ct.data_library["Калькуляторы"]["Пыль в атмосф. воздухе"][5:11]):
+                 results = ct.data_library["Калькуляторы"]["Пыль в атмосф. воздухе"][5:12]):
         super().__init__(parameters = parameters)
         self.results = results
         self.set_widget_parameters()
-        
-        self.create_input_area()
+
         self.result_area = self.create_result_field()
 
         [_.setFixedSize(ct.data_library["Размеры поля ввода"]) for _ in self.entry_objects]
@@ -134,10 +128,9 @@ class AtmosphericAirDust(AbstractInputZone):
 
 class VentilationEfficiency(AbstractInputZone):
     def __init__(self):
-        super().__init__(parameters = ct.data_library["Калькуляторы"]["Эффектив. вентиляции"][0:6])
+        super().__init__(ct.data_library["Калькуляторы"]["Эффектив. вентиляции"][0:6])
         self.set_widget_parameters()
 
-        self.create_input_area()
         self.result_area = self.create_result_field()
 
         [_.setFixedSize(ct.data_library["Размеры поля ввода"]) for _ in self.entry_objects[0:3]]
@@ -174,9 +167,8 @@ class VentilationEfficiency(AbstractInputZone):
 
     @QtCore.pyqtSlot()
     def lock_rectangle_entry_objects(self):
-        for _ in self.entry_objects[4:6]:
-            _.clear()
-            _.value = None
+        [_.clear() for _ in self.entry_objects[4:6]]
+        [self.reset_value(_) for _ in self.entry_objects[4:6]]
 
     @QtCore.pyqtSlot()
     def lock_circle_entry_object(self):
@@ -184,17 +176,20 @@ class VentilationEfficiency(AbstractInputZone):
         self.entry_objects[3].value = None
 
 
-class NoiseLevelsWithBackground(AbstractInputZone):
+class NoiseLevelsWithBackground(QtWidgets.QWidget):
     def __init__(self):
-        super().__init__(parameters=ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][0:10])
+        super().__init__()
         self.setFixedSize(ct.data_library["Размеры калькулятора шум"])
+        self.box = QtWidgets.QGridLayout(self)
+        self.box.setContentsMargins(ct.data_library["Отступы калькулятора"])
+        self.sum = range(10)
 
         [self.box.addWidget(
             QtWidgets.QLabel(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][10:15][_], self),
             _, 0, ct.data_library["Позиция левый-центр"]) for _ in range(5)]
 
-        [self.box.addWidget(QtWidgets.QLabel(self.parameters[_], self), 0, self.box.columnCount(),
-                            ct.data_library["Позиция нижний-центр"]) for _ in self.sum]
+        [self.box.addWidget(QtWidgets.QLabel(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][0:10][_], self),
+                            0, self.box.columnCount(), ct.data_library["Позиция нижний-центр"]) for _ in self.sum]
 
         self.entry_objects_source = []
         self.entry_objects_background = []
@@ -208,11 +203,12 @@ class NoiseLevelsWithBackground(AbstractInputZone):
         for i in (self.delta_result_area, self.correct_result_area):
             [i.append(QtWidgets.QLabel(self)) for _ in self.sum]
 
-        [self.entry_objects.append(_) for _ in (self.entry_objects_source, self.entry_objects_background,
+        self.octave_table = []
+        [self.octave_table.append(_) for _ in (self.entry_objects_source, self.entry_objects_background,
                                                 self.delta_result_area, self.correct_result_area)]
 
         f = lambda x: x + 1
-        for i, j in enumerate(self.entry_objects):
+        for i, j in enumerate(self.octave_table):
             [_.setFixedSize(ct.data_library["Размеры полей шум"]) for _ in j]
             [self.box.addWidget(j[_], f(i), f(_), ct.data_library["Позиция центр"]) for _ in self.sum]
 
@@ -233,7 +229,7 @@ class NoiseLevelsWithBackground(AbstractInputZone):
                 self.delta_result_area[_].setText(locale.format_string("%0.1f", result[0]))
                 self.correct_result_area[_].setText(locale.format_string("%0.1f", result[1]))
             else:
-                pass
+                return
 
     @staticmethod
     def correcting_with_background(source, back):
@@ -251,7 +247,7 @@ class NoiseLevelsWithBackground(AbstractInputZone):
 
 class MainRegister(AbstractInputZone):
     def __init__(self):
-        super().__init__(parameters=ct.data_library["Журналы"]["Основной регистратор"][0:8])
+        super().__init__(ct.data_library["Журналы"]["Основной регистратор"][0:8])
         self.box.setVerticalSpacing(15)
         self.box.setHorizontalSpacing(30)
 
@@ -301,8 +297,7 @@ class MainRegister(AbstractInputZone):
 
 class FactorsRegister(AbstractInputZone):
     def __init__(self, parameters = ct.data_library["Журналы"]["Физические факторы"]):
-        super().__init__(parameters)
-        self.parameters = parameters
+        super().__init__(parameters = parameters)
         self.box.setHorizontalSpacing(10)
         self.box.setVerticalSpacing(10)
 
