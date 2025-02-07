@@ -1,10 +1,9 @@
-from PyQt6 import QtWidgets, QtCore, QtGui
+from PyQt6 import QtWidgets, QtCore, QtGui, QtSql
 import sys
-import itertools
 from winpath import get_desktop
 import constants as ct
 from calculators_objects import (AtmosphericAirDust, VentilationEfficiency, NoiseLevelsWithBackground, MainRegister,
-                                 FactorsRegister, AbstractInputZone as az)
+                                 FactorsRegister, AbstractBaseCalc as calc_base)
 
 
 class BaseAbstractController(QtWidgets.QWidget):
@@ -47,7 +46,7 @@ class BaseAbstractController(QtWidgets.QWidget):
             button.setIconSize(ct.data_library["Размеры кнопок"])
             button.setAutoDefault(True)
             self.buttons.append(button)
-            self.box.addWidget(button, f(_), y, ct.data_library["Позиция левый-верхний"])
+            self.box.addWidget(button, f(_), y, r, 1, ct.data_library["Позиция левый-верхний"])
 
 
 class RegistersController(BaseAbstractController):
@@ -58,12 +57,33 @@ class RegistersController(BaseAbstractController):
                                           FactorsRegister(ct.data_library["Журналы"]["Радиационные факторы"])),
                                           list(ct.data_library["Иконки"][1:3]))
         self.register = MainRegister()
-        self.box.addWidget(self.register, 0, 0, 7, 1, alignment=ct.data_library["Позиция левый-верхний"])
+        self.box.addWidget(self.register, 0, 0, 8, 2, alignment=ct.data_library["Позиция левый-верхний"])
 
         self.reg_options = self.create_options()
         self.create_control_buttons()
 
         #self.options_zone.currentChanged.connect(self.clear_protocol_number)
+
+
+
+    def get_visual_data(self):
+
+        window = QtWidgets.QWidget()
+        window.setWindowFlags(QtCore.Qt.WindowType.Window)
+        window.resize(600, 800)
+        box = QtWidgets.QVBoxLayout(window)
+        data_model = QtSql.QSqlTableModel(window)
+        data_model.setTable('protocols')
+        data_model.setSort(1, QtCore.Qt.SortOrder.AscendingOrder)
+        data_model.select()
+        view_type = QtWidgets.QTableView(window)
+        view_type.setModel(data_model)
+        box.addWidget(view_type)
+        window.show()
+
+
+
+
 
 
 '''def save_physical_protocol(self):
@@ -143,7 +163,7 @@ class CalculatorsController(BaseAbstractController):
         self.message = lambda x: QtWidgets.QMessageBox.information(self, " ",
                                           f"{ct.data_library["Отчет"][4]}\'{ct.data_library["Отчет"][x][1:]}\'")
 
-    def ready_to_save_basic_calc(self, calc):
+    def save_basic_calc(self, calc):
         if calc.result_area.text() != "":
             data = [calc.parameters[_] + ': ' + calc.entry_objects[_].text() + '\n' for _ in range(len(calc.parameters))]
             data.append('\n' + calc.result_area.text() + ct.data_library["Отчет"][5])
@@ -154,11 +174,16 @@ class CalculatorsController(BaseAbstractController):
         else:
             return
 
-    def ready_to_save_noise_calc(self):
+    def save_noise_calc(self):
         if self.calcs_objects[3].octave_table[3][0].text() != "":
-            data = [_ + '|*|' for _ in ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][0:10]]
+            data = [ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][10].ljust(20)]
+            [data.append(_.ljust(8)) for _ in ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][0:10]]
             data.append(ct.data_library["Отчет"][5])
-            [data.append(j.text() + '   ') for i in self.calcs_objects[3].octave_table for j in i]
+
+            for n, i in enumerate(self.calcs_objects[3].octave_table):
+                data.append(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][11:15][n].ljust(20))
+                [data.append(j.text().ljust(8)) for j in i]
+                data.append('\n')
             data.append('\n')
 
             self.message(3)
@@ -170,17 +195,17 @@ class CalculatorsController(BaseAbstractController):
     def calculating(self):
         match self.calc_options.currentIndex():
             case 0:
-                if az.check_parameters(self.calcs_objects[0].entry_objects):
+                if calc_base.check_parameters(self.calcs_objects[0].entry_objects):
                     self.calcs_objects[0].calculate()
                 else:
                     return
             case 1:
-                if az.check_parameters(self.calcs_objects[1].entry_objects):
+                if calc_base.check_parameters(self.calcs_objects[1].entry_objects):
                     self.calcs_objects[1].calculate()
                 else:
                     return
             case 2:
-                if (az.check_parameters(self.calcs_objects[2].entry_objects[0:3]) and
+                if (calc_base.check_parameters(self.calcs_objects[2].entry_objects[0:3]) and
                         self.calcs_objects[2].set_hole_checks()):
                     self.calcs_objects[2].calculate()
                 else:
@@ -193,31 +218,31 @@ class CalculatorsController(BaseAbstractController):
         match self.calc_options.currentIndex():
             case 0:
                 [_.clear() for _ in self.calcs_objects[0].entry_objects]
-                [az.reset_value(_) for _ in self.calcs_objects[0].entry_objects]
+                [calc_base.reset_value(_) for _ in self.calcs_objects[0].entry_objects]
                 self.calcs_objects[0].result_area.clear()
             case 1:
                 [_.clear() for _ in self.calcs_objects[1].entry_objects]
-                [az.reset_value(_) for _ in self.calcs_objects[1].entry_objects]
+                [calc_base.reset_value(_) for _ in self.calcs_objects[1].entry_objects]
                 self.calcs_objects[1].result_area.clear()
             case 2:
                 [_.clear() for _ in self.calcs_objects[2].entry_objects]
-                [az.reset_value(_) for _ in self.calcs_objects[2].entry_objects]
+                [calc_base.reset_value(_) for _ in self.calcs_objects[2].entry_objects]
                 self.calcs_objects[2].result_area.clear()
             case 3:
                 [j.clear() for i in self.calcs_objects[3].octave_table for j in i]
-                [az.reset_value(j) for i in self.calcs_objects[3].octave_table for j in i]
+                [calc_base.reset_value(j) for i in self.calcs_objects[3].octave_table for j in i]
 
     @QtCore.pyqtSlot()
     def saving(self):
         match self.calc_options.currentIndex():
             case 0:
-                self.ready_to_save_basic_calc(self.calcs_objects[0])
+                self.save_basic_calc(self.calcs_objects[0])
             case 1:
-                self.ready_to_save_basic_calc(self.calcs_objects[1])
+                self.save_basic_calc(self.calcs_objects[1])
             case 2:
-                self.ready_to_save_basic_calc(self.calcs_objects[2])
+                self.save_basic_calc(self.calcs_objects[2])
             case 3:
-                self.ready_to_save_noise_calc()
+                self.save_noise_calc()
 
     @staticmethod
     def write_to_file(calc_index, data):
