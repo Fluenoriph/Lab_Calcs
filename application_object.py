@@ -37,7 +37,6 @@ class BaseAbstractController(QtWidgets.QWidget):
             self.icon_path.reverse()
             tooltips = ct.data_library["Иконки"][7:9]
 
-        f = lambda x: x + 1
         for _ in range(r):
             button = QtWidgets.QPushButton(self)
             button.setIcon(QtGui.QIcon(self.icon_path[_]))
@@ -46,14 +45,14 @@ class BaseAbstractController(QtWidgets.QWidget):
             button.setIconSize(ct.data_library["Размеры кнопок"])
             button.setAutoDefault(True)
             self.buttons.append(button)
-            self.box.addWidget(button, f(_), y, r, 1, ct.data_library["Позиция левый-верхний"])
+            self.box.addWidget(button, ct.f_upper(_), y, r, 1, ct.data_library["Позиция левый-верхний"])
 
 
 class RegistersController(BaseAbstractController):
     n = list(ct.data_library["Журналы"].keys())
 
     def __init__(self):
-        super().__init__(self.n[1:3],(FactorsRegister(),
+        super().__init__(self.n[1:],(FactorsRegister(),
                                           FactorsRegister(ct.data_library["Журналы"]["Радиационные факторы"])),
                                           list(ct.data_library["Иконки"][1:3]))
         self.register = MainRegister()
@@ -61,73 +60,22 @@ class RegistersController(BaseAbstractController):
 
         self.reg_options = self.create_options()
         self.create_control_buttons()
+        self.buttons[0].clicked.connect(self.add_to_database)
+
 
         #self.options_zone.currentChanged.connect(self.clear_protocol_number)
 
 
+    @QtCore.pyqtSlot()
+    def add_to_database(self):
+        self.register.add_values()
 
-    def get_visual_data(self):
 
-        window = QtWidgets.QWidget()
-        window.setWindowFlags(QtCore.Qt.WindowType.Window)
-        window.resize(600, 800)
-        box = QtWidgets.QVBoxLayout(window)
-        data_model = QtSql.QSqlTableModel(window)
-        data_model.setTable('protocols')
-        data_model.setSort(1, QtCore.Qt.SortOrder.AscendingOrder)
-        data_model.select()
-        view_type = QtWidgets.QTableView(window)
-        view_type.setModel(data_model)
-        box.addWidget(view_type)
-        window.show()
+ # Все функции добавления в базу здесь !!!!!!
 
 
 
-
-
-
-'''def save_physical_protocol(self):
-        self.base_register_area.connection_with_database.open()
-
-        queries_list = (self.base_register_area.ready_insert_to_protocol_table(),
-                        self.base_register_area.ready_insert_to_dates_of_research_table(),
-                        self.base_register_area.ready_insert_to_objects_names_table(),
-                        self.base_register_area.ready_insert_to_objects_addresses_table(),
-                        
-                        self.physical_register_options.ready_insert_to_microclimate_table(),
-                        self.physical_register_options.ready_insert_to_light_table(),
-                        self.physical_register_options.ready_insert_to_noise_table(),
-                        self.physical_register_options.ready_insert_to_vibration_table(),
-                        self.physical_register_options.ready_insert_to_emf_table(),
-                        self.physical_register_options.ready_insert_to_aeroionics_table(),
-                        self.physical_register_options.ready_insert_to_ventilation_table())
-
-        self.check_read_to_database(queries_list)
-        self.base_register_area.connection_with_database.close()
-
-    def save_radiation_protocol(self):
-        self.base_register_area.connection_with_database.open()
-
-        queries_list = (self.base_register_area.ready_insert_to_protocol_table(),
-                        self.base_register_area.ready_insert_to_dates_of_research_table(),
-                        self.base_register_area.ready_insert_to_objects_names_table(),
-                        self.base_register_area.ready_insert_to_objects_addresses_table(),
-                        
-                        self.radiation_control_register_options.ready_insert_to_gamma_radiation_table(),
-                        self.radiation_control_register_options.ready_insert_to_radon_volume_activity_table(),
-                        self.radiation_control_register_options.ready_insert_to_eeva_table(),
-                        self.radiation_control_register_options.ready_insert_to_radon_flux_density_table())
-
-        self.check_read_to_database(queries_list)
-        self.base_register_area.connection_with_database.close()
-
-    def check_read_to_database(self, queries):
-        for query in queries:
-            check = query.exec()
-            if not check:
-                self.show_database_error()
-
-    def show_database_error(self):
+'''def show_database_error(self):
         QtWidgets.QMessageBox.critical(self, " ", "Ошибка записи в базу данных."
                                                   "\nНекоторые данные могли не сохраниться !")
 
@@ -138,8 +86,6 @@ class RegistersController(BaseAbstractController):
                 self.save_physical_protocol()
             case 1:
                 self.save_radiation_protocol()
-
-    
 
     @QtCore.pyqtSlot()
     def clear_protocol_number(self):
@@ -195,21 +141,21 @@ class CalculatorsController(BaseAbstractController):
     def calculating(self):
         match self.calc_options.currentIndex():
             case 0:
-                if calc_base.check_parameters(self.calcs_objects[0].entry_objects):
+                if [i for i, x in enumerate(self.calcs_objects[0].entry_objects) if x.text() == ""]:
+                    return
+                else:
                     self.calcs_objects[0].calculate()
-                else:
-                    return
             case 1:
-                if calc_base.check_parameters(self.calcs_objects[1].entry_objects):
+                if [i for i, x in enumerate(self.calcs_objects[1].entry_objects) if x.text() == ""]:
+                    return
+                else:
                     self.calcs_objects[1].calculate()
-                else:
-                    return
             case 2:
-                if (calc_base.check_parameters(self.calcs_objects[2].entry_objects[0:3]) and
-                        self.calcs_objects[2].set_hole_checks()):
-                    self.calcs_objects[2].calculate()
-                else:
+                if ([i for i, x in enumerate(self.calcs_objects[1].entry_objects[0:3]) if x.text() == ""] and
+                        not self.calcs_objects[2].set_hole_checks()):
                     return
+                else:
+                    self.calcs_objects[2].calculate()
             case 3:
                 self.calcs_objects[3].calculate()
 

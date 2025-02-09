@@ -73,13 +73,6 @@ class AbstractBaseCalc(QtWidgets.QWidget):
         self.box.addWidget(self.result_area, self.box.rowCount(), 0, 1, 2, ct.data_library["Позиция левый-верхний"])
 
     @staticmethod
-    def check_parameters(x):
-        for _ in x:
-            if _.text() == "":
-                return False
-        return True
-
-    @staticmethod
     def reset_value(x):
         x.value = None
 
@@ -194,10 +187,9 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
         [self.octave_table.append(_) for _ in (self.entry_objects_source, self.entry_objects_background,
                                                 self.delta_result_area, self.correct_result_area)]
 
-        f = lambda x: x + 1
         for i, j in enumerate(self.octave_table):
             [_.setFixedSize(ct.data_library["Размеры полей шум"]) for _ in j]
-            [self.box.addWidget(j[_], f(i), f(_), ct.data_library["Позиция центр"]) for _ in self.sum]
+            [self.box.addWidget(j[_], ct.f_upper(i), ct.f_upper(_), ct.data_library["Позиция центр"]) for _ in self.sum]
 
             if i == 0 or i == 1:
                 [_.setMaxLength(5) for _ in j]
@@ -237,6 +229,8 @@ class AbstractRegister(QtWidgets.QWidget):
         self.parameters = parameters
         self.entry_objects = []
         self.sum = range(len(self.parameters))
+        #self.f_insert_command = lambda
+
 
         self.box = QtWidgets.QGridLayout(self)
         self.box.setVerticalSpacing(15)
@@ -247,35 +241,31 @@ class AbstractRegister(QtWidgets.QWidget):
 
         self.connection_with_database = QtSql.QSqlDatabase.addDatabase('QSQLITE')
         self.connection_with_database.setDatabaseName('registers_data.db')
-        self.connection_with_database.open()
 
+        #self.connection_with_database.open()    # ????
 
-    '''def ready_insert_to_protocol_table(self):
-        query = QtSql.QSqlQuery()
-        query.prepare(constants.BASE_REGISTER_COMMANDS_INSERT[0])
-        query.bindValue(':number', self.entry_objects[2].text())
-        query.bindValue(':protocol_date', self.entry_objects_dates[1].text())
-        query.bindValue(':work_type', self.entry_objects[3].text())
-        query.bindValue(':employee', self.entry_objects[6].text())
-        return query
+    def add_values_to_db(self, table_data):
+        match table_data[0]:
+            case "protocols":
+                n = "?, ?, ?, ?, ?"     # list * x ???
+            case "objects":
+                n = "?, ?, ?"
+            case "research_sum":
+                n = "?, ?, ?, ?"
+            case _:
+                return
 
-    def ready_insert_to_dates_of_research_table(self):
-        query = QtSql.QSqlQuery()
-        query.prepare(constants.BASE_REGISTER_COMMANDS_INSERT[1])
-        query.bindValue(':current_date', self.entry_objects_dates[0].text())
-        return query
+        x = QtSql.QSqlQuery()
+        x.prepare(f"INSERT INTO {table_data[0]} VALUES(NULL, {n})")
+        [x.addBindValue(_) for _ in table_data[1:]]
 
-    def ready_insert_to_objects_names_table(self):
-        query = QtSql.QSqlQuery()
-        query.prepare(constants.BASE_REGISTER_COMMANDS_INSERT[2])
-        query.bindValue(':name', self.entry_objects[4].text())
-        return query
+        if x.exec():
+            print("ok")
+        else:
+            print("bad")
 
-    def ready_insert_to_objects_addresses_table(self):
-        query = QtSql.QSqlQuery()
-        query.prepare(constants.BASE_REGISTER_COMMANDS_INSERT[3])
-        query.bindValue(':address', self.entry_objects[5].text())
-        return query'''
+        self.connection_with_database.close()
+
 
 class MainRegister(AbstractRegister):
     def __init__(self, parameters = ct.data_library["Журналы"]["Основной регистратор"][0:8]):
@@ -290,15 +280,38 @@ class MainRegister(AbstractRegister):
         [self.box.addWidget(self.entry_objects[_], _, 1, ct.data_library["Позиция левый-центр"]) for _ in self.sum]
 
         [_.setDate(ct.data_library["Текущий период"]) for _ in self.entry_objects[1:3]]
-        #self.entry_objects[3].addItems(ct.data_library["Журналы"]["Основной регистратор"][8:14])
+        [self.entry_objects[3].addItem(ct.data_library["Журналы"]["Основной регистратор"][8:14][_], ct.f_upper(_)) for _
+         in range(6)]  # ????? check
         self.entry_objects[7].setCompleter(QtWidgets.QCompleter(ct.data_library["Журналы"]["Основной регистратор"][14:18], self))
 
+    def add_values(self):
+        self.connection_with_database.open()
 
+        x = QtSql.QSqlQuery()
+        x.prepare("INSERT INTO protocols VALUES(NULL, ?, ?, ?, ?, ?)")
 
-        self.type_1 = QtSql.QSqlQueryModel()
-        self.type_1.setQuery('SELECT type FROM protocol_type')
-        print(self.type_1)
-        self.entry_objects[3].setModel(self.type_1)
+        [x.addBindValue(_.text()) for _ in self.entry_objects[0:3]]
+        x.addBindValue(self.entry_objects[7].text())
+        x.addBindValue(self.entry_objects[3].itemData(self.entry_objects[3].currentIndex()))
+
+        if x.exec():
+            print("ok")
+        else:
+            print("bad")
+            #print(self.connection_with_database.lastError().text())
+
+        y = QtSql.QSqlQuery()
+        y.prepare("INSERT INTO objects VALUES(NULL, ?, ?, ?)")
+
+        [y.addBindValue(_.text()) for _ in self.entry_objects[4:7]]
+
+        if y.exec():
+            print("ok")
+        else:
+            print("bad")
+
+        self.connection_with_database.close()
+
 
 class FactorsRegister(AbstractRegister):
     def __init__(self, parameters = ct.data_library["Журналы"]["Физические факторы"]):
@@ -318,80 +331,3 @@ class FactorsRegister(AbstractRegister):
         x = self.box.rowCount()
         self.box.addWidget(QtWidgets.QLabel("соотв.", self), x, 1, ct.data_library["Позиция левый-верхний"])
         self.box.addWidget(QtWidgets.QLabel("не соотв.", self), x, 2, ct.data_library["Позиция левый-верхний"])
-
-    '''def ready_insert_to_microclimate_table(self):
-        query = QtSql.QSqlQuery()
-        query.prepare(constants.PHYSICAL_REGISTER_COMMANDS_INSERT[0])
-        query.bindValue(':ok_standart', self.entry_objects_ok_standart[0].text())
-        query.bindValue(':no_standart', self.entry_objects_no_standart[0].text())
-        return query
-
-    def ready_insert_to_light_table(self):
-        query = QtSql.QSqlQuery()
-        query.prepare(constants.PHYSICAL_REGISTER_COMMANDS_INSERT[1])
-        query.bindValue(':ok_standart', self.entry_objects_ok_standart[1].text())
-        query.bindValue(':no_standart', self.entry_objects_no_standart[1].text())
-        return query
-
-    def ready_insert_to_noise_table(self):
-        query = QtSql.QSqlQuery()
-        query.prepare(constants.PHYSICAL_REGISTER_COMMANDS_INSERT[2])
-        query.bindValue(':ok_standart', self.entry_objects_ok_standart[2].text())
-        query.bindValue(':no_standart', self.entry_objects_no_standart[2].text())
-        return query
-
-    def ready_insert_to_vibration_table(self):
-        query = QtSql.QSqlQuery()
-        query.prepare(constants.PHYSICAL_REGISTER_COMMANDS_INSERT[3])
-        query.bindValue(':ok_standart', self.entry_objects_ok_standart[3].text())
-        query.bindValue(':no_standart', self.entry_objects_no_standart[3].text())
-        return query
-
-    def ready_insert_to_emf_table(self):
-        query = QtSql.QSqlQuery()
-        query.prepare(constants.PHYSICAL_REGISTER_COMMANDS_INSERT[4])
-        query.bindValue(':ok_standart', self.entry_objects_ok_standart[4].text())
-        query.bindValue(':no_standart', self.entry_objects_no_standart[4].text())
-        return query
-
-    def ready_insert_to_aeroionics_table(self):
-        query = QtSql.QSqlQuery()
-        query.prepare(constants.PHYSICAL_REGISTER_COMMANDS_INSERT[5])
-        query.bindValue(':ok_standart', self.entry_objects_ok_standart[5].text())
-        query.bindValue(':no_standart', self.entry_objects_no_standart[5].text())
-        return query
-
-    def ready_insert_to_ventilation_table(self):
-        query = QtSql.QSqlQuery()
-        query.prepare(constants.PHYSICAL_REGISTER_COMMANDS_INSERT[6])
-        query.bindValue(':ok_standart', self.entry_objects_ok_standart[6].text())
-        query.bindValue(':no_standart', self.entry_objects_no_standart[6].text())
-        return query
-
-    def ready_insert_to_gamma_radiation_table(self):
-        query = QtSql.QSqlQuery()
-        query.prepare(constants.RADIATION_REGISTER_COMMANDS_INSERT[0])
-        query.bindValue(':ok_standart', self.entry_objects_ok_standart[0].text())
-        query.bindValue(':no_standart', self.entry_objects_no_standart[0].text())
-        return query
-
-    def ready_insert_to_radon_volume_activity_table(self):
-        query = QtSql.QSqlQuery()
-        query.prepare(constants.RADIATION_REGISTER_COMMANDS_INSERT[1])
-        query.bindValue(':ok_standart', self.entry_objects_ok_standart[1].text())
-        query.bindValue(':no_standart', self.entry_objects_no_standart[1].text())
-        return query
-
-    def ready_insert_to_eeva_table(self):
-        query = QtSql.QSqlQuery()
-        query.prepare(constants.RADIATION_REGISTER_COMMANDS_INSERT[2])
-        query.bindValue(':ok_standart', self.entry_objects_ok_standart[2].text())
-        query.bindValue(':no_standart', self.entry_objects_no_standart[2].text())
-        return query
-
-    def ready_insert_to_radon_flux_density_table(self):
-        query = QtSql.QSqlQuery()
-        query.prepare(constants.RADIATION_REGISTER_COMMANDS_INSERT[3])
-        query.bindValue(':ok_standart', self.entry_objects_ok_standart[3].text())
-        query.bindValue(':no_standart', self.entry_objects_no_standart[3].text())
-        return query'''

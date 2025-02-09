@@ -1,6 +1,8 @@
 from PyQt6 import QtCore
 
 
+f_upper = lambda x: x + 1
+
 data_library = {
     "Главное меню": ("Файл", "Выход", "Помощь", "Сменить тему"),
 
@@ -26,8 +28,8 @@ data_library = {
               "\\noise_calc_result_log.txt", "Данные рассчета будут сохранены\nна рабочий стол в файл ",
               f"\n{'-' * 98}\n"),
 
-    "Цвета светлой темы": ["#fff5ee;", "#aaf0d1;", "#1b1116;", "#08e8de;", "#9d9101;", "#121910;", "#151719;",
-                           "#1cd3a2;", "#4d4234;", "#6699cc;", "#641c34;"],
+    "Цвета светлой темы": ("#fff5ee;", "#aaf0d1;", "#1b1116;", "#08e8de;", "#9d9101;", "#121910;", "#151719;",
+                           "#1cd3a2;", "#4d4234;", "#6699cc;", "#641c34;"),
 
     "Цвета темной темы": ("#26252d;", "#151719;", "#c9c0bb;", "#002137;", "#03c03c;", "#8a9597;", "#01796f;",
                           "#343e40;", "#4169e1;", "#0e1824;", "#baacc7;"),
@@ -102,25 +104,6 @@ data_library = {
         "Физические факторы": ("Микроклимат", "Освещенность", "Шум", "Вибрация", "ЭМП", "Аэроионы", "Вентиляция"),
 
         "Радиационные факторы": ("МЭД гамма-излучения", "Объемная активность радона", "ЭРОА радона",
-                                 "Плотность потока радона"),
-
-        "Запись основных данных": ("INSERT INTO protocols (number, protocol_date, work_type, employee) "
-                                   "VALUES (:number, :protocol_date, :work_type, :employee)",
-                                   "INSERT INTO dates_of_research (current_date) VALUES (:current_date)",
-                                   "INSERT INTO objects_names (name) VALUES (:name)",
-                                   "INSERT INTO objects_addresses (address) VALUES (:address)"),
-
-        "Запись физ. факторов": ("INSERT INTO microclimate (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
-                                 "INSERT INTO light (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
-                                 "INSERT INTO noise (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
-                                 "INSERT INTO vibration (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
-                                 "INSERT INTO emf (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
-                                 "INSERT INTO aeroionics (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
-                                 "INSERT INTO ventilation (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)"),
-
-        "Запись рад. факторов": ("INSERT INTO gamma_radiation (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
-                                 "INSERT INTO radon_volume_activity (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
-                                 "INSERT INTO eeva (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)",
-                                 "INSERT INTO radon_flux_density (ok_standart, no_standart) VALUES (:ok_standart, :no_standart)")
+                                 "Плотность потока радона")
     }
 }
