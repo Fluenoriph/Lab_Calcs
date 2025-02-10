@@ -229,8 +229,6 @@ class AbstractRegister(QtWidgets.QWidget):
         self.parameters = parameters
         self.entry_objects = []
         self.sum = range(len(self.parameters))
-        #self.f_insert_command = lambda
-
 
         self.box = QtWidgets.QGridLayout(self)
         self.box.setVerticalSpacing(15)
@@ -241,30 +239,7 @@ class AbstractRegister(QtWidgets.QWidget):
 
         self.connection_with_database = QtSql.QSqlDatabase.addDatabase('QSQLITE')
         self.connection_with_database.setDatabaseName('registers_data.db')
-
-        #self.connection_with_database.open()    # ????
-
-    def add_values_to_db(self, table_data):
-        match table_data[0]:
-            case "protocols":
-                n = "?, ?, ?, ?, ?"     # list * x ???
-            case "objects":
-                n = "?, ?, ?"
-            case "research_sum":
-                n = "?, ?, ?, ?"
-            case _:
-                return
-
-        x = QtSql.QSqlQuery()
-        x.prepare(f"INSERT INTO {table_data[0]} VALUES(NULL, {n})")
-        [x.addBindValue(_) for _ in table_data[1:]]
-
-        if x.exec():
-            print("ok")
-        else:
-            print("bad")
-
-        self.connection_with_database.close()
+        self.connection_with_database.open()    # ????
 
 
 class MainRegister(AbstractRegister):
@@ -284,34 +259,6 @@ class MainRegister(AbstractRegister):
          in range(6)]  # ????? check
         self.entry_objects[7].setCompleter(QtWidgets.QCompleter(ct.data_library["Журналы"]["Основной регистратор"][14:18], self))
 
-    def add_values(self):
-        self.connection_with_database.open()
-
-        x = QtSql.QSqlQuery()
-        x.prepare("INSERT INTO protocols VALUES(NULL, ?, ?, ?, ?, ?)")
-
-        [x.addBindValue(_.text()) for _ in self.entry_objects[0:3]]
-        x.addBindValue(self.entry_objects[7].text())
-        x.addBindValue(self.entry_objects[3].itemData(self.entry_objects[3].currentIndex()))
-
-        if x.exec():
-            print("ok")
-        else:
-            print("bad")
-            #print(self.connection_with_database.lastError().text())
-
-        y = QtSql.QSqlQuery()
-        y.prepare("INSERT INTO objects VALUES(NULL, ?, ?, ?)")
-
-        [y.addBindValue(_.text()) for _ in self.entry_objects[4:7]]
-
-        if y.exec():
-            print("ok")
-        else:
-            print("bad")
-
-        self.connection_with_database.close()
-
 
 class FactorsRegister(AbstractRegister):
     def __init__(self, parameters = ct.data_library["Журналы"]["Физические факторы"]):
@@ -324,7 +271,7 @@ class FactorsRegister(AbstractRegister):
         [self.entry_objects.append(_) for _ in (self.ok_standart_entries, self.no_standart_entries)]
         [j.setFixedSize(ct.data_library["Размеры поля ввода факторов"]) for i in self.entry_objects for j in i]
         [j.setRange(0, 9999) for i in self.entry_objects for j in i]
-
+                    # lambda ???
         [self.box.addWidget(self.entry_objects[0][_], _, 1, ct.data_library["Позиция левый-центр"]) for _ in self.sum]
         [self.box.addWidget(self.entry_objects[1][_], _, 2, ct.data_library["Позиция левый-центр"]) for _ in self.sum]
 

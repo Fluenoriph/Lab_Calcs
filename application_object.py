@@ -52,44 +52,108 @@ class RegistersController(BaseAbstractController):
     n = list(ct.data_library["Журналы"].keys())
 
     def __init__(self):
-        super().__init__(self.n[1:],(FactorsRegister(),
+        super().__init__(self.n[1:3],(FactorsRegister(),
                                           FactorsRegister(ct.data_library["Журналы"]["Радиационные факторы"])),
                                           list(ct.data_library["Иконки"][1:3]))
+        self.active_factor = []
+        self.error_message = lambda x: QtWidgets.QMessageBox.critical(self, " ", x)
+
+
         self.register = MainRegister()
         self.box.addWidget(self.register, 0, 0, 8, 2, alignment=ct.data_library["Позиция левый-верхний"])
 
         self.reg_options = self.create_options()
+        self.reg_options.currentChanged.connect(self.clear_number_to_move)
+
         self.create_control_buttons()
-        self.buttons[0].clicked.connect(self.add_to_database)
-
-
-        #self.options_zone.currentChanged.connect(self.clear_protocol_number)
-
+        self.buttons[0].clicked.connect(self.record_main_data)
+        self.buttons[0].clicked.connect(self.record_factors_data)
+        self.buttons[1].clicked.connect(self.clear_fields)
 
     @QtCore.pyqtSlot()
-    def add_to_database(self):
-        self.register.add_values()
+    def record_main_data(self):
+        #self.connection_with_database.open()
+        n = ("INSERT INTO protocols VALUES(NULL, ?, ?, ?, ?, ?)", "INSERT INTO objects VALUES(NULL, ?, ?, ?)")
 
+        protocols_data = [_.text() for _ in self.register.entry_objects[0:3]]
+        [protocols_data.append(_) for _ in (self.register.entry_objects[7].text(),
+                                            self.register.entry_objects[3].itemData(self.register.entry_objects[3].currentIndex()))]
 
- # Все функции добавления в базу здесь !!!!!!
+        objects_data = [_.text() for _ in self.register.entry_objects[4:7]]
 
+        for i, j in enumerate((protocols_data, objects_data)):
+            x = QtSql.QSqlQuery()
+            x.prepare(n[i])
+            [x.addBindValue(_) for _ in j]
 
+            if x.exec():  # retutn !!
+                print("ok")
+            else:
+                print("bad")
 
-'''def show_database_error(self):
-        QtWidgets.QMessageBox.critical(self, " ", "Ошибка записи в базу данных."
-                                                  "\nНекоторые данные могли не сохраниться !")
+        #self.connection_with_database.close()
 
     @QtCore.pyqtSlot()
-    def select_insert_command(self):
-        match self.options_area.currentIndex():
-            case 0:
-                self.save_physical_protocol()
-            case 1:
-                self.save_radiation_protocol()
+    def record_factors_data(self):
+        self.active_factor = [i for i, x in enumerate(self.calcs_objects[0].entry_objects[0]) if x.value() > 0]
+
+        if self.active_factor:
+            x = QtSql.QSqlQuery()
+            x.prepare()
+
+            n = len(self.active_factor)
+
+            if n > 1:       # self. >> lists !!!
+                factor_id = [_ + 1 for _ in self.active_factor]
+
+                number = []
+                [number.append(self.register.entry_objects[0].text()) for _ in range(n)]
+
+                sum_ok = [self.calcs_objects[0].entry_objects[0][i].value() for i in self.active_factor]   # lambda !!
+
+                sum_no = [self.calcs_objects[0].entry_objects[1][i].value() for i in self.active_factor]
+
+                x.addBindValue(factor_id)
+                x.addBindValue(sum_ok)
+                x.addBindValue(sum_no)
+                x.addBindValue(number)
+
+                print(factor_types)
+                print(sum_ok)
+                print(sum_no)
+                print(number)
+
+                if x.execBatch():
+                    print("ok")
+                else:
+                    print("bad")
+
+            else:
+
+                x.addBindValue(self.active_factor + 1)
+                x.addBindValue(self.register.entry_objects[0].text())
+                x.addBindValue(self.calcs_objects[0].entry_objects[0][self.active_factor].value())
+                x.addBindValue(self.calcs_objects[0].entry_objects[1][self.active_factor].value())
+
+
+                if y.exec():
+                    print("ok")
+                else:
+                    print("bad")
 
     @QtCore.pyqtSlot()
-    def clear_protocol_number(self):
-        self.base_register_area.entry_objects_others[0].clear()'''
+    def clear_fields(self):
+        [_.clear() for _ in self.register.entry_objects if self.register.entry_objects.index(_) != 3]
+
+        [j.clear() for i in self.calcs_objects[0].entry_objects for j in i]
+        [j.clear() for i in self.calcs_objects[1].entry_objects for j in i]
+      # refactor
+        [j.setValue(0) for i in self.calcs_objects[0].entry_objects for j in i]
+        [j.setValue(0) for i in self.calcs_objects[1].entry_objects for j in i]
+
+    @QtCore.pyqtSlot()
+    def clear_number_to_move(self):
+        return self.register.entry_objects[0].clear()
 
 
 class CalculatorsController(BaseAbstractController):
@@ -106,94 +170,89 @@ class CalculatorsController(BaseAbstractController):
         self.buttons[1].clicked.connect(self.clearing)
         self.buttons[2].clicked.connect(self.saving)
 
-        self.message = lambda x: QtWidgets.QMessageBox.information(self, " ",
-                                          f"{ct.data_library["Отчет"][4]}\'{ct.data_library["Отчет"][x][1:]}\'")
+        self.message = lambda: QtWidgets.QMessageBox.information(self, " ",
+                    f"{ct.data_library["Отчет"][4]}\'{ct.data_library["Отчет"][self.calc_options.currentIndex()][1:]}\'")
 
-    def save_basic_calc(self, calc):
+    def ready_to_calculate_airs(self):
+        calc = self.calcs_objects[self.calc_options.currentIndex()]      # in self current calc )
+
+        if [i for i, x in enumerate(calc.entry_objects) if x.text() == ""]:
+            return
+        else:
+            calc.calculate()
+
+    def clear_basic_calc(self):
+        calc = self.calcs_objects[self.calc_options.currentIndex()]
+
+        [_.clear() for _ in calc.entry_objects]
+        [calc_base.reset_value(_) for _ in calc.entry_objects]
+        calc.result_area.clear()
+
+    def save_basic_calc(self):
+        calc = self.calcs_objects[self.calc_options.currentIndex()]
+
         if calc.result_area.text() != "":
             data = [calc.parameters[_] + ': ' + calc.entry_objects[_].text() + '\n' for _ in range(len(calc.parameters))]
             data.append('\n' + calc.result_area.text() + ct.data_library["Отчет"][5])
-            i = self.calcs_objects.index(calc)
 
-            self.message(i)
-            self.write_to_file(i, data)
+            self.message()
+            self.write_to_file(data)
         else:
             return
 
     def save_noise_calc(self):
         if self.calcs_objects[3].octave_table[3][0].text() != "":
-            data = [ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][10].ljust(20)]
+            data = [ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][10].ljust(23)]
             [data.append(_.ljust(8)) for _ in ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][0:10]]
-            data.append(ct.data_library["Отчет"][5])
-
-            for n, i in enumerate(self.calcs_objects[3].octave_table):
-                data.append(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][11:15][n].ljust(20))
-                [data.append(j.text().ljust(8)) for j in i]
-                data.append('\n')
+            data.append('\n')
+            data.append("".ljust(23))
+            [data.append("----".ljust(8)) for _ in range(10)]
             data.append('\n')
 
-            self.message(3)
-            self.write_to_file(3, data)
+            for n, i in enumerate(self.calcs_objects[3].octave_table):
+                data.append(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][11:15][n].ljust(23))
+                [data.append(j.text().ljust(8)) for j in i]
+                data.append('\n')
+            data.append(ct.data_library["Отчет"][5])
+
+            self.message()
+            self.write_to_file(data)
         else:
             return
+
+    def write_to_file(self, data):
+        with open(get_desktop() + ct.data_library["Отчет"][self.calc_options.currentIndex()], "a", encoding="utf-8") as txt:
+            txt.writelines(data)
 
     @QtCore.pyqtSlot()
     def calculating(self):
         match self.calc_options.currentIndex():
-            case 0:
-                if [i for i, x in enumerate(self.calcs_objects[0].entry_objects) if x.text() == ""]:
-                    return
-                else:
-                    self.calcs_objects[0].calculate()
-            case 1:
-                if [i for i, x in enumerate(self.calcs_objects[1].entry_objects) if x.text() == ""]:
-                    return
-                else:
-                    self.calcs_objects[1].calculate()
             case 2:
-                if ([i for i, x in enumerate(self.calcs_objects[1].entry_objects[0:3]) if x.text() == ""] and
+                if ([i for i, x in enumerate(self.calcs_objects[2].entry_objects[0:3]) if x.text() == ""] or
                         not self.calcs_objects[2].set_hole_checks()):
                     return
                 else:
                     self.calcs_objects[2].calculate()
             case 3:
                 self.calcs_objects[3].calculate()
+            case _:
+                self.ready_to_calculate_airs()
 
     @QtCore.pyqtSlot()
     def clearing(self):
-        match self.calc_options.currentIndex():
-            case 0:
-                [_.clear() for _ in self.calcs_objects[0].entry_objects]
-                [calc_base.reset_value(_) for _ in self.calcs_objects[0].entry_objects]
-                self.calcs_objects[0].result_area.clear()
-            case 1:
-                [_.clear() for _ in self.calcs_objects[1].entry_objects]
-                [calc_base.reset_value(_) for _ in self.calcs_objects[1].entry_objects]
-                self.calcs_objects[1].result_area.clear()
-            case 2:
-                [_.clear() for _ in self.calcs_objects[2].entry_objects]
-                [calc_base.reset_value(_) for _ in self.calcs_objects[2].entry_objects]
-                self.calcs_objects[2].result_area.clear()
-            case 3:
-                [j.clear() for i in self.calcs_objects[3].octave_table for j in i]
-                [calc_base.reset_value(j) for i in self.calcs_objects[3].octave_table for j in i]
+        if self.calc_options.currentIndex() == 3:
+            [j.clear() for i in self.calcs_objects[3].octave_table for j in i]
+            [calc_base.reset_value(j) for i in self.calcs_objects[3].octave_table for j in i]
+        else:
+            self.clear_basic_calc()
 
     @QtCore.pyqtSlot()
     def saving(self):
-        match self.calc_options.currentIndex():
-            case 0:
-                self.save_basic_calc(self.calcs_objects[0])
-            case 1:
-                self.save_basic_calc(self.calcs_objects[1])
-            case 2:
-                self.save_basic_calc(self.calcs_objects[2])
-            case 3:
-                self.save_noise_calc()
+        if self.calc_options.currentIndex() == 3:
+            self.save_noise_calc()
+        else:
+            self.save_basic_calc()
 
-    @staticmethod
-    def write_to_file(calc_index, data):
-        with open(get_desktop() + ct.data_library["Отчет"][calc_index], "a", encoding="utf-8") as txt:
-            txt.writelines(data)
 
 class ApplicationType(QtWidgets.QWidget):
     def __init__(self):
