@@ -166,6 +166,12 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
         self.box.setContentsMargins(ct.data_library["Отступы калькулятора"])
         self.sum = range(10)
 
+        self.octave_table = []
+        self.entry_objects_source = []
+        self.entry_objects_background = []
+        self.delta_result_area = []
+        self.correct_result_area = []
+
         [self.box.addWidget(
             QtWidgets.QLabel(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][10:15][_], self),
             _, 0, ct.data_library["Позиция левый-центр"]) for _ in range(5)]
@@ -173,30 +179,20 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
         [self.box.addWidget(QtWidgets.QLabel(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][0:10][_], self),
                             0, self.box.columnCount(), ct.data_library["Позиция нижний-центр"]) for _ in self.sum]
 
-        self.entry_objects_source = []
-        self.entry_objects_background = []
-        [self.entry_objects_source.append(InputValue(self)) for _ in self.sum]
-        [self.entry_objects_background.append(InputValue(self)) for _ in self.sum]
-
-        self.delta_result_area = []
-        self.correct_result_area = []
-        [self.delta_result_area.append(QtWidgets.QLabel(self)) for _ in self.sum]
-        [self.correct_result_area.append(QtWidgets.QLabel(self)) for _ in self.sum]
-
-        self.octave_table = []
-        [self.octave_table.append(_) for _ in (self.entry_objects_source, self.entry_objects_background,
-                                                self.delta_result_area, self.correct_result_area)]
-
-        for i, j in enumerate(self.octave_table):
-            [_.setFixedSize(ct.data_library["Размеры полей шум"]) for _ in j]
-            [self.box.addWidget(j[_], ct.f_upper(i), ct.f_upper(_), ct.data_library["Позиция центр"]) for _ in self.sum]
-
+        for i, j in enumerate((self.entry_objects_source, self.entry_objects_background,
+                               self.delta_result_area, self.correct_result_area)):
             if i == 0 or i == 1:
+                [j.append(InputValue(self)) for _ in self.sum]
                 [_.setMaxLength(5) for _ in j]
                 [_.check_value() for _ in j]
             else:
+                [j.append(QtWidgets.QLabel(self)) for _ in self.sum]
                 [_.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter) for _ in j]
                 [_.setObjectName("result_field_noise") for _ in j]
+
+            [_.setFixedSize(ct.data_library["Размеры полей шум"]) for _ in j]
+            [self.box.addWidget(j[_], ct.f_upper(i), ct.f_upper(_), ct.data_library["Позиция центр"]) for _ in self.sum]
+            self.octave_table.append(j)
 
     # test !!!
     def calculate(self):
@@ -239,7 +235,7 @@ class AbstractRegister(QtWidgets.QWidget):
 
         self.connection_with_database = QtSql.QSqlDatabase.addDatabase('QSQLITE')
         self.connection_with_database.setDatabaseName('registers_data.db')
-        self.connection_with_database.open()    # ????
+        self.connection_with_database.open()
 
 
 class MainRegister(AbstractRegister):
@@ -247,8 +243,10 @@ class MainRegister(AbstractRegister):
         super().__init__(parameters)
         self.entry_objects.append(QtWidgets.QLineEdit(self))
         [self.entry_objects.append(QtWidgets.QDateEdit(self)) for _ in range(2)]
+
         self.entry_objects.append(QtWidgets.QComboBox(self))
         [self.entry_objects.append(QtWidgets.QLineEdit(self)) for _ in range(4)]
+
         [_.setFixedSize(ct.data_library["Размеры поля ввода инфо. протокола"]) for _ in self.entry_objects[0:4]]
         [_.setFixedSize(ct.data_library["Размеры поля ввода инфо. объекта"]) for _ in self.entry_objects[4:8]]
 
@@ -265,16 +263,18 @@ class FactorsRegister(AbstractRegister):
         super().__init__(parameters = parameters)
         self.ok_standart_entries = []
         self.no_standart_entries = []
-        [self.ok_standart_entries.append(QtWidgets.QSpinBox(self)) for _ in self.sum]
-        [self.no_standart_entries.append(QtWidgets.QSpinBox(self)) for _ in self.sum]
+
+        for i in (self.ok_standart_entries, self.no_standart_entries):
+            [i.append(QtWidgets.QSpinBox(self)) for _ in self.sum]
+            self.entry_objects.append(i)
 
         [self.entry_objects.append(_) for _ in (self.ok_standart_entries, self.no_standart_entries)]
         [j.setFixedSize(ct.data_library["Размеры поля ввода факторов"]) for i in self.entry_objects for j in i]
         [j.setRange(0, 9999) for i in self.entry_objects for j in i]
-                    # lambda ???
-        [self.box.addWidget(self.entry_objects[0][_], _, 1, ct.data_library["Позиция левый-центр"]) for _ in self.sum]
-        [self.box.addWidget(self.entry_objects[1][_], _, 2, ct.data_library["Позиция левый-центр"]) for _ in self.sum]
+
+        for i in range(2):
+            [self.box.addWidget(self.entry_objects[i][_], _, ct.f_upper(i), ct.data_library["Позиция левый-центр"]) for _ in self.sum]
 
         x = self.box.rowCount()
-        self.box.addWidget(QtWidgets.QLabel("соотв.", self), x, 1, ct.data_library["Позиция левый-верхний"])
-        self.box.addWidget(QtWidgets.QLabel("не соотв.", self), x, 2, ct.data_library["Позиция левый-верхний"])
+        for i, j in enumerate(("соотв.", "не соотв.")):
+            self.box.addWidget(QtWidgets.QLabel(j, self), x, ct.f_upper(i), ct.data_library["Позиция левый-верхний"])

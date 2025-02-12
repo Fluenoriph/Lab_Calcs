@@ -108,6 +108,7 @@ data_library = {
 
         "Команды записи в таблицы базы": ("INSERT INTO protocols VALUES(NULL, ?, ?, ?, ?, ?)",
                                           "INSERT INTO objects VALUES(NULL, ?, ?, ?)",
+
                                           "INSERT INTO factor_phys_sum VALUES(NULL, ?, ?, ?, ?)",
                                           "INSERT INTO factor_rad_sum VALUES(NULL, ?, ?, ?, ?)"),
 

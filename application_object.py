@@ -56,8 +56,8 @@ class RegistersController(BaseAbstractController):
                                           FactorsRegister(ct.data_library["Журналы"]["Радиационные факторы"])),
                                           list(ct.data_library["Иконки"][1:3]))
         self.active_factor = []
-        self.error_message = lambda x: QtWidgets.QMessageBox.critical(self, " ", x)
-
+        self.error_message = lambda x: QtWidgets.QMessageBox.critical(self, " ",
+                                                                      ct.data_library["Журналы"]["Критические сообщения"][x])
 
         self.register = MainRegister()
         self.box.addWidget(self.register, 0, 0, 8, 2, alignment=ct.data_library["Позиция левый-верхний"])
@@ -66,90 +66,71 @@ class RegistersController(BaseAbstractController):
         self.reg_options.currentChanged.connect(self.clear_number_to_move)
 
         self.create_control_buttons()
-        self.buttons[0].clicked.connect(self.record_main_data)
-        self.buttons[0].clicked.connect(self.record_factors_data)
+        self.buttons[0].clicked.connect(self.save_protocol)
         self.buttons[1].clicked.connect(self.clear_fields)
 
-    @QtCore.pyqtSlot()
-    def record_main_data(self):
-        #self.connection_with_database.open()
-        n = ("INSERT INTO protocols VALUES(NULL, ?, ?, ?, ?, ?)", "INSERT INTO objects VALUES(NULL, ?, ?, ?)")
+    def check_active_factors(self):
+        return [i for i, x in enumerate(self.calcs_objects[self.reg_options.currentIndex()].entry_objects[0]) if x.value() > 0]
 
+    def record_main_data(self):
         protocols_data = [_.text() for _ in self.register.entry_objects[0:3]]
         [protocols_data.append(_) for _ in (self.register.entry_objects[7].text(),
-                                            self.register.entry_objects[3].itemData(self.register.entry_objects[3].currentIndex()))]
+                                            self.register.entry_objects[3].itemData(
+                                                self.register.entry_objects[3].currentIndex()))]
 
-        objects_data = [_.text() for _ in self.register.entry_objects[4:7]]
-
-        for i, j in enumerate((protocols_data, objects_data)):
+        for i, j in enumerate((protocols_data, [_.text() for _ in self.register.entry_objects[4:7]])):
             x = QtSql.QSqlQuery()
-            x.prepare(n[i])
+            x.prepare(ct.data_library["Журналы"]["Команды записи в таблицы базы"][0:2][i])
             [x.addBindValue(_) for _ in j]
 
-            if x.exec():  # retutn !!
-                print("ok")
-            else:
-                print("bad")
+            if not x.exec():
+                return self.error_message(1)
 
-        #self.connection_with_database.close()
+    def record_factors_data(self, active_factor):
+        z = self.reg_options.currentIndex()
+        n = len(active_factor)
+        x = QtSql.QSqlQuery()
+        x.prepare(ct.data_library["Журналы"]["Команды записи в таблицы базы"][2:4][z])
+
+        if n > 1:
+            number = []
+            [number.append(self.register.entry_objects[0].text()) for _ in range(n)]
+
+            factor_values = []
+            for i in range(2):
+                factor_values.append([self.calcs_objects[z].entry_objects[i][_].value() for _ in active_factor])
+
+            for i in ([_ + 1 for _ in active_factor], number, factor_values[0], factor_values[1]):
+                x.addBindValue(i)
+            if not x.execBatch():
+                self.error_message(1)
+
+        else:
+            i = active_factor[0]
+            for _ in (i + 1, self.register.entry_objects[0].text(), self.calcs_objects[z].entry_objects[0][i].value(),
+                      self.calcs_objects[z].entry_objects[1][i].value()):
+                x.addBindValue(_)
+            if not x.exec():
+                return self.error_message(1)
 
     @QtCore.pyqtSlot()
-    def record_factors_data(self):
-        self.active_factor = [i for i, x in enumerate(self.calcs_objects[0].entry_objects[0]) if x.value() > 0]
+    def save_protocol(self):
+        x = self.check_active_factors()
 
-        if self.active_factor:
-            x = QtSql.QSqlQuery()
-            x.prepare()
-
-            n = len(self.active_factor)
-
-            if n > 1:       # self. >> lists !!!
-                factor_id = [_ + 1 for _ in self.active_factor]
-
-                number = []
-                [number.append(self.register.entry_objects[0].text()) for _ in range(n)]
-
-                sum_ok = [self.calcs_objects[0].entry_objects[0][i].value() for i in self.active_factor]   # lambda !!
-
-                sum_no = [self.calcs_objects[0].entry_objects[1][i].value() for i in self.active_factor]
-
-                x.addBindValue(factor_id)
-                x.addBindValue(sum_ok)
-                x.addBindValue(sum_no)
-                x.addBindValue(number)
-
-                print(factor_types)
-                print(sum_ok)
-                print(sum_no)
-                print(number)
-
-                if x.execBatch():
-                    print("ok")
-                else:
-                    print("bad")
-
-            else:
-
-                x.addBindValue(self.active_factor + 1)
-                x.addBindValue(self.register.entry_objects[0].text())
-                x.addBindValue(self.calcs_objects[0].entry_objects[0][self.active_factor].value())
-                x.addBindValue(self.calcs_objects[0].entry_objects[1][self.active_factor].value())
-
-
-                if y.exec():
-                    print("ok")
-                else:
-                    print("bad")
+        if self.register.entry_objects[0] == "" or [i for i, x in enumerate(self.register.entry_objects[4:8]) if x.text() == ""] or not x:
+            return self.error_message(0)
+        else:
+            self.record_main_data()
+            self.record_factors_data(x)
+            self.register.entry_objects[0].clear()
 
     @QtCore.pyqtSlot()
     def clear_fields(self):
         [_.clear() for _ in self.register.entry_objects if self.register.entry_objects.index(_) != 3]
 
-        [j.clear() for i in self.calcs_objects[0].entry_objects for j in i]
-        [j.clear() for i in self.calcs_objects[1].entry_objects for j in i]
-      # refactor
-        [j.setValue(0) for i in self.calcs_objects[0].entry_objects for j in i]
-        [j.setValue(0) for i in self.calcs_objects[1].entry_objects for j in i]
+        for _ in range(2):
+            [j.clear() for i in self.calcs_objects[_].entry_objects for j in i]
+            [j.setValue(0) for i in self.calcs_objects[_].entry_objects for j in i]
 
     @QtCore.pyqtSlot()
     def clear_number_to_move(self):
@@ -293,10 +274,11 @@ class ApplicationType(QtWidgets.QWidget):
         settings.sync()
 
         self.box.addWidget(self.menu_area, 0, 0, 1, 4)
-        self.box.addWidget(self.selector_area, 1, 1, 1, 1, ct.data_library["Позиция левый-верхний"])
-        self.box.addWidget(self.calculators_area, 1, 2, 1, 1, ct.data_library["Позиция левый-верхний"])
+        self.box.setColumnMinimumWidth(0, 1)    #???
 
-        self.box.setColumnMinimumWidth(0, 1)
+        for i, j in enumerate((self.selector_area, self.calculators_area)):
+            self.box.addWidget(j, 1, ct.f_upper(i), 1, 1, ct.data_library["Позиция левый-верхний"])
+
         self.show()
 
     def set_style(self, colors):
@@ -413,6 +395,7 @@ class ApplicationType(QtWidgets.QWidget):
         selector_panel.calculators_index = selector_panel.model_type.index(0, 0)
         selector_panel.registers_index = selector_panel.model_type.index(1, 0)
         selector_panel.clicked.connect(self.select_calcs_type)
+
         selector_panel.setCurrentIndex(selector_panel.calculators_index)
 
         return selector_panel
@@ -447,7 +430,7 @@ class ApplicationType(QtWidgets.QWidget):
 
     @QtCore.pyqtSlot()
     def select_calcs_type(self):
-        match self.selector_area.currentIndex():
+        match self.selector_area.currentIndex():    # refactor index !!!
             case self.selector_area.calculators_index:
                 self.calculators_show_fixed()
             case self.selector_area.registers_index:
@@ -457,6 +440,5 @@ class ApplicationType(QtWidgets.QWidget):
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon(ct.data_library["Иконки"][3]))
-    #print(type(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][16]))
     app_calcs = ApplicationType()
     sys.exit(app.exec())
