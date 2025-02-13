@@ -225,6 +225,8 @@ class AbstractRegister(QtWidgets.QWidget):
         self.parameters = parameters
         self.entry_objects = []
         self.sum = range(len(self.parameters))
+        self.connect = QtSql.QSqlDatabase.addDatabase('QSQLITE')
+        self.connect.setDatabaseName('registers_data.db')
 
         self.box = QtWidgets.QGridLayout(self)
         self.box.setVerticalSpacing(15)
@@ -233,9 +235,12 @@ class AbstractRegister(QtWidgets.QWidget):
         [self.box.addWidget(QtWidgets.QLabel(self.parameters[_], self), _, 0, ct.data_library["Позиция левый-центр"])
          for _ in self.sum]
 
-        self.connection_with_database = QtSql.QSqlDatabase.addDatabase('QSQLITE')
-        self.connection_with_database.setDatabaseName('registers_data.db')
-        self.connection_with_database.open()
+        if not self.connect.open():
+            self.error_message(self, 2)
+
+    @staticmethod
+    def error_message(parent, x):
+        return QtWidgets.QMessageBox.critical(parent, " ", ct.data_library["Журналы"]["Критические сообщения"][x])
 
 
 class MainRegister(AbstractRegister):
@@ -254,7 +259,7 @@ class MainRegister(AbstractRegister):
 
         [_.setDate(ct.data_library["Текущий период"]) for _ in self.entry_objects[1:3]]
         [self.entry_objects[3].addItem(ct.data_library["Журналы"]["Основной регистратор"][8:14][_], ct.f_upper(_)) for _
-         in range(6)]  # ????? check
+         in range(6)]
         self.entry_objects[7].setCompleter(QtWidgets.QCompleter(ct.data_library["Журналы"]["Основной регистратор"][14:18], self))
 
 

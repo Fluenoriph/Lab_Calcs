@@ -3,7 +3,7 @@ import sys
 from winpath import get_desktop
 import constants as ct
 from calculators_objects import (AtmosphericAirDust, VentilationEfficiency, NoiseLevelsWithBackground, MainRegister,
-                                 FactorsRegister, AbstractBaseCalc as calc_base)
+                                 FactorsRegister, AbstractBaseCalc as calc_base, AbstractRegister as ar)
 
 
 class BaseAbstractController(QtWidgets.QWidget):
@@ -55,9 +55,6 @@ class RegistersController(BaseAbstractController):
         super().__init__(self.n[1:3],(FactorsRegister(),
                                           FactorsRegister(ct.data_library["Журналы"]["Радиационные факторы"])),
                                           list(ct.data_library["Иконки"][1:3]))
-        self.active_factor = []
-        self.error_message = lambda x: QtWidgets.QMessageBox.critical(self, " ",
-                                                                      ct.data_library["Журналы"]["Критические сообщения"][x])
 
         self.register = MainRegister()
         self.box.addWidget(self.register, 0, 0, 8, 2, alignment=ct.data_library["Позиция левый-верхний"])
@@ -84,7 +81,7 @@ class RegistersController(BaseAbstractController):
             [x.addBindValue(_) for _ in j]
 
             if not x.exec():
-                return self.error_message(1)
+                return ar.error_message(self, 1)
 
     def record_factors_data(self, active_factor):
         z = self.reg_options.currentIndex()
@@ -103,7 +100,7 @@ class RegistersController(BaseAbstractController):
             for i in ([_ + 1 for _ in active_factor], number, factor_values[0], factor_values[1]):
                 x.addBindValue(i)
             if not x.execBatch():
-                self.error_message(1)
+                ar.error_message(self, 1)
 
         else:
             i = active_factor[0]
@@ -111,14 +108,16 @@ class RegistersController(BaseAbstractController):
                       self.calcs_objects[z].entry_objects[1][i].value()):
                 x.addBindValue(_)
             if not x.exec():
-                return self.error_message(1)
+                return ar.error_message(self, 1)
 
     @QtCore.pyqtSlot()
     def save_protocol(self):
         x = self.check_active_factors()
 
-        if self.register.entry_objects[0] == "" or [i for i, x in enumerate(self.register.entry_objects[4:8]) if x.text() == ""] or not x:
-            return self.error_message(0)
+        if (self.register.entry_objects[0] == "" or [i for i, x in enumerate(self.register.entry_objects[4:8]) if x.text() == ""]
+                or not x or [i for i in x if self.calcs_objects[self.reg_options.currentIndex()].entry_objects[0][i].value()
+                                             < self.calcs_objects[self.reg_options.currentIndex()].entry_objects[1][i].value()]):
+            return ar.error_message(self, 0)
         else:
             self.record_main_data()
             self.record_factors_data(x)
@@ -147,12 +146,12 @@ class CalculatorsController(BaseAbstractController):
         self.calc_options = self.create_options()
         self.create_control_buttons()
 
+        self.message = lambda: QtWidgets.QMessageBox.information(self, " ",
+                                                                 f"{ct.data_library["Отчет"][4]}\'{ct.data_library["Отчет"][self.calc_options.currentIndex()][1:]}\'")
+
         self.buttons[0].clicked.connect(self.calculating)
         self.buttons[1].clicked.connect(self.clearing)
         self.buttons[2].clicked.connect(self.saving)
-
-        self.message = lambda: QtWidgets.QMessageBox.information(self, " ",
-                    f"{ct.data_library["Отчет"][4]}\'{ct.data_library["Отчет"][self.calc_options.currentIndex()][1:]}\'")
 
     def ready_to_calculate_airs(self):
         calc = self.calcs_objects[self.calc_options.currentIndex()]      # in self current calc )
@@ -282,67 +281,47 @@ class ApplicationType(QtWidgets.QWidget):
         self.show()
 
     def set_style(self, colors):
-        x = ("* {outline: 0; border-style: none; background: "+colors[0]+" font: 13px arial, sans-serif;} "
-                                                                         
+        self.setStyleSheet("* {outline: 0; border-style: none; background: "+colors[0]+" font: 13px arial, sans-serif;} "                                                  
+             
              "QMenuBar, QMenu {background: "+colors[0]+" color: "+colors[2]+"} QLabel {color: "+colors[6]+"} "   
-             "QTabBar:tab {border-radius: 5px; padding: 5px; background: "+colors[9]+" color: "+colors[5]+"} "                          
-             "QLineEdit, QDateEdit, QSpinBox, QComboBox {border-radius: 5px; background: "+colors[7]+" color: "+colors[8]+"} "
+             "QMenuBar {border-bottom: 1px solid "+colors[2]+"} "
+             "QMenuBar::item:selected {background: "+colors[3]+"} "
+             "QMenu::separator {border-bottom: 1px solid "+colors[2]+"} "                                      
+             "QMenu::item:selected {background: "+colors[3]+"} "    
+                          
+             "QToolTip {color: "+colors[2]+"} "
+                                                        
+             "QMessageBox QLabel {color: "+colors[2]+"} "
+             "QMessageBox .QPushButton {border-radius: 5px; padding: 6px 16px 6px 16px; background: "+colors[3]+" color: "+colors[2]+"} "                             
+             "QMessageBox .QPushButton:pressed {background: "+colors[4]+"}"    
+             
+             "QPushButton {border-radius: 9px; padding: 3px;} "
+             "QPushButton:hover {background: "+colors[3]+"} "
+             "QPushButton:pressed {background: "+colors[4]+"} "
+
+             "QListView {border-radius: 9px; background: "+colors[1]+"} "       
+             "QListView::item {border-radius: 5px; padding: 2px; color: "+colors[2]+"} "
+             "QListView::item:hover {background: "+colors[3]+"} "
+             "QListView::item:selected {background: " + colors[3] + " color: " + colors[4] + "}"
+
              "QTabWidget:pane {border-style: none;} "
-             "QPushButton {border-radius: 9px; padding: 3px;} ")
-
-
-
-
-
-
-
-
-        self.setStyleSheet(
-
-
-
-
-
-
-
-
-
-                            "QMenuBar {border-bottom: 1px solid "+colors[2]+"} "
-                            "QMenu::separator {border-bottom: 1px solid "+colors[2]+"} "                                      
-                            "QToolTip {color: "+colors[2]+"} "
-                           "QMessageBox QLabel {color: "+colors[2]+"} "                                                
-                            "QListView::item {border-radius: 5px; padding: 2px; color: "+colors[2]+"} "                                        
-                            
-                            
-                            "QListView::item:hover {background: "+colors[3]+"} "                                                                                        
-                           "QMenuBar::item:selected {background: "+colors[3]+"} "
-                           "QMenu::item:selected {background: "+colors[3]+"} "                                                                                           
-                           "QPushButton:hover {background: "+colors[3]+"} "
-                            "QMessageBox .QPushButton {border-radius: 5px; padding: 6px 16px 6px 16px; "
-                           "background: "+colors[3]+"} "                            
-                            "QTabBar:tab::hover {background: "+colors[3]+"} "       
-                                                                       
-                           "QPushButton:pressed {background: "+colors[4]+"} "                                                 
-                           "QMessageBox .QPushButton:pressed {background: "+colors[4]+"}"
-                            
-                            "QListView::item:selected {background: "+colors[3]+" color: "+colors[4]+"}"                                                                    
-                           "QTabBar:tab::selected {background: "+colors[3]+" color: "+colors[4]+"} "   
+             "QTabBar:tab {border-radius: 5px; padding: 5px; background: "+colors[9]+" color: "+colors[5]+"} "     
+             "QTabBar:tab::hover {background: "+colors[3]+"} "
+             "QTabBar:tab::selected {background: "+colors[3]+" color: "+colors[4]+"} "   
                                                                                                            
-                                                                               
-                                                                                                                                                        
-                                                                                    
-                           "QLabel#result_field {border-radius: 9px; background: "+colors[9]+" color: "+colors[10]+"} "
-                           "QLabel#result_field_noise {border-radius: 5px; background: "+colors[9]+" color: "+colors[10]+"} "         
-                                
-                            "QListView {border-radius: 9px; background: "+colors[1]+"} "             
-                           "QLineEdit:focus {background: "+colors[1]+"} "
-                           "QDateEdit:focus {background: "+colors[1]+"} "
-                           "QComboBox:selected {background: "+colors[1]+"} "
-                           "QSpinBox:focus {background: "+colors[1]+"}")
+             "QLineEdit, QDateEdit, QSpinBox, QComboBox {border-radius: 5px; background: "+colors[7]+" color: "+colors[8]+"} "                                                           
+             
+             "QLineEdit:focus {background: "+colors[1]+"} "
+             "QDateEdit:focus {background: "+colors[1]+"} "
+             "QComboBox:selected {background: "+colors[1]+"} "
+             "QSpinBox:focus {background: "+colors[1]+"} "          
+                                                                                                                                                                               
+             "QLabel#result_field {border-radius: 9px; background: "+colors[9]+" color: "+colors[10]+"} "
+             "QLabel#result_field_noise {border-radius: 5px; background: "+colors[9]+" color: "+colors[10]+"}")
 
     def create_main_menu(self):
         main_menu = QtWidgets.QMenuBar(self)
-        main_menu.setFixedHeight(21)
+        main_menu.setFixedHeight(22)
 
         main_menu.submenu_file = QtWidgets.QMenu(ct.data_library["Главное меню"][0], main_menu)
         main_menu.submenu_help = QtWidgets.QMenu(ct.data_library["Главное меню"][2], main_menu)
