@@ -66,49 +66,46 @@ class RegistersController(BaseAbstractController):
         self.buttons[0].clicked.connect(self.save_protocol)
         self.buttons[1].clicked.connect(self.clear_fields)
 
+        self.ready_to_rec_factors = lambda q, i: q.prepare(f"INSERT INTO {ct.data_library["Журналы"]["Запись в таблицы"]
+        [self.reg_options.currentIndex()][i]} VALUES(NULL, ?, ?)")
+
+        self.set_factors_data = lambda q, i: [
+            q.addBindValue(self.calcs_objects[self.reg_options.currentIndex()].entry_objects[_][i].value()) for _ in
+            range(2)]
+
     def check_active_factors(self):
         return [i for i, x in enumerate(self.calcs_objects[self.reg_options.currentIndex()].entry_objects[0]) if x.value() > 0]
 
+    def put_in_table(self, x):
+        if not x.exec():
+            return ar.error_message(self, 1)
+
     def record_main_data(self):
+        x = QtSql.QSqlQuery()
+
         protocols_data = [_.text() for _ in self.register.entry_objects[0:3]]
         [protocols_data.append(_) for _ in (self.register.entry_objects[7].text(),
                                             self.register.entry_objects[3].itemData(
                                                 self.register.entry_objects[3].currentIndex()))]
 
         for i, j in enumerate((protocols_data, [_.text() for _ in self.register.entry_objects[4:7]])):
-            x = QtSql.QSqlQuery()
-            x.prepare(ct.data_library["Журналы"]["Команды записи в таблицы базы"][0:2][i])
+            x.prepare(ct.data_library["Журналы"]["Запись в таблицы"][2:4][i])
             [x.addBindValue(_) for _ in j]
+            self.put_in_table(x)
 
-            if not x.exec():
-                return ar.error_message(self, 1)
-
-    def record_factors_data(self, active_factor):
-        z = self.reg_options.currentIndex()
-        n = len(active_factor)
+    def record_factors_data(self):
+        active_factor = self.check_active_factors()
         x = QtSql.QSqlQuery()
-        x.prepare(ct.data_library["Журналы"]["Команды записи в таблицы базы"][2:4][z])
 
-        if n > 1:
-            number = []
-            [number.append(self.register.entry_objects[0].text()) for _ in range(n)]
-
-            factor_values = []
-            for i in range(2):
-                factor_values.append([self.calcs_objects[z].entry_objects[i][_].value() for _ in active_factor])
-
-            for i in ([_ + 1 for _ in active_factor], number, factor_values[0], factor_values[1]):
-                x.addBindValue(i)
-            if not x.execBatch():
-                ar.error_message(self, 1)
-
+        if len(active_factor) > 1:
+            for i in active_factor:
+                self.ready_to_rec_factors(x, i)
+                self.set_factors_data(x, i)
+                self.put_in_table(x)
         else:
-            i = active_factor[0]
-            for _ in (i + 1, self.register.entry_objects[0].text(), self.calcs_objects[z].entry_objects[0][i].value(),
-                      self.calcs_objects[z].entry_objects[1][i].value()):
-                x.addBindValue(_)
-            if not x.exec():
-                return ar.error_message(self, 1)
+            self.ready_to_rec_factors(x, active_factor[0])
+            self.set_factors_data(x, active_factor[0])
+            self.put_in_table(x)
 
     @QtCore.pyqtSlot()
     def save_protocol(self):
@@ -120,7 +117,7 @@ class RegistersController(BaseAbstractController):
             return ar.error_message(self, 0)
         else:
             self.record_main_data()
-            self.record_factors_data(x)
+            self.record_factors_data()
             self.register.entry_objects[0].clear()
 
     @QtCore.pyqtSlot()
@@ -146,15 +143,15 @@ class CalculatorsController(BaseAbstractController):
         self.calc_options = self.create_options()
         self.create_control_buttons()
 
-        self.message = lambda: QtWidgets.QMessageBox.information(self, " ",
-                                                                 f"{ct.data_library["Отчет"][4]}\'{ct.data_library["Отчет"][self.calc_options.currentIndex()][1:]}\'")
-
         self.buttons[0].clicked.connect(self.calculating)
         self.buttons[1].clicked.connect(self.clearing)
         self.buttons[2].clicked.connect(self.saving)
 
+        self.message = lambda: QtWidgets.QMessageBox.information(self, " ",
+                                                                 f"{ct.data_library["Отчет"][4]}\'{ct.data_library["Отчет"][self.calc_options.currentIndex()][1:]}\'")
+
     def ready_to_calculate_airs(self):
-        calc = self.calcs_objects[self.calc_options.currentIndex()]      # in self current calc )
+        calc = self.calcs_objects[self.calc_options.currentIndex()]
 
         if [i for i, x in enumerate(calc.entry_objects) if x.text() == ""]:
             return

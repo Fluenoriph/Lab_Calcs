@@ -106,11 +106,10 @@ data_library = {
         "Радиационные факторы": ("МЭД гамма-излучения", "Объемная активность радона", "ЭРОА радона",
                                  "Плотность потока радона"),
 
-        "Команды записи в таблицы базы": ("INSERT INTO protocols VALUES(NULL, ?, ?, ?, ?, ?)",
-                                          "INSERT INTO objects VALUES(NULL, ?, ?, ?)",
+        "Запись в таблицы": (("microclimate", "light", "noise", "vibration", "emf", "aeroions", "ventilation"),
+                             ("gamma_radiation", "radon_volume_activity", "eeva_radon", "radon_flux_density"),
 
-                                          "INSERT INTO factor_phys_sum VALUES(NULL, ?, ?, ?, ?)",
-                                          "INSERT INTO factor_rad_sum VALUES(NULL, ?, ?, ?, ?)"),
+                             "INSERT INTO protocols VALUES(NULL, ?, ?, ?, ?, ?)", "INSERT INTO objects VALUES(NULL, ?, ?, ?)"),
 
         "Критические сообщения": ("Введите все значения !", "Ошибка записи в базу данных."
                                                             "\nНекоторые данные могли не сохраниться !",
