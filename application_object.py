@@ -7,11 +7,12 @@ from calculators_objects import (AtmosphericAirDust, VentilationEfficiency, Nois
 
 
 class BaseAbstractController(QtWidgets.QWidget):
-    def __init__(self, calcs_names, calcs_objects, icon_path):
+    def __init__(self, calcs_names, calcs_objects, icon_path, tooltips):
         super().__init__()
         self.calcs_names = calcs_names
         self.calcs_objects = calcs_objects
         self.icon_path = icon_path
+        self.tooltips = tooltips
         self.buttons = []
 
         self.box = QtWidgets.QGridLayout(self)
@@ -28,24 +29,17 @@ class BaseAbstractController(QtWidgets.QWidget):
         return area
 
     def create_control_buttons(self):
-        r = len(self.icon_path)
-        y = self.box.columnCount()
+        x = self.box.columnCount()
 
-        if r == 3:
-            tooltips = ct.data_library["Иконки"][4:7]
-        else:
-            self.icon_path.reverse()
-            tooltips = ct.data_library["Иконки"][7:9]
-
-        for _ in range(r):
+        for _ in range(3):
             button = QtWidgets.QPushButton(self)
             button.setIcon(QtGui.QIcon(self.icon_path[_]))
-            button.setToolTip(tooltips[_])
+            button.setToolTip(self.tooltips[_])
             button.setToolTipDuration(3000)
             button.setIconSize(ct.data_library["Размеры кнопок"])
             button.setAutoDefault(True)
             self.buttons.append(button)
-            self.box.addWidget(button, ct.f_upper(_), y, r, 1, ct.data_library["Позиция левый-верхний"])
+            self.box.addWidget(button, _ + 1, x, 3, 1, ct.data_library["Позиция левый-верхний"])
 
 
 class RegistersController(BaseAbstractController):
@@ -53,8 +47,8 @@ class RegistersController(BaseAbstractController):
 
     def __init__(self):
         super().__init__(self.n[1:3],(FactorsRegister(),
-                                          FactorsRegister(ct.data_library["Журналы"]["Радиационные факторы"])),
-                                          list(ct.data_library["Иконки"][1:3]))
+        FactorsRegister(ct.data_library["Журналы"]["Радиационные факторы"]["Параметры"])),
+        ct.data_library["Элементы управления"]["Иконки журнала"], ct.data_library["Элементы управления"]["Подсказки журнала"])
 
         self.register = MainRegister()
         self.box.addWidget(self.register, 0, 0, 8, 2, alignment=ct.data_library["Позиция левый-верхний"])
@@ -65,16 +59,7 @@ class RegistersController(BaseAbstractController):
         self.create_control_buttons()
         self.buttons[0].clicked.connect(self.save_protocol)
         self.buttons[1].clicked.connect(self.clear_fields)
-
-        self.ready_to_rec_factors = lambda q, i: q.prepare(f"INSERT INTO {ct.data_library["Журналы"]["Запись в таблицы"]
-        [self.reg_options.currentIndex()][i]} VALUES(NULL, ?, ?)")
-
-        self.set_factors_data = lambda q, i: [
-            q.addBindValue(self.calcs_objects[self.reg_options.currentIndex()].entry_objects[_][i].value()) for _ in
-            range(2)]
-
-    def check_active_factors(self):
-        return [i for i, x in enumerate(self.calcs_objects[self.reg_options.currentIndex()].entry_objects[0]) if x.value() > 0]
+        self.buttons[2].clicked.connect(self.run_protocols_view)
 
     def put_in_table(self, x):
         if not x.exec():
@@ -83,37 +68,35 @@ class RegistersController(BaseAbstractController):
     def record_main_data(self):
         x = QtSql.QSqlQuery()
 
-        protocols_data = [_.text() for _ in self.register.entry_objects[0:3]]
-        [protocols_data.append(_) for _ in (self.register.entry_objects[7].text(),
-                                            self.register.entry_objects[3].itemData(
-                                                self.register.entry_objects[3].currentIndex()))]
+        protocols_data = [_.text() for _ in self.register.entry_objects[1:3]]
+        protocols_data.append(self.register.entry_objects[3].itemData(self.register.entry_objects[3].currentIndex()))
+        [protocols_data.append(_.text()) for _ in self.register.entry_objects[4:8]]
 
-        for i, j in enumerate((protocols_data, [_.text() for _ in self.register.entry_objects[4:7]])):
-            x.prepare(ct.data_library["Журналы"]["Запись в таблицы"][2:4][i])
-            [x.addBindValue(_) for _ in j]
-            self.put_in_table(x)
+        x.prepare("INSERT INTO protocol_numbers VALUES(NULL, ?)")
+        x.addBindValue(self.register.entry_objects[0].text())
+        self.put_in_table(x)
+
+        x.prepare("INSERT INTO protocols_data VALUES(NULL, ?, ?, ?, ?, ?, ?, ?)")
+        [x.addBindValue(_) for _ in protocols_data]
+        self.put_in_table(x)
 
     def record_factors_data(self):
-        active_factor = self.check_active_factors()
+        n = self.reg_options.currentIndex()       # refactor all
         x = QtSql.QSqlQuery()
 
-        if len(active_factor) > 1:
-            for i in active_factor:
-                self.ready_to_rec_factors(x, i)
-                self.set_factors_data(x, i)
-                self.put_in_table(x)
-        else:
-            self.ready_to_rec_factors(x, active_factor[0])
-            self.set_factors_data(x, active_factor[0])
+        for i in range(self.calcs_objects[n].sum):
+            x.prepare(f"INSERT INTO {ct.data_library["Журналы"][self.calcs_names[n]]["Таблицы"][i]} VALUES(NULL, ?, ?)")
+            [x.addBindValue(self.calcs_objects[n].entry_objects[_][i].value()) for _ in range(2)]
             self.put_in_table(x)
 
     @QtCore.pyqtSlot()
     def save_protocol(self):
-        x = self.check_active_factors()
+        n = self.reg_options.currentIndex()
+        x = [i for i, x in enumerate(self.calcs_objects[n].entry_objects[0]) if x.value() > 0]
 
         if (self.register.entry_objects[0] == "" or [i for i, x in enumerate(self.register.entry_objects[4:8]) if x.text() == ""]
-                or not x or [i for i in x if self.calcs_objects[self.reg_options.currentIndex()].entry_objects[0][i].value()
-                                             < self.calcs_objects[self.reg_options.currentIndex()].entry_objects[1][i].value()]):
+                or not x or [i for i in x if self.calcs_objects[n].entry_objects[0][i].value()
+                                             < self.calcs_objects[n].entry_objects[1][i].value()]):
             return ar.error_message(self, 0)
         else:
             self.record_main_data()
@@ -132,13 +115,38 @@ class RegistersController(BaseAbstractController):
     def clear_number_to_move(self):
         return self.register.entry_objects[0].clear()
 
+    @QtCore.pyqtSlot()
+    def run_protocols_view(self):
+        i = self.reg_options.currentIndex()
+        d = ct.data_library["Журналы"][self.calcs_names[i]]["Столбцы"]
+        x = QtCore.Qt.Orientation.Horizontal  # in dict
+        n = self.calcs_objects[i].sum * 2
+
+        view_type = QtWidgets.QTableView(self)
+        view_type.setWindowFlags(QtCore.Qt.WindowType.Window)
+        view_type.resize(1400, 600)
+
+        data_model = QtSql.QSqlTableModel()
+        data_model.setTable(ct.data_library["Журналы"]["Представления"][i])
+        data_model.setSort(0, QtCore.Qt.SortOrder.AscendingOrder)
+        data_model.select()
+
+        [data_model.setHeaderData(_, x, ct.data_library["Журналы"]["Основной регистратор"]["Столбцы"][_]) for _ in range(7)]
+        [data_model.setHeaderData(_ + 7, x, d[_]) for _ in range(n)]
+        data_model.setHeaderData(n + 7, x, "Ф.И.О. ответс.")
+
+        view_type.setModel(data_model)
+        view_type.setWindowTitle(self.calcs_names[i])
+        view_type.show()
+
 
 class CalculatorsController(BaseAbstractController):
     def __init__(self):
         super().__init__(list(ct.data_library["Калькуляторы"].keys()),
-        (AtmosphericAirDust(), AtmosphericAirDust(ct.data_library["Калькуляторы"]["Пыль в воздухе раб. зоны"][0:5],
-        ct.data_library["Калькуляторы"]["Пыль в воздухе раб. зоны"][5:12]), VentilationEfficiency(), NoiseLevelsWithBackground()),
-                         list(ct.data_library["Иконки"][0:3]))
+        (AtmosphericAirDust(), AtmosphericAirDust(ct.data_library["Калькуляторы"]["Пыль в воздухе раб. зоны"]["Параметры"],
+        ct.data_library["Калькуляторы"]["Пыль в воздухе раб. зоны"]["Результаты"]), VentilationEfficiency(),
+         NoiseLevelsWithBackground()), ct.data_library["Элементы управления"]["Иконки калькулятора"],
+                         ct.data_library["Элементы управления"]["Подсказки калькулятора"])
 
         self.calc_options = self.create_options()
         self.create_control_buttons()
@@ -179,15 +187,15 @@ class CalculatorsController(BaseAbstractController):
 
     def save_noise_calc(self):
         if self.calcs_objects[3].octave_table[3][0].text() != "":
-            data = [ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][10].ljust(23)]
-            [data.append(_.ljust(8)) for _ in ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][0:10]]
+            data = [ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Результаты"][0].ljust(23)]
+            [data.append(_.ljust(8)) for _ in ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Октавные полосы"]]
             data.append('\n')
             data.append("".ljust(23))
             [data.append("----".ljust(8)) for _ in range(10)]
             data.append('\n')
 
             for n, i in enumerate(self.calcs_objects[3].octave_table):
-                data.append(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"][11:15][n].ljust(23))
+                data.append(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Результаты"][1:][n].ljust(23))
                 [data.append(j.text().ljust(8)) for j in i]
                 data.append('\n')
             data.append(ct.data_library["Отчет"][5])
@@ -245,7 +253,6 @@ class ApplicationType(QtWidgets.QWidget):
         x = (screen_size.width() - self.frameSize().width()) // 2
         y = (screen_size.height() - self.frameSize().height()) // 2
         self.move(x, y)
-        self.activateWindow()
 
         self.box = QtWidgets.QGridLayout(self)
         self.box.setHorizontalSpacing(5)
@@ -273,7 +280,7 @@ class ApplicationType(QtWidgets.QWidget):
         self.box.setColumnMinimumWidth(0, 1)    #???
 
         for i, j in enumerate((self.selector_area, self.calculators_area)):
-            self.box.addWidget(j, 1, ct.f_upper(i), 1, 1, ct.data_library["Позиция левый-верхний"])
+            self.box.addWidget(j, 1, i + 1, 1, 1, ct.data_library["Позиция левый-верхний"])
 
         self.show()
 
@@ -415,6 +422,6 @@ class ApplicationType(QtWidgets.QWidget):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    app.setWindowIcon(QtGui.QIcon(ct.data_library["Иконки"][3]))
+    app.setWindowIcon(QtGui.QIcon("images/calc_logo.ico"))
     app_calcs = ApplicationType()
     sys.exit(app.exec())
