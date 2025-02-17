@@ -2,7 +2,6 @@ from PyQt6 import QtWidgets, QtCore, QtGui, QtSql
 import constants as ct
 import math
 import locale
-import re
 from functools import partial
 from decimal import Decimal, ROUND_HALF_UP
 locale.setlocale(locale.LC_ALL, "ru")
@@ -16,10 +15,10 @@ class InputValue(QtWidgets.QLineEdit):
         self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
 
     def check_value(self):
-        self.textEdited.connect(partial(self.validate_text,re.compile(r"^\d+([.]|,)?\d*$")))
+        self.textEdited.connect(partial(self.validate_text, QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("\\d+([.]|,)?\\d*"), self)))
 
     def check_temper_value(self):
-        self.textEdited.connect(partial(self.validate_text,re.compile(r"^(-?|\d)\d*([.]|,)?\d*$")))
+        self.textEdited.connect(partial(self.validate_text, QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("-?\\d*([.]|,)?\\d*"), self)))
         self.editingFinished.connect(self.clear_none_value)
 
     def get_entry_value(self):
@@ -27,7 +26,8 @@ class InputValue(QtWidgets.QLineEdit):
 
     @QtCore.pyqtSlot()
     def validate_text(self, validator):
-        if validator.findall(self.text()):
+        self.setValidator(validator)
+        if self.hasAcceptableInput():
             if self.text().find(",") != -1:
                 self.value = self.text().replace(",", ".")
             else:
@@ -37,7 +37,7 @@ class InputValue(QtWidgets.QLineEdit):
 
     @QtCore.pyqtSlot()
     def clear_none_value(self):
-        return [self.clear() for _ in ("-", ".", ",") if self.text() == _]
+        return [self.clear() for _ in ("-", ".", ",", "-.", "-,") if self.text() == _]
 
 
 class AbstractBaseCalc(QtWidgets.QWidget):
@@ -170,10 +170,10 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
 
         [self.box.addWidget(
             QtWidgets.QLabel(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Результаты"][_], self),
-            _, 0, ct.data_library["Позиция левый-центр"]) for _ in range(5)]
+            _ + 1, 0, ct.data_library["Позиция левый-центр"]) for _ in range(4)]
 
         [self.box.addWidget(QtWidgets.QLabel(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Октавные полосы"][_], self),
-                            0, self.box.columnCount(), ct.data_library["Позиция нижний-центр"]) for _ in self.sum]
+                            0, _ + 1, ct.data_library["Позиция нижний-центр"]) for _ in self.sum]
 
         for i, j in enumerate((self.entry_objects_source, self.entry_objects_background,
                                self.delta_result_area, self.correct_result_area)):
@@ -245,19 +245,21 @@ class MainRegister(AbstractRegister):
         super().__init__(parameters)
         self.entry_objects.append(QtWidgets.QLineEdit(self))
         [self.entry_objects.append(QtWidgets.QDateEdit(self)) for _ in range(2)]
+        [self.entry_objects.append(QtWidgets.QLineEdit(self)) for _ in range(3)]
+        [self.entry_objects.append(QtWidgets.QComboBox(self)) for _ in range(2)]
 
-        self.entry_objects.append(QtWidgets.QComboBox(self))
-        [self.entry_objects.append(QtWidgets.QLineEdit(self)) for _ in range(4)]
-
-        [_.setFixedSize(ct.data_library["Размеры поля ввода инфо. протокола"]) for _ in self.entry_objects[0:4]]
-        [_.setFixedSize(ct.data_library["Размеры поля ввода инфо. объекта"]) for _ in self.entry_objects[4:8]]
+        [_.setFixedSize(ct.data_library["Размеры поля ввода инфо. протокола"]) for _ in self.entry_objects[0:3]]
+        [_.setFixedSize(ct.data_library["Размеры поля ввода инфо. объекта"]) for _ in self.entry_objects[3:6]]
+        self.entry_objects[6].setFixedSize(ct.data_library["Размеры поля ввода инфо. протокола"])
+        self.entry_objects[7].setFixedSize(ct.data_library["Размеры поля ввода инфо. объекта"])
 
         [self.box.addWidget(self.entry_objects[_], _, 1, ct.data_library["Позиция левый-центр"]) for _ in self.r]
 
         [_.setDate(ct.data_library["Текущий период"]) for _ in self.entry_objects[1:3]]
-        [self.entry_objects[3].addItem(ct.data_library["Журналы"]["Основной регистратор"]["Тип выполнения"][_], _ + 1) for _
-         in range(6)]
-        self.entry_objects[7].setCompleter(QtWidgets.QCompleter(ct.data_library["Журналы"]["Основной регистратор"]["Сотрудники"], self))
+        [self.entry_objects[6].addItem(ct.data_library["Журналы"]["Основной регистратор"]["Тип выполнения"][_], _) for _
+         in range(7)]
+        [self.entry_objects[7].addItem(ct.data_library["Журналы"]["Основной регистратор"]["Сотрудники"][_], _) for _
+         in range(5)]
 
 
 class FactorsRegister(AbstractRegister):

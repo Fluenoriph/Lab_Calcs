@@ -13,22 +13,29 @@ class BaseAbstractController(QtWidgets.QWidget):
         self.calcs_objects = calcs_objects
         self.icon_path = icon_path
         self.tooltips = tooltips
-        self.buttons = []
 
         self.box = QtWidgets.QGridLayout(self)
         self.box.setContentsMargins(ct.data_library["Отступы контроллеров"])
+
+        self.calcs_area = self.create_options()
+        self.buttons = self.create_control_buttons()
 
     def create_options(self):
         area = QtWidgets.QTabWidget(self)
         area.setCurrentIndex(0)
         area.setUsesScrollButtons(False)
 
-        r = range(len(self.calcs_names))
-        [area.addTab(self.calcs_objects[_], self.calcs_names[_]) for _ in r]
-        self.box.addWidget(area, 0, self.box.columnCount(), 8, 1, alignment=ct.data_library["Позиция левый-верхний"])
+        y = self.box.columnCount()
+        x = len(self.calcs_names)
+        if x == 2:
+            y = 2
+
+        [area.addTab(self.calcs_objects[_], self.calcs_names[_]) for _ in range(x)]
+        self.box.addWidget(area, 0, y, 8, 1, alignment=ct.data_library["Позиция левый-верхний"])
         return area
 
     def create_control_buttons(self):
+        buttons = []
         x = self.box.columnCount()
 
         for _ in range(3):
@@ -38,9 +45,9 @@ class BaseAbstractController(QtWidgets.QWidget):
             button.setToolTipDuration(3000)
             button.setIconSize(ct.data_library["Размеры кнопок"])
             button.setAutoDefault(True)
-            self.buttons.append(button)
+            buttons.append(button)
             self.box.addWidget(button, _ + 1, x, 3, 1, ct.data_library["Позиция левый-верхний"])
-
+        return buttons
 
 class RegistersController(BaseAbstractController):
     n = list(ct.data_library["Журналы"].keys())
@@ -53,59 +60,54 @@ class RegistersController(BaseAbstractController):
         self.register = MainRegister()
         self.box.addWidget(self.register, 0, 0, 8, 2, alignment=ct.data_library["Позиция левый-верхний"])
 
-        self.reg_options = self.create_options()
-        self.reg_options.currentChanged.connect(self.clear_number_to_move)
+        self.calcs_area.currentChanged.connect(self.clear_number_to_move)
 
-        self.create_control_buttons()
         self.buttons[0].clicked.connect(self.save_protocol)
         self.buttons[1].clicked.connect(self.clear_fields)
         self.buttons[2].clicked.connect(self.run_protocols_view)
 
-    def put_in_table(self, x):
-        if not x.exec():
-            return ar.error_message(self, 1)
-
     def record_main_data(self):
         x = QtSql.QSqlQuery()
+        y = self.calcs_area.currentIndex()
 
-        protocols_data = [_.text() for _ in self.register.entry_objects[1:3]]
-        protocols_data.append(self.register.entry_objects[3].itemData(self.register.entry_objects[3].currentIndex()))
-        [protocols_data.append(_.text()) for _ in self.register.entry_objects[4:8]]
+        protocol_data = [_.text() for _ in self.register.entry_objects[0:6]]
+        [protocol_data.append(_.itemData(_.currentIndex())) for _ in self.register.entry_objects[6:8]]
 
-        x.prepare("INSERT INTO protocol_numbers VALUES(NULL, ?)")
-        x.addBindValue(self.register.entry_objects[0].text())
-        self.put_in_table(x)
-
-        x.prepare("INSERT INTO protocols_data VALUES(NULL, ?, ?, ?, ?, ?, ?, ?)")
-        [x.addBindValue(_) for _ in protocols_data]
-        self.put_in_table(x)
+        x.prepare(f"INSERT INTO {ct.data_library["Журналы"]["Основной регистратор"]["Тип журнала"][y]} "
+                  f"VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?)")
+        [x.addBindValue(_) for _ in protocol_data]
+        return x.exec()
 
     def record_factors_data(self):
-        n = self.reg_options.currentIndex()       # refactor all
+        n = self.calcs_area.currentIndex()       # refactor all  в функции ?
         x = QtSql.QSqlQuery()
 
         for i in range(self.calcs_objects[n].sum):
             x.prepare(f"INSERT INTO {ct.data_library["Журналы"][self.calcs_names[n]]["Таблицы"][i]} VALUES(NULL, ?, ?)")
             [x.addBindValue(self.calcs_objects[n].entry_objects[_][i].value()) for _ in range(2)]
-            self.put_in_table(x)
+            if not x.exec():
+                return ar.error_message(self, 1)
 
     @QtCore.pyqtSlot()
     def save_protocol(self):
-        n = self.reg_options.currentIndex()
+        n = self.calcs_area.currentIndex()
         x = [i for i, x in enumerate(self.calcs_objects[n].entry_objects[0]) if x.value() > 0]
 
-        if (self.register.entry_objects[0] == "" or [i for i, x in enumerate(self.register.entry_objects[4:8]) if x.text() == ""]
-                or not x or [i for i in x if self.calcs_objects[n].entry_objects[0][i].value()
+        if (self.register.entry_objects[0].text() == "" or [i for i, x in enumerate(self.register.entry_objects[3:6]) if x.text() == ""]
+                or [i for i, x in enumerate(self.register.entry_objects[6:8]) if x.currentIndex() == 0] or not x or
+                [i for i in x if self.calcs_objects[n].entry_objects[0][i].value()
                                              < self.calcs_objects[n].entry_objects[1][i].value()]):
             return ar.error_message(self, 0)
         else:
-            self.record_main_data()
-            self.record_factors_data()
-            self.register.entry_objects[0].clear()
+            if self.record_main_data():
+                self.record_factors_data()
+            else:
+                return ar.error_message(self, 1)
 
     @QtCore.pyqtSlot()
     def clear_fields(self):
-        [_.clear() for _ in self.register.entry_objects if self.register.entry_objects.index(_) != 3]
+        [_.clear() for _ in self.register.entry_objects[0:6]]
+        [_.setCurrentIndex(0) for _ in self.register.entry_objects[6:8]]
 
         for _ in range(2):
             [j.clear() for i in self.calcs_objects[_].entry_objects for j in i]
@@ -117,7 +119,7 @@ class RegistersController(BaseAbstractController):
 
     @QtCore.pyqtSlot()
     def run_protocols_view(self):
-        i = self.reg_options.currentIndex()
+        i = self.calcs_area.currentIndex()
         d = ct.data_library["Журналы"][self.calcs_names[i]]["Столбцы"]
         x = QtCore.Qt.Orientation.Horizontal  # in dict
         n = self.calcs_objects[i].sum * 2
@@ -125,6 +127,10 @@ class RegistersController(BaseAbstractController):
         view_type = QtWidgets.QTableView(self)
         view_type.setWindowFlags(QtCore.Qt.WindowType.Window)
         view_type.resize(1400, 600)
+        view_type.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+        view_type.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
+        view_type.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+        #view_type.resizeColumnsToContents()
 
         data_model = QtSql.QSqlTableModel()
         data_model.setTable(ct.data_library["Журналы"]["Представления"][i])
@@ -148,18 +154,15 @@ class CalculatorsController(BaseAbstractController):
          NoiseLevelsWithBackground()), ct.data_library["Элементы управления"]["Иконки калькулятора"],
                          ct.data_library["Элементы управления"]["Подсказки калькулятора"])
 
-        self.calc_options = self.create_options()
-        self.create_control_buttons()
-
         self.buttons[0].clicked.connect(self.calculating)
         self.buttons[1].clicked.connect(self.clearing)
         self.buttons[2].clicked.connect(self.saving)
 
         self.message = lambda: QtWidgets.QMessageBox.information(self, " ",
-                                                                 f"{ct.data_library["Отчет"][4]}\'{ct.data_library["Отчет"][self.calc_options.currentIndex()][1:]}\'")
+                                                                 f"{ct.data_library["Отчет"][4]}\'{ct.data_library["Отчет"][self.calcs_area.currentIndex()][1:]}\'")
 
     def ready_to_calculate_airs(self):
-        calc = self.calcs_objects[self.calc_options.currentIndex()]
+        calc = self.calcs_objects[self.calcs_area.currentIndex()]
 
         if [i for i, x in enumerate(calc.entry_objects) if x.text() == ""]:
             return
@@ -167,14 +170,14 @@ class CalculatorsController(BaseAbstractController):
             calc.calculate()
 
     def clear_basic_calc(self):
-        calc = self.calcs_objects[self.calc_options.currentIndex()]
+        calc = self.calcs_objects[self.calcs_area.currentIndex()]
 
         [_.clear() for _ in calc.entry_objects]
         [calc_base.reset_value(_) for _ in calc.entry_objects]
         calc.result_area.clear()
 
     def save_basic_calc(self):
-        calc = self.calcs_objects[self.calc_options.currentIndex()]
+        calc = self.calcs_objects[self.calcs_area.currentIndex()]
 
         if calc.result_area.text() != "":
             data = [calc.parameters[_] + ': ' + calc.entry_objects[_].text() + '\n' for _ in range(len(calc.parameters))]
@@ -187,7 +190,7 @@ class CalculatorsController(BaseAbstractController):
 
     def save_noise_calc(self):
         if self.calcs_objects[3].octave_table[3][0].text() != "":
-            data = [ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Результаты"][0].ljust(23)]
+            data = ["".ljust(23)]
             [data.append(_.ljust(8)) for _ in ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Октавные полосы"]]
             data.append('\n')
             data.append("".ljust(23))
@@ -195,7 +198,7 @@ class CalculatorsController(BaseAbstractController):
             data.append('\n')
 
             for n, i in enumerate(self.calcs_objects[3].octave_table):
-                data.append(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Результаты"][1:][n].ljust(23))
+                data.append(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Результаты"][n].ljust(23))
                 [data.append(j.text().ljust(8)) for j in i]
                 data.append('\n')
             data.append(ct.data_library["Отчет"][5])
@@ -206,12 +209,12 @@ class CalculatorsController(BaseAbstractController):
             return
 
     def write_to_file(self, data):
-        with open(get_desktop() + ct.data_library["Отчет"][self.calc_options.currentIndex()], "a", encoding="utf-8") as txt:
+        with open(get_desktop() + ct.data_library["Отчет"][self.calcs_area.currentIndex()], "a", encoding="utf-8") as txt:
             txt.writelines(data)
 
     @QtCore.pyqtSlot()
     def calculating(self):
-        match self.calc_options.currentIndex():
+        match self.calcs_area.currentIndex():
             case 2:
                 if ([i for i, x in enumerate(self.calcs_objects[2].entry_objects[0:3]) if x.text() == ""] or
                         not self.calcs_objects[2].set_hole_checks()):
@@ -225,7 +228,7 @@ class CalculatorsController(BaseAbstractController):
 
     @QtCore.pyqtSlot()
     def clearing(self):
-        if self.calc_options.currentIndex() == 3:
+        if self.calcs_area.currentIndex() == 3:
             [j.clear() for i in self.calcs_objects[3].octave_table for j in i]
             [calc_base.reset_value(j) for i in self.calcs_objects[3].octave_table for j in i]
         else:
@@ -233,7 +236,7 @@ class CalculatorsController(BaseAbstractController):
 
     @QtCore.pyqtSlot()
     def saving(self):
-        if self.calc_options.currentIndex() == 3:
+        if self.calcs_area.currentIndex() == 3:
             self.save_noise_calc()
         else:
             self.save_basic_calc()
@@ -321,7 +324,11 @@ class ApplicationType(QtWidgets.QWidget):
              "QSpinBox:focus {background: "+colors[1]+"} "          
                                                                                                                                                                                
              "QLabel#result_field {border-radius: 9px; background: "+colors[9]+" color: "+colors[10]+"} "
-             "QLabel#result_field_noise {border-radius: 5px; background: "+colors[9]+" color: "+colors[10]+"}")
+             "QLabel#result_field_noise {border-radius: 5px; background: "+colors[9]+" color: "+colors[10]+"}"
+             
+             "QTableView {font: 10px arial, sans-serif;} "
+             "QTableView QHeaderView::section {border: 1px solid; font: 10px arial, sans-serif;}"
+                           )
 
     def create_main_menu(self):
         main_menu = QtWidgets.QMenuBar(self)
