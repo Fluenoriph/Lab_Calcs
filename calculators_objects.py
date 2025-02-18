@@ -111,8 +111,8 @@ class VentilationEfficiency(AbstractBaseCalc):
     def __init__(self):
         super().__init__(ct.data_library["Калькуляторы"]["Эффектив. вентиляции"]["Параметры"],
                          ct.data_library["Калькуляторы"]["Эффектив. вентиляции"]["Результаты"])
-        [_.setFixedSize(ct.data_library["Размеры поля ввода"]) for _ in self.entry_objects[0:3]]
-        [_.setFixedSize(ct.data_library["Размеры поля ввода вент. отвер."]) for _ in self.entry_objects[3:6]]
+        [_.setFixedSize(ct.data_library["Размеры поля ввода"]) for _ in self.entry_objects[:3]]
+        [_.setFixedSize(ct.data_library["Размеры поля ввода вент. отвер."]) for _ in self.entry_objects[3:]]
         [_.setMaxLength(7) for _ in self.entry_objects]
         [_.check_value() for _ in self.entry_objects]
 
@@ -145,8 +145,8 @@ class VentilationEfficiency(AbstractBaseCalc):
 
     @QtCore.pyqtSlot()
     def lock_rectangle_entry_objects(self):
-        [_.clear() for _ in self.entry_objects[4:6]]
-        [self.reset_value(_) for _ in self.entry_objects[4:6]]
+        [_.clear() for _ in self.entry_objects[4:]]
+        [self.reset_value(_) for _ in self.entry_objects[4:]]
 
     @QtCore.pyqtSlot()
     def lock_circle_entry_object(self):
@@ -248,7 +248,7 @@ class MainRegister(AbstractRegister):
         [self.entry_objects.append(QtWidgets.QLineEdit(self)) for _ in range(3)]
         [self.entry_objects.append(QtWidgets.QComboBox(self)) for _ in range(2)]
 
-        [_.setFixedSize(ct.data_library["Размеры поля ввода инфо. протокола"]) for _ in self.entry_objects[0:3]]
+        [_.setFixedSize(ct.data_library["Размеры поля ввода инфо. протокола"]) for _ in self.entry_objects[:3]]
         [_.setFixedSize(ct.data_library["Размеры поля ввода инфо. объекта"]) for _ in self.entry_objects[3:6]]
         self.entry_objects[6].setFixedSize(ct.data_library["Размеры поля ввода инфо. протокола"])
         self.entry_objects[7].setFixedSize(ct.data_library["Размеры поля ввода инфо. объекта"])

@@ -70,8 +70,8 @@ class RegistersController(BaseAbstractController):
         x = QtSql.QSqlQuery()
         y = self.calcs_area.currentIndex()
 
-        protocol_data = [_.text() for _ in self.register.entry_objects[0:6]]
-        [protocol_data.append(_.itemData(_.currentIndex())) for _ in self.register.entry_objects[6:8]]
+        protocol_data = [_.text() for _ in self.register.entry_objects[:6]]
+        [protocol_data.append(_.itemData(_.currentIndex())) for _ in self.register.entry_objects[6:]]
 
         x.prepare(f"INSERT INTO {ct.data_library["Журналы"]["Основной регистратор"]["Тип журнала"][y]} "
                   f"VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?)")
@@ -94,7 +94,7 @@ class RegistersController(BaseAbstractController):
         x = [i for i, x in enumerate(self.calcs_objects[n].entry_objects[0]) if x.value() > 0]
 
         if (self.register.entry_objects[0].text() == "" or [i for i, x in enumerate(self.register.entry_objects[3:6]) if x.text() == ""]
-                or [i for i, x in enumerate(self.register.entry_objects[6:8]) if x.currentIndex() == 0] or not x or
+                or [i for i, x in enumerate(self.register.entry_objects[6:]) if x.currentIndex() == 0] or not x or
                 [i for i in x if self.calcs_objects[n].entry_objects[0][i].value()
                                              < self.calcs_objects[n].entry_objects[1][i].value()]):
             return ar.error_message(self, 0)
@@ -106,8 +106,8 @@ class RegistersController(BaseAbstractController):
 
     @QtCore.pyqtSlot()
     def clear_fields(self):
-        [_.clear() for _ in self.register.entry_objects[0:6]]
-        [_.setCurrentIndex(0) for _ in self.register.entry_objects[6:8]]
+        [_.clear() for _ in self.register.entry_objects[:6]]
+        [_.setCurrentIndex(0) for _ in self.register.entry_objects[6:]]
 
         for _ in range(2):
             [j.clear() for i in self.calcs_objects[_].entry_objects for j in i]
@@ -127,21 +127,25 @@ class RegistersController(BaseAbstractController):
         view_type = QtWidgets.QTableView(self)
         view_type.setWindowFlags(QtCore.Qt.WindowType.Window)
         view_type.resize(1400, 600)
+        header = view_type.horizontalHeader()
         view_type.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         view_type.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
         view_type.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
-        #view_type.resizeColumnsToContents()
+        view_type.setWordWrap(True)
 
         data_model = QtSql.QSqlTableModel()
         data_model.setTable(ct.data_library["Журналы"]["Представления"][i])
         data_model.setSort(0, QtCore.Qt.SortOrder.AscendingOrder)
         data_model.select()
+        view_type.setModel(data_model)
 
         [data_model.setHeaderData(_, x, ct.data_library["Журналы"]["Основной регистратор"]["Столбцы"][_]) for _ in range(7)]
         [data_model.setHeaderData(_ + 7, x, d[_]) for _ in range(n)]
         data_model.setHeaderData(n + 7, x, "Ф.И.О. ответс.")
 
-        view_type.setModel(data_model)
+        [header.resizeSection(_ + 7, 60) for _ in range(n)]
+        [header.setSectionResizeMode(_ + 7, QtWidgets.QHeaderView.ResizeMode.Fixed) for _ in range(n)]
+
         view_type.setWindowTitle(self.calcs_names[i])
         view_type.show()
 
@@ -326,8 +330,12 @@ class ApplicationType(QtWidgets.QWidget):
              "QLabel#result_field {border-radius: 9px; background: "+colors[9]+" color: "+colors[10]+"} "
              "QLabel#result_field_noise {border-radius: 5px; background: "+colors[9]+" color: "+colors[10]+"}"
              
-             "QTableView {font: 10px arial, sans-serif;} "
-             "QTableView QHeaderView::section {border: 1px solid; font: 10px arial, sans-serif;}"
+             "QTableView {font: 10px arial, sans-serif; background: blue;} "
+             "QTableView::item:selected {background: red;} "
+             "QTableView QHeaderView::section {border: 0px; font: 10px arial, sans-serif; background: "+colors[1]+"} "
+             "QTableView QTableCornerButton::section {border: 0px; background: "+colors[1]+"} "
+             "QTableView QScrollBar:horizontal {border: 0px; background: transparent;}"
+
                            )
 
     def create_main_menu(self):
