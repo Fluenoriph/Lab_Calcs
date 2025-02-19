@@ -249,9 +249,8 @@ class CalculatorsController(BaseAbstractController):
 class ApplicationType(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-        QtWidgets.QApplication.setOrganizationName("Ivan Bogdanov")
-        QtWidgets.QApplication.setApplicationName("Calculators 2.1.0 Beta")
-        settings = QtCore.QSettings(self)
+        self.settings = QtCore.QSettings(QtCore.QSettings.Format.IniFormat, QtCore.QSettings.Scope.UserScope, "Ivan_Bogdanov",
+                        "Calculators__2.1.0__Beta", self)
 
         self.setWindowTitle("Калькуляторы")
         self.resize(1015, 550)
@@ -273,21 +272,20 @@ class ApplicationType(QtWidgets.QWidget):
         self.registers_area = RegistersController()
         self.calculators_area = CalculatorsController()
 
-        self.set_style(ct.data_library["Цвета светлой темы"])
-
-        settings.beginWriteArray("Light Style")
-        for i, el in enumerate(ct.data_library["Цвета светлой темы"]):
-            settings.setArrayIndex(i)
-            settings.setValue("Color", el)
-
-        settings.endArray()
-        settings.sync()
-
+        #print(self.settings.fileName())       # C:/Users/Mahabhara/AppData/Roaming/Ivan_Bogdanov/Calculators__2.1.0__Beta.ini
         self.box.addWidget(self.menu_area, 0, 0, 1, 4)
         self.box.setColumnMinimumWidth(0, 1)    #???
 
         for i, j in enumerate((self.selector_area, self.calculators_area)):
             self.box.addWidget(j, 1, i + 1, 1, 1, ct.data_library["Позиция левый-верхний"])
+
+        self.current_style_value = self.settings.value("Style", 1)
+
+        if int(self.current_style_value) == 1:
+            self.set_style(ct.data_library["Цвета светлой темы"])
+        else:
+            self.set_style(ct.data_library["Цвета темной темы"])
+            self.menu_area.change_style.toggle()
 
         self.show()
 
@@ -393,7 +391,6 @@ class ApplicationType(QtWidgets.QWidget):
         selector_panel.calculators_index = selector_panel.model_type.index(0, 0)
         selector_panel.registers_index = selector_panel.model_type.index(1, 0)
         selector_panel.clicked.connect(self.select_calcs_type)
-
         selector_panel.setCurrentIndex(selector_panel.calculators_index)
 
         return selector_panel
@@ -403,8 +400,12 @@ class ApplicationType(QtWidgets.QWidget):
         match self.menu_area.change_style.isChecked():
             case True:
                 self.set_style(ct.data_library["Цвета темной темы"])
+                self.settings.setValue(ct.data_library["Настройки"], 2)
+                self.settings.sync()
             case False:
                 self.set_style(ct.data_library["Цвета светлой темы"])
+                self.settings.setValue(ct.data_library["Настройки"], 1)
+                self.settings.sync()
 
     @QtCore.pyqtSlot()
     def open_about_app_message(self):
