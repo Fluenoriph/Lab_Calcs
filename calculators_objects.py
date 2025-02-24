@@ -46,19 +46,19 @@ class AbstractBaseCalc(QtWidgets.QWidget):
         self.parameters = parameters
         self.results = results
         self.entry_objects = []
-        self.sum = range(len(self.parameters))
 
         self.box = QtWidgets.QGridLayout(self)
         self.box.setContentsMargins(ct.data_library["Отступы калькулятора"])
-        self.setFixedSize(ct.data_library["Размеры калькулятора базовые"])
-        self.box.setVerticalSpacing(20)
-        self.box.setHorizontalSpacing(50)
 
-        [self.box.addWidget(QtWidgets.QLabel(self.parameters[_], self), _, 0, ct.data_library["Позиция левый-центр"])
-         for _ in self.sum]
+        self.box.setHorizontalSpacing(130)   # dynamics !
+        self.box.setVerticalSpacing(25)
 
-        [self.entry_objects.append(InputValue(self)) for _ in self.sum]
-        [self.box.addWidget(self.entry_objects[_], _, 1, ct.data_library["Позиция левый-центр"]) for _ in self.sum]
+        for _ in self.parameters:
+            i = self.box.rowCount()
+            self.box.addWidget(QtWidgets.QLabel(_, self), i, 0, ct.data_library["Позиция левый-центр"])
+            j = InputValue(self)
+            self.box.addWidget(j, i, 1, ct.data_library["Позиция левый-центр"])
+            self.entry_objects.append(j)
 
         self.result_area = QtWidgets.QLabel(self)
         self.result_area.setFixedSize(ct.data_library["Размеры поля результатов"])
@@ -66,8 +66,9 @@ class AbstractBaseCalc(QtWidgets.QWidget):
         self.result_area.setObjectName("result_field")
         self.result_area.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByKeyboard |
                                      QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
+
         self.box.setRowMinimumHeight(self.box.rowCount(), 30)
-        self.box.addWidget(self.result_area, self.box.rowCount(), 0, 1, 2, ct.data_library["Позиция левый-верхний"])
+        self.box.addWidget(self.result_area, self.box.rowCount(), 0, 1, 3, ct.data_library["Позиция левый-верхний"])
 
     @staticmethod
     def reset_value(x):
@@ -75,9 +76,11 @@ class AbstractBaseCalc(QtWidgets.QWidget):
 
 
 class AtmosphericAirDust(AbstractBaseCalc):
-    def __init__(self, parameters = ct.data_library["Калькуляторы"]["Пыль в атмосф. воздухе"]["Параметры"],
-                 results = ct.data_library["Калькуляторы"]["Пыль в атмосф. воздухе"]["Результаты"]):
+    def __init__(self, parameters = ct.data_library["Калькуляторы"]["Пыль в атмосферном воздухе"]["Параметры"],
+                 results = ct.data_library["Калькуляторы"]["Пыль в атмосферном воздухе"]["Результаты"]):
+
         super().__init__(parameters = parameters, results = results)
+
         [_.setFixedSize(ct.data_library["Размеры поля ввода"]) for _ in self.entry_objects]
         [_.setMaxLength(10) for _ in self.entry_objects]
         [_.check_value() for _ in self.entry_objects if self.entry_objects.index(_) != 1]
@@ -109,8 +112,9 @@ class AtmosphericAirDust(AbstractBaseCalc):
 
 class VentilationEfficiency(AbstractBaseCalc):
     def __init__(self):
-        super().__init__(ct.data_library["Калькуляторы"]["Эффектив. вентиляции"]["Параметры"],
-                         ct.data_library["Калькуляторы"]["Эффектив. вентиляции"]["Результаты"])
+        super().__init__(ct.data_library["Калькуляторы"]["Эффективность вентиляции"]["Параметры"],
+                         ct.data_library["Калькуляторы"]["Эффективность вентиляции"]["Результаты"])
+
         [_.setFixedSize(ct.data_library["Размеры поля ввода"]) for _ in self.entry_objects[:3]]
         [_.setFixedSize(ct.data_library["Размеры поля ввода вент. отвер."]) for _ in self.entry_objects[3:]]
         [_.setMaxLength(7) for _ in self.entry_objects]
@@ -157,16 +161,17 @@ class VentilationEfficiency(AbstractBaseCalc):
 class NoiseLevelsWithBackground(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-        self.setFixedSize(ct.data_library["Размеры калькулятора шум"])
-        self.box = QtWidgets.QGridLayout(self)
-        self.box.setContentsMargins(ct.data_library["Отступы калькулятора"])
-        self.sum = range(10)
+        self.setFixedSize(ct.data_library["Размеры калькулятора шум"])  # incapsulate ??  dynamics
 
+        self.sum = range(10)
         self.octave_table = []
         self.entry_objects_source = []
         self.entry_objects_background = []
         self.delta_result_area = []
         self.correct_result_area = []
+
+        self.box = QtWidgets.QGridLayout(self)
+        self.box.setContentsMargins(ct.data_library["Отступы калькулятора"])
 
         [self.box.addWidget(
             QtWidgets.QLabel(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Результаты"][_], self),
@@ -190,7 +195,6 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
             [self.box.addWidget(j[_], i + 1, _ + 1, ct.data_library["Позиция центр"]) for _ in self.sum]
             self.octave_table.append(j)
 
-    # test !!!
     def calculate(self):
         for _ in range(10):
             if self.entry_objects_source[_].text() != "" and self.entry_objects_background[_].text() != "":
@@ -226,8 +230,7 @@ class AbstractRegister(QtWidgets.QWidget):
         self.connect.setDatabaseName('registers_data.db')
 
         self.box = QtWidgets.QGridLayout(self)
-        self.box.setVerticalSpacing(15)
-        self.box.setHorizontalSpacing(30)
+        self.box.setContentsMargins(ct.data_library["Отступы калькулятора"])
 
         [self.box.addWidget(QtWidgets.QLabel(self.parameters[_], self), _, 0, ct.data_library["Позиция левый-центр"])
          for _ in self.r]
@@ -243,6 +246,9 @@ class AbstractRegister(QtWidgets.QWidget):
 class MainRegister(AbstractRegister):
     def __init__(self, parameters = ct.data_library["Журналы"]["Основной регистратор"]["Параметры"]):
         super().__init__(parameters)
+        self.box.setVerticalSpacing(25)
+        self.box.setHorizontalSpacing(100)  # dynamics
+
         self.entry_objects.append(QtWidgets.QLineEdit(self))
         [self.entry_objects.append(QtWidgets.QDateEdit(self)) for _ in range(2)]
         [self.entry_objects.append(QtWidgets.QLineEdit(self)) for _ in range(3)]
@@ -265,19 +271,19 @@ class MainRegister(AbstractRegister):
 class FactorsRegister(AbstractRegister):
     def __init__(self, parameters = ct.data_library["Журналы"]["Физические факторы"]["Параметры"]):
         super().__init__(parameters = parameters)
+        #self.box.setVerticalSpacing(10)
+        #self.box.setHorizontalSpacing(10)     # dynamics     main size
+
         self.ok_standart_entries = []
         self.no_standart_entries = []
 
         for i in (self.ok_standart_entries, self.no_standart_entries):
             [i.append(QtWidgets.QSpinBox(self)) for _ in self.r]
+            [_.setFixedSize(ct.data_library["Размеры поля ввода факторов"]) for _ in i]
+            [_.setRange(0, 9999) for _ in i]
+            n = self.box.columnCount()
+            [self.box.addWidget(i[_], _, n, ct.data_library["Позиция левый-центр"]) for _ in self.r]
             self.entry_objects.append(i)
-
-        [self.entry_objects.append(_) for _ in (self.ok_standart_entries, self.no_standart_entries)]
-        [j.setFixedSize(ct.data_library["Размеры поля ввода факторов"]) for i in self.entry_objects for j in i]
-        [j.setRange(0, 9999) for i in self.entry_objects for j in i]
-
-        for i in range(2):
-            [self.box.addWidget(self.entry_objects[i][_], _, i + 1, ct.data_library["Позиция левый-центр"]) for _ in self.r]
 
         x = self.box.rowCount()
         for i, j in enumerate(("соотв.", "не соотв.")):

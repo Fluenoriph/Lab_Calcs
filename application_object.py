@@ -18,6 +18,8 @@ class BaseAbstractController(QtWidgets.QWidget):
         self.box.setContentsMargins(ct.data_library["Отступы контроллеров"])
 
         self.calcs_area = self.create_options()
+        self.setFixedSize(1200, 1000)        # dynamics
+
         self.buttons = self.create_control_buttons()
 
     def create_options(self):
@@ -36,6 +38,7 @@ class BaseAbstractController(QtWidgets.QWidget):
 
     def create_control_buttons(self):
         buttons = []
+        self.box.setColumnStretch(self.box.columnCount(), 50)
         x = self.box.columnCount()
 
         for _ in range(3):
@@ -57,6 +60,7 @@ class RegistersController(BaseAbstractController):
         FactorsRegister(ct.data_library["Журналы"]["Радиационные факторы"]["Параметры"])),
         ct.data_library["Элементы управления"]["Иконки журнала"], ct.data_library["Элементы управления"]["Подсказки журнала"])
 
+        self.box.setHorizontalSpacing(50)  # dyn
         self.register = MainRegister()
         self.box.addWidget(self.register, 0, 0, 8, 2, alignment=ct.data_library["Позиция левый-верхний"])
 
@@ -122,11 +126,11 @@ class RegistersController(BaseAbstractController):
         i = self.calcs_area.currentIndex()
         d = ct.data_library["Журналы"][self.calcs_names[i]]["Столбцы"]
         x = QtCore.Qt.Orientation.Horizontal  # in dict
-        n = self.calcs_objects[i].sum * 2
+        n = self.calcs_objects[i].sum * 2 # ??
 
         view_type = QtWidgets.QTableView(self)
         view_type.setWindowFlags(QtCore.Qt.WindowType.Window)
-        view_type.resize(1400, 600)
+        view_type.resize(1400, 600) # ????
         header = view_type.horizontalHeader()
         view_type.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         view_type.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
@@ -143,8 +147,12 @@ class RegistersController(BaseAbstractController):
         [data_model.setHeaderData(_ + 7, x, d[_]) for _ in range(n)]
         data_model.setHeaderData(n + 7, x, "Ф.И.О. ответс.")
 
+        header.resizeSection(0, 60)
+        [header.resizeSection(_, 70) for _ in (1, 2, 6)]
+        header.resizeSection(3, 180)
+        [header.resizeSection(_, 100) for _ in (4, n + 7)]
+        header.resizeSection(5, 200)
         [header.resizeSection(_ + 7, 60) for _ in range(n)]
-        [header.setSectionResizeMode(_ + 7, QtWidgets.QHeaderView.ResizeMode.Fixed) for _ in range(n)]
 
         view_type.setWindowTitle(self.calcs_names[i])
         view_type.show()
@@ -153,8 +161,8 @@ class RegistersController(BaseAbstractController):
 class CalculatorsController(BaseAbstractController):
     def __init__(self):
         super().__init__(list(ct.data_library["Калькуляторы"].keys()),
-        (AtmosphericAirDust(), AtmosphericAirDust(ct.data_library["Калькуляторы"]["Пыль в воздухе раб. зоны"]["Параметры"],
-        ct.data_library["Калькуляторы"]["Пыль в воздухе раб. зоны"]["Результаты"]), VentilationEfficiency(),
+        (AtmosphericAirDust(), AtmosphericAirDust(ct.data_library["Калькуляторы"]["Пыль в воздухе рабочей зоны"]["Параметры"],
+        ct.data_library["Калькуляторы"]["Пыль в воздухе рабочей зоны"]["Результаты"]), VentilationEfficiency(),
          NoiseLevelsWithBackground()), ct.data_library["Элементы управления"]["Иконки калькулятора"],
                          ct.data_library["Элементы управления"]["Подсказки калькулятора"])
 
@@ -251,9 +259,9 @@ class ApplicationType(QtWidgets.QWidget):
         super().__init__()
         self.settings = QtCore.QSettings(QtCore.QSettings.Format.IniFormat, QtCore.QSettings.Scope.UserScope, "Ivan_Bogdanov",
                         "Calculators__2.1.0__Beta", self)
+        self.data_dict_names = list(ct.data_library.keys())
 
         self.setWindowTitle("Калькуляторы")
-        self.resize(1015, 550)
         self.move(self.width() * -2, 0)
         screen_size = self.screen().availableSize()
         x = (screen_size.width() - self.frameSize().width()) // 2
@@ -261,26 +269,19 @@ class ApplicationType(QtWidgets.QWidget):
         self.move(x, y)
 
         self.box = QtWidgets.QGridLayout(self)
-        self.box.setHorizontalSpacing(5)
-        self.box.setVerticalSpacing(15)
-        self.box.setContentsMargins(0, 0, 0, 0)
-
-        self.data_dict_names = list(ct.data_library.keys())
+        self.box.setContentsMargins(0, 0, 0, 5)
+        self.box.setColumnMinimumWidth(0, 1)
 
         self.menu_area = self.create_main_menu()
         self.selector_area = self.create_selector_panel()
         self.registers_area = RegistersController()
         self.calculators_area = CalculatorsController()
 
-        #print(self.settings.fileName())       # C:/Users/Mahabhara/AppData/Roaming/Ivan_Bogdanov/Calculators__2.1.0__Beta.ini
         self.box.addWidget(self.menu_area, 0, 0, 1, 4)
-        self.box.setColumnMinimumWidth(0, 1)    #???
-
         for i, j in enumerate((self.selector_area, self.calculators_area)):
-            self.box.addWidget(j, 1, i + 1, 1, 1, ct.data_library["Позиция левый-верхний"])
+            self.box.addWidget(j, 1, i + 1, ct.data_library["Позиция левый-верхний"])
 
         self.current_style_value = self.settings.value("Style", 1)
-
         if int(self.current_style_value) == 1:
             self.set_style(ct.data_library["Цвета светлой темы"])
         else:
@@ -288,6 +289,8 @@ class ApplicationType(QtWidgets.QWidget):
             self.menu_area.change_style.toggle()
 
         self.show()
+
+        self.selector_area.setFixedSize(150, self.height())
 
     def set_style(self, colors):
         self.setStyleSheet("* {outline: 0; border-style: none; background: "+colors[0]+" font: 13px arial, sans-serif;} "                                                  
@@ -376,9 +379,7 @@ class ApplicationType(QtWidgets.QWidget):
 
     def create_selector_panel(self):
         selector_panel = QtWidgets.QListView(self)
-        selector_panel.setFixedSize(ct.data_library["Размеры зоны выбора"])
         selector_panel.setSpacing(10)
-        selector_panel.setFrameStyle(QtWidgets.QFrame.Shape.NoFrame)
 
         selector_panel.names = (self.data_dict_names[24], self.data_dict_names[25])
         selector_panel.model_type = QtCore.QStringListModel(selector_panel.names)
