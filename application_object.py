@@ -2,8 +2,46 @@ from PyQt6 import QtWidgets, QtCore, QtGui, QtSql
 import sys
 from winpath import get_desktop
 import constants as ct
-from calculators_objects import (AtmosphericAirDust, VentilationEfficiency, NoiseLevelsWithBackground, MainRegister,
-                                 FactorsRegister, AbstractBaseCalc as calc_base, AbstractRegister as ar)
+from calculators_objects import (AtmosphericAirDust, VentilationEfficiency, NoiseLevelsWithBackground,
+                                 AbstractBaseCalc as calc_base, Factors)
+
+
+class ProtocolView(QtWidgets.QTableView):
+    def __init__(self, name):
+        super().__init__()
+        self.name = name
+        self.factor_titles = ct.data_library["Журналы"][self.name]["Столбцы"]
+        self.n = len(self.factor_titles)
+
+        self.setWindowFlags(QtCore.Qt.WindowType.Window)
+        self.resize(1400, 600)  # ????
+
+        self.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
+        self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+        self.setWordWrap(True)
+        self.header = self.horizontalHeader()
+
+        self.data_model = QtSql.QSqlTableModel(self)
+        self.data_model.setTable(ct.data_library["Журналы"][self.name]["Представление"])
+        self.data_model.setSort(0, QtCore.Qt.SortOrder.AscendingOrder)
+        self.data_model.select()
+        self.setModel(self.data_model)
+
+        [self.data_model.setHeaderData(_, ct.data_library["Ориентация"], ct.data_library["Журналы"]["Основной регистратор"]["Столбцы"][_]) for _ in
+         range(7)]
+        [self.data_model.setHeaderData(_ + 7, ct.data_library["Ориентация"], self.factor_titles[_]) for _ in range(self.n)]
+        self.data_model.setHeaderData(self.n + 7, ct.data_library["Ориентация"], "Ф.И.О. ответс.")
+
+        self.header.setMinimumSectionSize(60)
+        self.header.resizeSection(0, 60)
+        [self.header.resizeSection(_, 70) for _ in (1, 2, 6)]
+        self.header.resizeSection(3, 180)
+        [self.header.resizeSection(_, 100) for _ in (4, self.n + 7)]
+        self.header.resizeSection(5, 200)
+        [self.header.resizeSection(_ + 7, 60) for _ in range(self.n)]
+
+        self.setWindowTitle(self.name)
 
 
 class BaseAbstractController(QtWidgets.QWidget):
@@ -53,16 +91,41 @@ class BaseAbstractController(QtWidgets.QWidget):
         return buttons
 
 class RegistersController(BaseAbstractController):
-    n = list(ct.data_library["Журналы"].keys())
-
     def __init__(self):
-        super().__init__(self.n[1:3],(FactorsRegister(),
-        FactorsRegister(ct.data_library["Журналы"]["Радиационные факторы"]["Параметры"])),
+        super().__init__(("Физические факторы", "Радиационные факторы"),(Factors(ct.data_library["Журналы"]["Физические факторы"]["Параметры"]),
+        Factors(ct.data_library["Журналы"]["Радиационные факторы"]["Параметры"])),
         ct.data_library["Элементы управления"]["Иконки журнала"], ct.data_library["Элементы управления"]["Подсказки журнала"])
 
-        self.box.setHorizontalSpacing(50)  # dyn
-        self.register = MainRegister()
-        self.box.addWidget(self.register, 0, 0, 8, 2, alignment=ct.data_library["Позиция левый-верхний"])
+        self.connect = QtSql.QSqlDatabase.addDatabase('QSQLITE')
+        self.connect.setDatabaseName('registers_data.db')
+        if not self.connect.open():
+            self.error_message(self, 2)
+
+        self.factors_tables = (ProtocolView(self.calcs_names[0]), ProtocolView(self.calcs_names[1]))
+
+        #self.box.setHorizontalSpacing(50)  # dyn
+
+        [self.box.addWidget(QtWidgets.QLabel(ct.data_library["Журналы"]["Основной регистратор"]["Параметры"][_], self),
+                            _, 0, ct.data_library["Позиция левый-центр"]) for _ in range(8)]
+
+        self.entry_objects = []
+        self.entry_objects.append(QtWidgets.QLineEdit(self))
+        [self.entry_objects.append(QtWidgets.QDateEdit(self)) for _ in range(2)]
+        [self.entry_objects.append(QtWidgets.QLineEdit(self)) for _ in range(3)]
+        [self.entry_objects.append(QtWidgets.QComboBox(self)) for _ in range(2)]
+
+        [_.setFixedSize(ct.data_library["Размеры поля ввода инфо. протокола"]) for _ in self.entry_objects[:3]]
+        [_.setFixedSize(ct.data_library["Размеры поля ввода инфо. объекта"]) for _ in self.entry_objects[3:6]]
+        self.entry_objects[6].setFixedSize(ct.data_library["Размеры поля ввода инфо. протокола"])
+        self.entry_objects[7].setFixedSize(ct.data_library["Размеры поля ввода инфо. объекта"])
+
+        [self.box.addWidget(self.entry_objects[_], _, 1, ct.data_library["Позиция левый-центр"]) for _ in range(8)]
+
+        [_.setDate(ct.data_library["Текущий период"]) for _ in self.entry_objects[1:3]]
+        [self.entry_objects[6].addItem(ct.data_library["Журналы"]["Основной регистратор"]["Тип выполнения"][_], _) for _
+         in range(7)]
+        [self.entry_objects[7].addItem(ct.data_library["Журналы"]["Основной регистратор"]["Сотрудники"][_], _) for _
+         in range(5)]
 
         self.calcs_area.currentChanged.connect(self.clear_number_to_move)
 
@@ -74,8 +137,8 @@ class RegistersController(BaseAbstractController):
         x = QtSql.QSqlQuery()
         y = self.calcs_area.currentIndex()
 
-        protocol_data = [_.text() for _ in self.register.entry_objects[:6]]
-        [protocol_data.append(_.itemData(_.currentIndex())) for _ in self.register.entry_objects[6:]]
+        protocol_data = [_.text() for _ in self.entry_objects[:6]]
+        [protocol_data.append(_.itemData(_.currentIndex())) for _ in self.entry_objects[6:]]
 
         x.prepare(f"INSERT INTO {ct.data_library["Журналы"]["Основной регистратор"]["Тип журнала"][y]} "
                   f"VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?)")
@@ -86,32 +149,32 @@ class RegistersController(BaseAbstractController):
         n = self.calcs_area.currentIndex()       # refactor all  в функции ?
         x = QtSql.QSqlQuery()
 
-        for i in range(self.calcs_objects[n].sum):
+        for i in self.calcs_objects[n].r:
             x.prepare(f"INSERT INTO {ct.data_library["Журналы"][self.calcs_names[n]]["Таблицы"][i]} VALUES(NULL, ?, ?)")
             [x.addBindValue(self.calcs_objects[n].entry_objects[_][i].value()) for _ in range(2)]
             if not x.exec():
-                return ar.error_message(self, 1)
+                return self.error_message(self, 1)
 
     @QtCore.pyqtSlot()
     def save_protocol(self):
         n = self.calcs_area.currentIndex()
         x = [i for i, x in enumerate(self.calcs_objects[n].entry_objects[0]) if x.value() > 0]
 
-        if (self.register.entry_objects[0].text() == "" or [i for i, x in enumerate(self.register.entry_objects[3:6]) if x.text() == ""]
-                or [i for i, x in enumerate(self.register.entry_objects[6:]) if x.currentIndex() == 0] or not x or
+        if (self.entry_objects[0].text() == "" or [i for i, x in enumerate(self.entry_objects[3:6]) if x.text() == ""]
+                or [i for i, x in enumerate(self.entry_objects[6:]) if x.currentIndex() == 0] or not x or
                 [i for i in x if self.calcs_objects[n].entry_objects[0][i].value()
                                              < self.calcs_objects[n].entry_objects[1][i].value()]):
-            return ar.error_message(self, 0)
+            return self.error_message(self, 0)
         else:
             if self.record_main_data():
                 self.record_factors_data()
             else:
-                return ar.error_message(self, 1)
+                return self.error_message(self, 1)
 
     @QtCore.pyqtSlot()
     def clear_fields(self):
-        [_.clear() for _ in self.register.entry_objects[:6]]
-        [_.setCurrentIndex(0) for _ in self.register.entry_objects[6:]]
+        [_.clear() for _ in self.entry_objects[:6]]
+        [_.setCurrentIndex(0) for _ in self.entry_objects[6:]]
 
         for _ in range(2):
             [j.clear() for i in self.calcs_objects[_].entry_objects for j in i]
@@ -119,43 +182,15 @@ class RegistersController(BaseAbstractController):
 
     @QtCore.pyqtSlot()
     def clear_number_to_move(self):
-        return self.register.entry_objects[0].clear()
+        return self.entry_objects[0].clear()
 
     @QtCore.pyqtSlot()
     def run_protocols_view(self):
-        i = self.calcs_area.currentIndex()
-        d = ct.data_library["Журналы"][self.calcs_names[i]]["Столбцы"]
-        x = QtCore.Qt.Orientation.Horizontal  # in dict
-        n = self.calcs_objects[i].sum * 2 # ??
+        return self.factors_tables[self.calcs_area.currentIndex()].show()
 
-        view_type = QtWidgets.QTableView(self)
-        view_type.setWindowFlags(QtCore.Qt.WindowType.Window)
-        view_type.resize(1400, 600) # ????
-        header = view_type.horizontalHeader()
-        view_type.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
-        view_type.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
-        view_type.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
-        view_type.setWordWrap(True)
-
-        data_model = QtSql.QSqlTableModel()
-        data_model.setTable(ct.data_library["Журналы"]["Представления"][i])
-        data_model.setSort(0, QtCore.Qt.SortOrder.AscendingOrder)
-        data_model.select()
-        view_type.setModel(data_model)
-
-        [data_model.setHeaderData(_, x, ct.data_library["Журналы"]["Основной регистратор"]["Столбцы"][_]) for _ in range(7)]
-        [data_model.setHeaderData(_ + 7, x, d[_]) for _ in range(n)]
-        data_model.setHeaderData(n + 7, x, "Ф.И.О. ответс.")
-
-        header.resizeSection(0, 60)
-        [header.resizeSection(_, 70) for _ in (1, 2, 6)]
-        header.resizeSection(3, 180)
-        [header.resizeSection(_, 100) for _ in (4, n + 7)]
-        header.resizeSection(5, 200)
-        [header.resizeSection(_ + 7, 60) for _ in range(n)]
-
-        view_type.setWindowTitle(self.calcs_names[i])
-        view_type.show()
+    @staticmethod
+    def error_message(parent, x):
+        return QtWidgets.QMessageBox.critical(parent, " ", ct.data_library["Журналы"]["Критические сообщения"][x])
 
 
 class CalculatorsController(BaseAbstractController):

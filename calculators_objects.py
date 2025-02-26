@@ -173,10 +173,6 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
         self.box = QtWidgets.QGridLayout(self)
         self.box.setContentsMargins(ct.data_library["Отступы калькулятора"])
 
-        [self.box.addWidget(
-            QtWidgets.QLabel(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Результаты"][_], self),
-            _ + 1, 0, ct.data_library["Позиция левый-центр"]) for _ in range(4)]
-
         [self.box.addWidget(QtWidgets.QLabel(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Октавные полосы"][_], self),
                             0, _ + 1, ct.data_library["Позиция нижний-центр"]) for _ in self.sum]
 
@@ -190,6 +186,9 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
                 [j.append(QtWidgets.QLabel(self)) for _ in self.sum]
                 [_.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter) for _ in j]
                 [_.setObjectName("result_field_noise") for _ in j]
+
+            self.box.addWidget(QtWidgets.QLabel(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Результаты"][i], self),
+            i + 1, 0, ct.data_library["Позиция левый-центр"])
 
             [_.setFixedSize(ct.data_library["Размеры полей шум"]) for _ in j]
             [self.box.addWidget(j[_], i + 1, _ + 1, ct.data_library["Позиция центр"]) for _ in self.sum]
@@ -218,73 +217,25 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
                 if _[0] <= delta <= _[1]:
                     return delta, source - _[2]
 
-
-class AbstractRegister(QtWidgets.QWidget):
+class Factors(QtWidgets.QWidget):
     def __init__(self, parameters):
         super().__init__()
         self.parameters = parameters
-        self.entry_objects = []
-        self.sum = len(self.parameters)
-        self.r = range(self.sum)
-        self.connect = QtSql.QSqlDatabase.addDatabase('QSQLITE')
-        self.connect.setDatabaseName('registers_data.db')
+        self.r = range(len(self.parameters))
 
         self.box = QtWidgets.QGridLayout(self)
-        self.box.setContentsMargins(ct.data_library["Отступы калькулятора"])
 
-        [self.box.addWidget(QtWidgets.QLabel(self.parameters[_], self), _, 0, ct.data_library["Позиция левый-центр"])
-         for _ in self.r]
-
-        if not self.connect.open():
-            self.error_message(self, 2)
-
-    @staticmethod
-    def error_message(parent, x):
-        return QtWidgets.QMessageBox.critical(parent, " ", ct.data_library["Журналы"]["Критические сообщения"][x])
-
-
-class MainRegister(AbstractRegister):
-    def __init__(self, parameters = ct.data_library["Журналы"]["Основной регистратор"]["Параметры"]):
-        super().__init__(parameters)
-        self.box.setVerticalSpacing(25)
-        self.box.setHorizontalSpacing(100)  # dynamics
-
-        self.entry_objects.append(QtWidgets.QLineEdit(self))
-        [self.entry_objects.append(QtWidgets.QDateEdit(self)) for _ in range(2)]
-        [self.entry_objects.append(QtWidgets.QLineEdit(self)) for _ in range(3)]
-        [self.entry_objects.append(QtWidgets.QComboBox(self)) for _ in range(2)]
-
-        [_.setFixedSize(ct.data_library["Размеры поля ввода инфо. протокола"]) for _ in self.entry_objects[:3]]
-        [_.setFixedSize(ct.data_library["Размеры поля ввода инфо. объекта"]) for _ in self.entry_objects[3:6]]
-        self.entry_objects[6].setFixedSize(ct.data_library["Размеры поля ввода инфо. протокола"])
-        self.entry_objects[7].setFixedSize(ct.data_library["Размеры поля ввода инфо. объекта"])
-
-        [self.box.addWidget(self.entry_objects[_], _, 1, ct.data_library["Позиция левый-центр"]) for _ in self.r]
-
-        [_.setDate(ct.data_library["Текущий период"]) for _ in self.entry_objects[1:3]]
-        [self.entry_objects[6].addItem(ct.data_library["Журналы"]["Основной регистратор"]["Тип выполнения"][_], _) for _
-         in range(7)]
-        [self.entry_objects[7].addItem(ct.data_library["Журналы"]["Основной регистратор"]["Сотрудники"][_], _) for _
-         in range(5)]
-
-
-class FactorsRegister(AbstractRegister):
-    def __init__(self, parameters = ct.data_library["Журналы"]["Физические факторы"]["Параметры"]):
-        super().__init__(parameters = parameters)
-        #self.box.setVerticalSpacing(10)
-        #self.box.setHorizontalSpacing(10)     # dynamics     main size
-
+        self.entry_objects = []
         self.ok_standart_entries = []
         self.no_standart_entries = []
 
-        for i in (self.ok_standart_entries, self.no_standart_entries):
-            [i.append(QtWidgets.QSpinBox(self)) for _ in self.r]
-            [_.setFixedSize(ct.data_library["Размеры поля ввода факторов"]) for _ in i]
-            [_.setRange(0, 9999) for _ in i]
-            n = self.box.columnCount()
-            [self.box.addWidget(i[_], _, n, ct.data_library["Позиция левый-центр"]) for _ in self.r]
-            self.entry_objects.append(i)
-
-        x = self.box.rowCount()
         for i, j in enumerate(("соотв.", "не соотв.")):
-            self.box.addWidget(QtWidgets.QLabel(j, self), x, i + 1, ct.data_library["Позиция левый-верхний"])
+            self.box.addWidget(QtWidgets.QLabel(j, self), 0, i + 1, ct.data_library["Позиция левый-верхний"])
+        [self.box.addWidget(QtWidgets.QLabel(self.parameters[_], self), _ + 1, 0, ct.data_library["Позиция левый-центр"]) for _ in self.r]
+
+        for i, j in enumerate((self.ok_standart_entries, self.no_standart_entries)):
+            [j.append(QtWidgets.QSpinBox(self)) for _ in self.r]
+            [_.setFixedSize(ct.data_library["Размеры поля ввода факторов"]) for _ in j]
+            [_.setRange(0, 9999) for _ in j]
+            [self.box.addWidget(j[_], _ + 1, i + 1, ct.data_library["Позиция левый-центр"]) for _ in self.r]
+            self.entry_objects.append(j)
