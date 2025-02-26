@@ -1,6 +1,7 @@
 from PyQt6 import QtWidgets, QtCore, QtGui, QtSql
 import sys
 from winpath import get_desktop
+from functools import partial
 import constants as ct
 from calculators_objects import (AtmosphericAirDust, VentilationEfficiency, NoiseLevelsWithBackground,
                                  AbstractBaseCalc as calc_base, Factors)
@@ -14,7 +15,7 @@ class ProtocolView(QtWidgets.QTableView):
         self.n = len(self.factor_titles)
 
         self.setWindowFlags(QtCore.Qt.WindowType.Window)
-        self.resize(1400, 600)  # ????
+        #self.resize(1400, 600)  # ????
 
         self.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         self.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
@@ -56,7 +57,7 @@ class BaseAbstractController(QtWidgets.QWidget):
         self.box.setContentsMargins(ct.data_library["Отступы контроллеров"])
 
         self.calcs_area = self.create_options()
-        self.setFixedSize(1200, 1000)        # dynamics
+        #self.setFixedSize(1200, 1000)        # dynamics
 
         self.buttons = self.create_control_buttons()
 
@@ -76,7 +77,10 @@ class BaseAbstractController(QtWidgets.QWidget):
 
     def create_control_buttons(self):
         buttons = []
-        self.box.setColumnStretch(self.box.columnCount(), 50)
+        frame = QtWidgets.QWidget(self)
+        frame.setFixedSize(ct.data_library["Размер виджета кнопок"])
+        box = QtWidgets.QVBoxLayout(frame)
+        #self.box.setColumnStretch(self.box.columnCount(), 50)
         x = self.box.columnCount()
 
         for _ in range(3):
@@ -87,7 +91,9 @@ class BaseAbstractController(QtWidgets.QWidget):
             button.setIconSize(ct.data_library["Размеры кнопок"])
             button.setAutoDefault(True)
             buttons.append(button)
-            self.box.addWidget(button, _ + 1, x, 3, 1, ct.data_library["Позиция левый-верхний"])
+            box.addWidget(button, alignment=ct.data_library["Позиция центр"])
+
+        self.box.addWidget(frame, 1, x, 8, 1, ct.data_library["Позиция левый-верхний"])
         return buttons
 
 class RegistersController(BaseAbstractController):
@@ -102,8 +108,10 @@ class RegistersController(BaseAbstractController):
             self.error_message(self, 2)
 
         self.factors_tables = (ProtocolView(self.calcs_names[0]), ProtocolView(self.calcs_names[1]))
+        self.factors_tables[0].setObjectName("table")
 
-        #self.box.setHorizontalSpacing(50)  # dyn
+        self.box.setHorizontalSpacing(50)  # dyn
+        self.box.setVerticalSpacing(10)
 
         [self.box.addWidget(QtWidgets.QLabel(ct.data_library["Журналы"]["Основной регистратор"]["Параметры"][_], self),
                             _, 0, ct.data_library["Позиция левый-центр"]) for _ in range(8)]
@@ -146,7 +154,7 @@ class RegistersController(BaseAbstractController):
         return x.exec()
 
     def record_factors_data(self):
-        n = self.calcs_area.currentIndex()       # refactor all  в функции ?
+        n = self.calcs_area.currentIndex()
         x = QtSql.QSqlQuery()
 
         for i in self.calcs_objects[n].r:
@@ -307,25 +315,73 @@ class ApplicationType(QtWidgets.QWidget):
         self.box.setContentsMargins(0, 0, 0, 5)
         self.box.setColumnMinimumWidth(0, 1)
 
-        self.menu_area = self.create_main_menu()
-        self.selector_area = self.create_selector_panel()
-        self.registers_area = RegistersController()
-        self.calculators_area = CalculatorsController()
+        self.main_menu = QtWidgets.QMenuBar(self)
+        self.main_menu.setFixedHeight(22)
 
-        self.box.addWidget(self.menu_area, 0, 0, 1, 4)
-        for i, j in enumerate((self.selector_area, self.calculators_area)):
+        self.main_menu.submenu_file = QtWidgets.QMenu(ct.data_library["Главное меню"][0], self.main_menu)
+        self.main_menu.submenu_help = QtWidgets.QMenu(ct.data_library["Главное меню"][2], self.main_menu)
+        self.main_menu.change_style = QtGui.QAction(ct.data_library["Главное меню"][3], self.main_menu)
+        self.main_menu.change_style.setCheckable(True)
+
+        self.main_menu.addMenu(self.main_menu.submenu_file)
+        self.main_menu.addMenu(self.main_menu.submenu_help)
+        self.main_menu.addAction(self.main_menu.change_style)
+        self.set_style_act = self.main_menu.change_style
+        self.main_menu.change_style.toggled.connect(self.change_app_style)
+
+        self.main_menu.set_calculators_act = QtGui.QAction(self.data_dict_names[24], self.main_menu.submenu_file)
+        self.main_menu.set_calculators_act.triggered.connect(partial(self.set_selector_index, 0))
+        self.main_menu.set_calculators_act.triggered.connect(self.select_calcs_type)
+
+        self.main_menu.set_registers_act = QtGui.QAction(self.data_dict_names[25], self.main_menu.submenu_file)
+        self.main_menu.set_registers_act.triggered.connect(partial(self.set_selector_index, 1))
+        self.main_menu.set_registers_act.triggered.connect(self.select_calcs_type)
+
+        self.main_menu.exit_act = QtGui.QAction(ct.data_library["Главное меню"][1], self.main_menu.submenu_file)
+        self.main_menu.exit_act.triggered.connect(sys.exit)
+
+        self.main_menu.submenu_file.addAction(self.main_menu.set_calculators_act)
+        self.main_menu.submenu_file.addAction(self.main_menu.set_registers_act)
+        self.main_menu.submenu_file.addSeparator()
+        self.main_menu.submenu_file.addAction(self.main_menu.exit_act)
+
+        self.main_menu.help_link = QtGui.QAction(self.data_dict_names[1], self.main_menu.submenu_help)
+        self.main_menu.help_link.triggered.connect(self.open_help_message)
+
+        self.main_menu.about = QtGui.QAction(self.data_dict_names[2], self.main_menu.submenu_help)
+        self.main_menu.about.triggered.connect(self.open_about_app_message)
+
+        self.main_menu.submenu_help.addAction(self.main_menu.help_link)
+        self.main_menu.submenu_help.addSeparator()
+        self.main_menu.submenu_help.addAction(self.main_menu.about)
+        self.box.addWidget(self.main_menu, 0, 0, 1, 4)
+
+        self.selector_panel = QtWidgets.QListView(self)
+        self.selector_panel.setSpacing(10)
+
+        self.selector_panel.model_type = QtCore.QStringListModel((self.data_dict_names[24], self.data_dict_names[25]))
+        self.selector_panel.setModel(self.selector_panel.model_type)
+
+        self.selector_panel.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
+        self.selector_panel.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.selector_panel.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
+
+        self.selector_panel.setCurrentIndex(self.selector_panel.model_type.index(0, 0))
+        self.selector_panel.clicked.connect(self.select_calcs_type)
+
+        self.controllers = (CalculatorsController(), RegistersController())
+
+        for i, j in enumerate((self.selector_panel, self.controllers[0])):
             self.box.addWidget(j, 1, i + 1, ct.data_library["Позиция левый-верхний"])
 
-        self.current_style_value = self.settings.value("Style", 1)
-        if int(self.current_style_value) == 1:
-            self.set_style(ct.data_library["Цвета светлой темы"])
-        else:
-            self.set_style(ct.data_library["Цвета темной темы"])
-            self.menu_area.change_style.toggle()
+        x = int(self.settings.value(ct.data_library["Настройки"], 0))
+        self.set_style(ct.data_library["Цвета"][x])
+        if x == 1:
+            self.main_menu.change_style.setChecked(True)
 
         self.show()
 
-        self.selector_area.setFixedSize(150, self.height())
+        self.selector_panel.setFixedSize(150, self.height())
 
     def set_style(self, colors):
         self.setStyleSheet("* {outline: 0; border-style: none; background: "+colors[0]+" font: 13px arial, sans-serif;} "                                                  
@@ -364,84 +420,25 @@ class ApplicationType(QtWidgets.QWidget):
              "QSpinBox:focus {background: "+colors[1]+"} "          
                                                                                                                                                                                
              "QLabel#result_field {border-radius: 9px; background: "+colors[9]+" color: "+colors[10]+"} "
-             "QLabel#result_field_noise {border-radius: 5px; background: "+colors[9]+" color: "+colors[10]+"}"
-             
-             "QTableView {font: 10px arial, sans-serif; background: blue;} "
+             "QLabel#result_field_noise {border-radius: 5px; background: "+colors[9]+" color: "+colors[10]+"}")
+
+        [_.setStyleSheet("QTableView {font: 10px arial, sans-serif; background: blue;} "
              "QTableView::item:selected {background: red;} "
              "QTableView QHeaderView::section {border: 0px; font: 10px arial, sans-serif; background: "+colors[1]+"} "
              "QTableView QTableCornerButton::section {border: 0px; background: "+colors[1]+"} "
-             "QTableView QScrollBar:horizontal {border: 0px; background: transparent;}"
+             "QTableView QScrollBar:horizontal {border: 0px; background: transparent;}") for _ in self.controllers[1].factors_tables]
 
-                           )
-
-    def create_main_menu(self):
-        main_menu = QtWidgets.QMenuBar(self)
-        main_menu.setFixedHeight(22)
-
-        main_menu.submenu_file = QtWidgets.QMenu(ct.data_library["Главное меню"][0], main_menu)
-        main_menu.submenu_help = QtWidgets.QMenu(ct.data_library["Главное меню"][2], main_menu)
-        main_menu.change_style = QtGui.QAction(ct.data_library["Главное меню"][3], main_menu)
-        main_menu.change_style.setCheckable(True)
-        main_menu.change_style.toggled.connect(self.change_app_style)
-
-        main_menu.addMenu(main_menu.submenu_file)
-        main_menu.addMenu(main_menu.submenu_help)
-        main_menu.addAction(main_menu.change_style)
-
-        main_menu.set_calculators_act = QtGui.QAction(self.data_dict_names[24], main_menu.submenu_file)
-        main_menu.set_calculators_act.triggered.connect(self.calculators_show_fixed)
-        main_menu.set_registers_act = QtGui.QAction(self.data_dict_names[25], main_menu.submenu_file)
-        main_menu.set_registers_act.triggered.connect(self.registers_show_fixed)
-        main_menu.exit_act = QtGui.QAction(ct.data_library["Главное меню"][1], main_menu.submenu_file)
-        main_menu.exit_act.triggered.connect(sys.exit)
-
-        main_menu.submenu_file.addAction(main_menu.set_registers_act)
-        main_menu.submenu_file.addAction(main_menu.set_calculators_act)
-        main_menu.submenu_file.addSeparator()
-        main_menu.submenu_file.addAction(main_menu.exit_act)
-
-        main_menu.help_link = QtGui.QAction(self.data_dict_names[1], main_menu.submenu_help)
-        main_menu.help_link.triggered.connect(self.open_help_message)
-
-        main_menu.about = QtGui.QAction(self.data_dict_names[2], main_menu.submenu_help)
-        main_menu.about.triggered.connect(self.open_about_app_message)
-
-        main_menu.submenu_help.addAction(main_menu.help_link)
-        main_menu.submenu_help.addSeparator()
-        main_menu.submenu_help.addAction(main_menu.about)
-
-        return main_menu
-
-    def create_selector_panel(self):
-        selector_panel = QtWidgets.QListView(self)
-        selector_panel.setSpacing(10)
-
-        selector_panel.names = (self.data_dict_names[24], self.data_dict_names[25])
-        selector_panel.model_type = QtCore.QStringListModel(selector_panel.names)
-        selector_panel.setModel(selector_panel.model_type)
-
-        selector_panel.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
-        selector_panel.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
-        selector_panel.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
-
-        selector_panel.calculators_index = selector_panel.model_type.index(0, 0)
-        selector_panel.registers_index = selector_panel.model_type.index(1, 0)
-        selector_panel.clicked.connect(self.select_calcs_type)
-        selector_panel.setCurrentIndex(selector_panel.calculators_index)
-
-        return selector_panel
+    @QtCore.pyqtSlot()
+    def set_selector_index(self, x):
+        return self.selector_panel.setCurrentIndex(self.selector_panel.model_type.index(x, 0))
 
     @QtCore.pyqtSlot()
     def change_app_style(self):
-        match self.menu_area.change_style.isChecked():
-            case True:
-                self.set_style(ct.data_library["Цвета темной темы"])
-                self.settings.setValue(ct.data_library["Настройки"], 2)
-                self.settings.sync()
-            case False:
-                self.set_style(ct.data_library["Цвета светлой темы"])
-                self.settings.setValue(ct.data_library["Настройки"], 1)
-                self.settings.sync()
+        i = int(self.set_style_act.isChecked())
+
+        self.set_style(ct.data_library["Цвета"][i])
+        self.settings.setValue(ct.data_library["Настройки"], i)
+        self.settings.sync()
 
     @QtCore.pyqtSlot()
     def open_about_app_message(self):
@@ -452,24 +449,14 @@ class ApplicationType(QtWidgets.QWidget):
         QtWidgets.QMessageBox.information(self, self.data_dict_names[1], ct.data_library["Справка"])
 
     @QtCore.pyqtSlot()
-    def calculators_show_fixed(self):
-        self.registers_area.close()
-        self.box.replaceWidget(self.registers_area, self.calculators_area)
-        self.calculators_area.show()
-
-    @QtCore.pyqtSlot()
-    def registers_show_fixed(self):
-        self.calculators_area.close()
-        self.box.replaceWidget(self.calculators_area, self.registers_area)
-        self.registers_area.show()
-
-    @QtCore.pyqtSlot()
     def select_calcs_type(self):
-        match self.selector_area.currentIndex():    # refactor index !!!
-            case self.selector_area.calculators_index:
-                self.calculators_show_fixed()
-            case self.selector_area.registers_index:
-                self.registers_show_fixed()
+        x = [0, 1]
+        if self.selector_panel.currentIndex().row() == 1:
+            x.reverse()
+
+        self.controllers[x[1]].close()
+        self.box.replaceWidget(self.controllers[x[1]], self.controllers[x[0]])
+        self.controllers[x[0]].show()
 
 
 if __name__ == "__main__":
