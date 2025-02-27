@@ -15,7 +15,7 @@ class ProtocolView(QtWidgets.QTableView):
         self.n = len(self.factor_titles)
 
         self.setWindowFlags(QtCore.Qt.WindowType.Window)
-        #self.resize(1400, 600)  # ????
+        self.resize(1200, 600)
 
         self.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         self.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
@@ -57,8 +57,6 @@ class BaseAbstractController(QtWidgets.QWidget):
         self.box.setContentsMargins(ct.data_library["Отступы контроллеров"])
 
         self.calcs_area = self.create_options()
-        #self.setFixedSize(1200, 1000)        # dynamics
-
         self.buttons = self.create_control_buttons()
 
     def create_options(self):
@@ -66,10 +64,11 @@ class BaseAbstractController(QtWidgets.QWidget):
         area.setCurrentIndex(0)
         area.setUsesScrollButtons(False)
 
-        y = self.box.columnCount()
         x = len(self.calcs_names)
         if x == 2:
             y = 2
+        else:
+            y = 0
 
         [area.addTab(self.calcs_objects[_], self.calcs_names[_]) for _ in range(x)]
         self.box.addWidget(area, 0, y, 8, 1, alignment=ct.data_library["Позиция левый-верхний"])
@@ -80,7 +79,6 @@ class BaseAbstractController(QtWidgets.QWidget):
         frame = QtWidgets.QWidget(self)
         frame.setFixedSize(ct.data_library["Размер виджета кнопок"])
         box = QtWidgets.QVBoxLayout(frame)
-        #self.box.setColumnStretch(self.box.columnCount(), 50)
         x = self.box.columnCount()
 
         for _ in range(3):
@@ -109,9 +107,6 @@ class RegistersController(BaseAbstractController):
 
         self.factors_tables = (ProtocolView(self.calcs_names[0]), ProtocolView(self.calcs_names[1]))
         self.factors_tables[0].setObjectName("table")
-
-        self.box.setHorizontalSpacing(50)  # dyn
-        self.box.setVerticalSpacing(10)
 
         [self.box.addWidget(QtWidgets.QLabel(ct.data_library["Журналы"]["Основной регистратор"]["Параметры"][_], self),
                             _, 0, ct.data_library["Позиция левый-центр"]) for _ in range(8)]
@@ -305,6 +300,7 @@ class ApplicationType(QtWidgets.QWidget):
         self.data_dict_names = list(ct.data_library.keys())
 
         self.setWindowTitle("Калькуляторы")
+        self.resize(1600, 1000)
         self.move(self.width() * -2, 0)
         screen_size = self.screen().availableSize()
         x = (screen_size.width() - self.frameSize().width()) // 2
@@ -380,8 +376,29 @@ class ApplicationType(QtWidgets.QWidget):
             self.main_menu.change_style.setChecked(True)
 
         self.show()
+        self.set_sizes()
 
+    def set_sizes(self):
         self.selector_panel.setFixedSize(150, self.height())
+
+        for _ in range(3):
+            self.controllers[0].calcs_objects[_].box.setHorizontalSpacing(125)
+            self.controllers[0].calcs_objects[_].box.setVerticalSpacing(25)
+        self.controllers[0].calcs_objects[3].setFixedSize(900, 250)
+
+        self.controllers[1].box.setHorizontalSpacing(90)
+        self.controllers[1].box.setVerticalSpacing(25)
+
+        #self.controllers[1].calcs_objects[1].setFixedSize(350, 250)
+        self.controllers[1].calcs_objects[0].box.setHorizontalSpacing(25)
+        self.controllers[1].calcs_objects[0].box.setVerticalSpacing(15)
+
+        self.controllers[1].calcs_objects[1].box.setHorizontalSpacing(25)
+        self.controllers[1].calcs_objects[1].box.setVerticalSpacing(15)
+
+        #self.controllers[1].calcs_objects[1].setFixedSize(300, 400)
+
+        #self.selector_panel.setFixedSize(150, self.height())
 
     def set_style(self, colors):
         self.setStyleSheet("* {outline: 0; border-style: none; background: "+colors[0]+" font: 13px arial, sans-serif;} "                                                  
@@ -402,13 +419,13 @@ class ApplicationType(QtWidgets.QWidget):
              "QPushButton:hover {background: "+colors[3]+"} "
              "QPushButton:pressed {background: "+colors[4]+"} "
 
-             "QListView {border-radius: 9px; background: "+colors[1]+"} "       
+             "QListView {border-radius: 9px; background: "+colors[5]+"} "       
              "QListView::item {border-radius: 5px; padding: 2px; color: "+colors[2]+"} "
              "QListView::item:hover {background: "+colors[3]+"} "
              "QListView::item:selected {background: " + colors[3] + " color: " + colors[4] + "}"
 
              "QTabWidget:pane {border-style: none;} "
-             "QTabBar:tab {border-radius: 5px; padding: 5px; background: "+colors[9]+" color: "+colors[5]+"} "     
+             "QTabBar:tab {border-radius: 5px; padding: 5px; background: "+colors[5]+" color: "+colors[2]+"} "     
              "QTabBar:tab::hover {background: "+colors[3]+"} "
              "QTabBar:tab::selected {background: "+colors[3]+" color: "+colors[4]+"} "   
                                                                                                            
@@ -422,10 +439,11 @@ class ApplicationType(QtWidgets.QWidget):
              "QLabel#result_field {border-radius: 9px; background: "+colors[9]+" color: "+colors[10]+"} "
              "QLabel#result_field_noise {border-radius: 5px; background: "+colors[9]+" color: "+colors[10]+"}")
 
-        [_.setStyleSheet("QTableView {font: 10px arial, sans-serif; background: blue;} "
-             "QTableView::item:selected {background: red;} "
-             "QTableView QHeaderView::section {border: 0px; font: 10px arial, sans-serif; background: "+colors[1]+"} "
-             "QTableView QTableCornerButton::section {border: 0px; background: "+colors[1]+"} "
+        [_.setStyleSheet("QTableView {font: 10px arial, sans-serif; background: "+colors[5]+" color: "+colors[2]+"} "
+             "QTableView::item:selected {background: "+colors[3]+" color: "+colors[4]+"} "
+             "QTableView QHeaderView::section {border: 0px; font: 10px arial, sans-serif; background: "+colors[0]+" color: "+colors[6]+"} "
+             "QTableView QTableCornerButton::section {border: 0px; background: "+colors[0]+"} "
+             
              "QTableView QScrollBar:horizontal {border: 0px; background: transparent;}") for _ in self.controllers[1].factors_tables]
 
     @QtCore.pyqtSlot()

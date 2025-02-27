@@ -50,9 +50,6 @@ class AbstractBaseCalc(QtWidgets.QWidget):
         self.box = QtWidgets.QGridLayout(self)
         self.box.setContentsMargins(ct.data_library["Отступы калькулятора"])
 
-        self.box.setHorizontalSpacing(130)   # dynamics !
-        self.box.setVerticalSpacing(25)
-
         for _ in self.parameters:
             i = self.box.rowCount()
             self.box.addWidget(QtWidgets.QLabel(_, self), i, 0, ct.data_library["Позиция левый-центр"])
@@ -161,8 +158,6 @@ class VentilationEfficiency(AbstractBaseCalc):
 class NoiseLevelsWithBackground(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-        self.setFixedSize(ct.data_library["Размеры калькулятора шум"])  # incapsulate ??  dynamics
-
         self.sum = range(10)
         self.octave_table = []
         self.entry_objects_source = []
@@ -230,7 +225,7 @@ class Factors(QtWidgets.QWidget):
         self.no_standart_entries = []
 
         for i, j in enumerate(("соотв.", "не соотв.")):
-            self.box.addWidget(QtWidgets.QLabel(j, self), 0, i + 1, ct.data_library["Позиция левый-верхний"])
+            self.box.addWidget(QtWidgets.QLabel(j, self), 0, i + 1, ct.data_library["Позиция левый-центр"])
         [self.box.addWidget(QtWidgets.QLabel(self.parameters[_], self), _ + 1, 0, ct.data_library["Позиция левый-центр"]) for _ in self.r]
 
         for i, j in enumerate((self.ok_standart_entries, self.no_standart_entries)):
