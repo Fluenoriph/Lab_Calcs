@@ -8,20 +8,21 @@ from calculators_objects import (AtmosphericAirDust, VentilationEfficiency, Nois
 
 
 class ProtocolView(QtWidgets.QTableView):
-    def __init__(self, name):
-        super().__init__()
+    def __init__(self, name, parent):
+        super().__init__(parent)
         self.name = name
         self.factor_titles = ct.data_library["Журналы"][self.name]["Столбцы"]
         self.n = len(self.factor_titles)
 
         self.setWindowFlags(QtCore.Qt.WindowType.Window)
-        self.resize(1200, 600)
+        self.setWindowTitle(self.name)
+        self.resize(ct.data_library["Размер представления"])
 
         self.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         self.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
         self.setWordWrap(True)
-        self.header = self.horizontalHeader()
+        self.verticalHeader().hide()
 
         self.data_model = QtSql.QSqlTableModel(self)
         self.data_model.setTable(ct.data_library["Журналы"][self.name]["Представление"])
@@ -34,15 +35,19 @@ class ProtocolView(QtWidgets.QTableView):
         [self.data_model.setHeaderData(_ + 7, ct.data_library["Ориентация"], self.factor_titles[_]) for _ in range(self.n)]
         self.data_model.setHeaderData(self.n + 7, ct.data_library["Ориентация"], "Ф.И.О. ответс.")
 
-        self.header.setMinimumSectionSize(60)
-        self.header.resizeSection(0, 60)
-        [self.header.resizeSection(_, 70) for _ in (1, 2, 6)]
-        self.header.resizeSection(3, 180)
-        [self.header.resizeSection(_, 100) for _ in (4, self.n + 7)]
-        self.header.resizeSection(5, 200)
-        [self.header.resizeSection(_ + 7, 60) for _ in range(self.n)]
+        self.horizontalHeader().setDefaultAlignment(ct.data_library["Позиция левый-центр"])
+        self.horizontalHeader().setMinimumSectionSize(70)
+        self.horizontalHeader().resizeSection(0, 70)
+        [self.horizontalHeader().resizeSection(_, 80) for _ in (1, 2, 6)]
+        self.horizontalHeader().resizeSection(3, 200)
+        [self.horizontalHeader().resizeSection(_, 150) for _ in (4, self.n + 7)]
+        self.horizontalHeader().resizeSection(5, 250)
 
-        self.setWindowTitle(self.name)
+        for _ in range(self.n):
+            self.horizontalHeader().resizeSection(_ + 7, 70)
+            self.horizontalHeader().setSectionResizeMode(_ + 7, QtWidgets.QHeaderView.ResizeMode.Fixed)
+
+        self.horizontalHeader().setStretchLastSection(True)
 
 
 class BaseAbstractController(QtWidgets.QWidget):
@@ -105,8 +110,7 @@ class RegistersController(BaseAbstractController):
         if not self.connect.open():
             self.error_message(self, 2)
 
-        self.factors_tables = (ProtocolView(self.calcs_names[0]), ProtocolView(self.calcs_names[1]))
-        self.factors_tables[0].setObjectName("table")
+        self.factors_tables = (ProtocolView(self.calcs_names[0], self), ProtocolView(self.calcs_names[1], self))
 
         [self.box.addWidget(QtWidgets.QLabel(ct.data_library["Журналы"]["Основной регистратор"]["Параметры"][_], self),
                             _, 0, ct.data_library["Позиция левый-центр"]) for _ in range(8)]
@@ -184,12 +188,12 @@ class RegistersController(BaseAbstractController):
             [j.setValue(0) for i in self.calcs_objects[_].entry_objects for j in i]
 
     @QtCore.pyqtSlot()
-    def clear_number_to_move(self):
-        return self.entry_objects[0].clear()
-
-    @QtCore.pyqtSlot()
     def run_protocols_view(self):
         return self.factors_tables[self.calcs_area.currentIndex()].show()
+
+    @QtCore.pyqtSlot()
+    def clear_number_to_move(self):
+        return self.entry_objects[0].clear()
 
     @staticmethod
     def error_message(parent, x):
@@ -299,16 +303,16 @@ class ApplicationType(QtWidgets.QWidget):
                         "Calculators__2.1.0__Beta", self)
         self.data_dict_names = list(ct.data_library.keys())
 
-        self.setWindowTitle("Калькуляторы")
-        self.resize(1600, 1000)
         self.move(self.width() * -2, 0)
         screen_size = self.screen().availableSize()
         x = (screen_size.width() - self.frameSize().width()) // 2
         y = (screen_size.height() - self.frameSize().height()) // 2
         self.move(x, y)
+        self.setWindowTitle("Калькуляторы")
+        self.resize(ct.data_library["Размер главного окна"])
 
         self.box = QtWidgets.QGridLayout(self)
-        self.box.setContentsMargins(0, 0, 0, 5)
+        self.box.setContentsMargins(0, 0, 0, 8)
         self.box.setColumnMinimumWidth(0, 1)
 
         self.main_menu = QtWidgets.QMenuBar(self)
@@ -354,6 +358,7 @@ class ApplicationType(QtWidgets.QWidget):
 
         self.selector_panel = QtWidgets.QListView(self)
         self.selector_panel.setSpacing(10)
+        self.selector_panel.setFixedSize(150, 725)
 
         self.selector_panel.model_type = QtCore.QStringListModel((self.data_dict_names[24], self.data_dict_names[25]))
         self.selector_panel.setModel(self.selector_panel.model_type)
@@ -375,39 +380,38 @@ class ApplicationType(QtWidgets.QWidget):
         if x == 1:
             self.main_menu.change_style.setChecked(True)
 
+        self.set_sizes(ct.data_library["Расстояние по умолчанию"])
         self.show()
-        self.set_sizes()
 
-    def set_sizes(self):
-        self.selector_panel.setFixedSize(150, self.height())
+    def changeEvent(self, x):
+        if x.type() == QtCore.QEvent.Type.WindowStateChange:
+            if self.isMaximized():
+                self.set_sizes(ct.data_library["Расстояние максимальное"])
+            else:
+                self.set_sizes(ct.data_library["Расстояние по умолчанию"])
 
-        for _ in range(3):
-            self.controllers[0].calcs_objects[_].box.setHorizontalSpacing(125)
-            self.controllers[0].calcs_objects[_].box.setVerticalSpacing(25)
-        self.controllers[0].calcs_objects[3].setFixedSize(900, 250)
+        QtWidgets.QWidget.changeEvent(self, x)
 
-        self.controllers[1].box.setHorizontalSpacing(90)
-        self.controllers[1].box.setVerticalSpacing(25)
+    def set_sizes(self, distance):
+        [self.controllers[0].calcs_objects[_].box.setHorizontalSpacing(distance[0]) for _ in range(3)]
+        [self.controllers[0].calcs_objects[_].box.setVerticalSpacing(distance[1]) for _ in range(3)]
+        self.controllers[0].calcs_objects[3].setFixedSize(distance[2])
 
-        #self.controllers[1].calcs_objects[1].setFixedSize(350, 250)
-        self.controllers[1].calcs_objects[0].box.setHorizontalSpacing(25)
-        self.controllers[1].calcs_objects[0].box.setVerticalSpacing(15)
+        self.controllers[1].box.setHorizontalSpacing(distance[3])
+        self.controllers[1].box.setVerticalSpacing(distance[1])
 
-        self.controllers[1].calcs_objects[1].box.setHorizontalSpacing(25)
-        self.controllers[1].calcs_objects[1].box.setVerticalSpacing(15)
-
-        #self.controllers[1].calcs_objects[1].setFixedSize(300, 400)
-
-        #self.selector_panel.setFixedSize(150, self.height())
+        [self.controllers[1].calcs_objects[_].box.setHorizontalSpacing(distance[1]) for _ in range(2)]
+        [self.controllers[1].calcs_objects[_].box.setVerticalSpacing(distance[4]) for _ in range(2)]
 
     def set_style(self, colors):
-        self.setStyleSheet("* {outline: 0; border-style: none; background: "+colors[0]+" font: 13px arial, sans-serif;} "                                                  
+        self.setStyleSheet("* {outline: none; border-style: none; background: "+colors[0]+" font: 13px arial, sans-serif;} "                                                  
              
              "QMenuBar, QMenu {background: "+colors[0]+" color: "+colors[2]+"} QLabel {color: "+colors[6]+"} "   
              "QMenuBar {border-bottom: 1px solid "+colors[2]+"} "
              "QMenuBar::item:selected {background: "+colors[3]+"} "
              "QMenu::separator {border-bottom: 1px solid "+colors[2]+"} "                                      
-             "QMenu::item:selected {background: "+colors[3]+"} "    
+             "QMenu::item:selected {background: "+colors[3]+"} "
+             "QMenuBar::item:pressed {color: "+colors[4]+"} "
                           
              "QToolTip {color: "+colors[2]+"} "
                                                         
@@ -439,16 +443,16 @@ class ApplicationType(QtWidgets.QWidget):
              "QLabel#result_field {border-radius: 9px; background: "+colors[9]+" color: "+colors[10]+"} "
              "QLabel#result_field_noise {border-radius: 5px; background: "+colors[9]+" color: "+colors[10]+"}")
 
-        [_.setStyleSheet("QTableView {font: 10px arial, sans-serif; background: "+colors[5]+" color: "+colors[2]+"} "
+        [_.setStyleSheet("QTableView {outline: none; font: 10px verdana, sans-serif; "
+                         "gridline-color: "+colors[8]+" background: "+colors[5]+" color: "+colors[2]+"} "
              "QTableView::item:selected {background: "+colors[3]+" color: "+colors[4]+"} "
-             "QTableView QHeaderView::section {border: 0px; font: 10px arial, sans-serif; background: "+colors[0]+" color: "+colors[6]+"} "
-             "QTableView QTableCornerButton::section {border: 0px; background: "+colors[0]+"} "
-             
-             "QTableView QScrollBar:horizontal {border: 0px; background: transparent;}") for _ in self.controllers[1].factors_tables]
-
-    @QtCore.pyqtSlot()
-    def set_selector_index(self, x):
-        return self.selector_panel.setCurrentIndex(self.selector_panel.model_type.index(x, 0))
+             "QHeaderView::section {border: 0px; font: 10px verdana, sans-serif; background: "+colors[0]+" color: "+colors[6]+"} "
+             "QTableCornerButton::section {border: 0px; background: "+colors[0]+"} "
+             "QScrollBar {background: transparent;} "                            
+             "QScrollBar::add-page {border: 0px; background: "+colors[7]+"} "
+             "QScrollBar::sub-page {border: 0px; background: "+colors[7]+"} "
+             "QScrollBar::handle {border: 0px; background: "+colors[9]+"} "
+             "QScrollBar::handle:hover {background: "+colors[3]+"}") for _ in self.controllers[1].factors_tables]
 
     @QtCore.pyqtSlot()
     def change_app_style(self):
@@ -459,12 +463,8 @@ class ApplicationType(QtWidgets.QWidget):
         self.settings.sync()
 
     @QtCore.pyqtSlot()
-    def open_about_app_message(self):
-        QtWidgets.QMessageBox.about(self, self.data_dict_names[2], ct.data_library["О программе"])
-
-    @QtCore.pyqtSlot()
-    def open_help_message(self):
-        QtWidgets.QMessageBox.information(self, self.data_dict_names[1], ct.data_library["Справка"])
+    def set_selector_index(self, x):
+        return self.selector_panel.setCurrentIndex(self.selector_panel.model_type.index(x, 0))
 
     @QtCore.pyqtSlot()
     def select_calcs_type(self):
@@ -475,6 +475,14 @@ class ApplicationType(QtWidgets.QWidget):
         self.controllers[x[1]].close()
         self.box.replaceWidget(self.controllers[x[1]], self.controllers[x[0]])
         self.controllers[x[0]].show()
+
+    @QtCore.pyqtSlot()
+    def open_about_app_message(self):
+        QtWidgets.QMessageBox.about(self, self.data_dict_names[2], ct.data_library["О программе"])
+
+    @QtCore.pyqtSlot()
+    def open_help_message(self):
+        QtWidgets.QMessageBox.information(self, self.data_dict_names[1], ct.data_library["Справка"])
 
 
 if __name__ == "__main__":

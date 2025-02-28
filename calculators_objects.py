@@ -1,4 +1,4 @@
-from PyQt6 import QtWidgets, QtCore, QtGui, QtSql
+from PyQt6 import QtWidgets, QtCore, QtGui
 import constants as ct
 import math
 import locale
