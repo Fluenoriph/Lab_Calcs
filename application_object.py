@@ -128,7 +128,10 @@ class RegistersController(BaseAbstractController):
 
         [self.box.addWidget(self.entry_objects[_], _, 1, ct.data_library["Позиция левый-центр"]) for _ in range(8)]
 
-        [_.setDate(ct.data_library["Текущий период"]) for _ in self.entry_objects[1:3]]
+        for _ in self.entry_objects[1:3]:
+            _.setDate(ct.data_library["Текущий период"])
+            _.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.NoButtons)
+
         [self.entry_objects[6].addItem(ct.data_library["Журналы"]["Основной регистратор"]["Тип выполнения"][_], _) for _
          in range(7)]
         [self.entry_objects[7].addItem(ct.data_library["Журналы"]["Основной регистратор"]["Сотрудники"][_], _) for _
@@ -316,7 +319,8 @@ class ApplicationType(QtWidgets.QWidget):
         self.box.setColumnMinimumWidth(0, 1)
 
         self.main_menu = QtWidgets.QMenuBar(self)
-        self.main_menu.setFixedHeight(22)
+        self.main_menu.setFixedHeight(25)
+        #self.main_menu.adjustSize()
 
         self.main_menu.submenu_file = QtWidgets.QMenu(ct.data_library["Главное меню"][0], self.main_menu)
         self.main_menu.submenu_help = QtWidgets.QMenu(ct.data_library["Главное меню"][2], self.main_menu)
@@ -358,7 +362,8 @@ class ApplicationType(QtWidgets.QWidget):
 
         self.selector_panel = QtWidgets.QListView(self)
         self.selector_panel.setSpacing(10)
-        self.selector_panel.setFixedSize(150, 725)
+        self.selector_panel.setFixedHeight(725)
+        #self.selector_panel.adjustSize()
 
         self.selector_panel.model_type = QtCore.QStringListModel((self.data_dict_names[24], self.data_dict_names[25]))
         self.selector_panel.setModel(self.selector_panel.model_type)
@@ -367,7 +372,8 @@ class ApplicationType(QtWidgets.QWidget):
         self.selector_panel.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         self.selector_panel.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
 
-        self.selector_panel.setCurrentIndex(self.selector_panel.model_type.index(0, 0))
+        self.selector_model = self.selector_panel.model_type
+        self.selector_panel.setCurrentIndex(self.selector_model.index(0, 0))
         self.selector_panel.clicked.connect(self.select_calcs_type)
 
         self.controllers = (CalculatorsController(), RegistersController())
@@ -464,7 +470,7 @@ class ApplicationType(QtWidgets.QWidget):
 
     @QtCore.pyqtSlot()
     def set_selector_index(self, x):
-        return self.selector_panel.setCurrentIndex(self.selector_panel.model_type.index(x, 0))
+        return self.selector_panel.setCurrentIndex(self.selector_model.index(x, 0))
 
     @QtCore.pyqtSlot()
     def select_calcs_type(self):

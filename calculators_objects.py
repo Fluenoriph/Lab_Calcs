@@ -231,6 +231,7 @@ class Factors(QtWidgets.QWidget):
         for i, j in enumerate((self.ok_standart_entries, self.no_standart_entries)):
             [j.append(QtWidgets.QSpinBox(self)) for _ in self.r]
             [_.setFixedSize(ct.data_library["Размеры поля ввода факторов"]) for _ in j]
+            [_.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.NoButtons) for _ in j]
             [_.setRange(0, 9999) for _ in j]
             [self.box.addWidget(j[_], _ + 1, i + 1, ct.data_library["Позиция левый-центр"]) for _ in self.r]
             self.entry_objects.append(j)
