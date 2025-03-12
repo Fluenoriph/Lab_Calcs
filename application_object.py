@@ -49,6 +49,9 @@ class ProtocolView(QtWidgets.QTableView):
 
         self.horizontalHeader().setStretchLastSection(True)
 
+    def update_data(self):
+        return self.data_model.select()
+
 
 class BaseAbstractController(QtWidgets.QWidget):
     def __init__(self, calcs_names, calcs_objects, icon_path, tooltips):
@@ -108,7 +111,7 @@ class RegistersController(BaseAbstractController):
         self.connect = QtSql.QSqlDatabase.addDatabase('QSQLITE')
         self.connect.setDatabaseName('registers_data.db')
         if not self.connect.open():
-            self.error_message(self, 2)
+            self.error_message(2)
 
         self.factors_tables = (ProtocolView(self.calcs_names[0], self), ProtocolView(self.calcs_names[1], self))
 
@@ -163,23 +166,24 @@ class RegistersController(BaseAbstractController):
             x.prepare(f"INSERT INTO {ct.data_library["Журналы"][self.calcs_names[n]]["Таблицы"][i]} VALUES(NULL, ?, ?)")
             [x.addBindValue(self.calcs_objects[n].entry_objects[_][i].value()) for _ in range(2)]
             if not x.exec():
-                return self.error_message(self, 1)
+                return self.error_message(1)
+
+    def error_message(self, x):
+        return QtWidgets.QMessageBox.critical(self, " ", ct.data_library["Журналы"]["Критические сообщения"][x])
 
     @QtCore.pyqtSlot()
     def save_protocol(self):
         n = self.calcs_area.currentIndex()
-        x = [i for i, x in enumerate(self.calcs_objects[n].entry_objects[0]) if x.value() > 0]
 
-        if (self.entry_objects[0].text() == "" or [i for i, x in enumerate(self.entry_objects[3:6]) if x.text() == ""]
-                or [i for i, x in enumerate(self.entry_objects[6:]) if x.currentIndex() == 0] or not x or
-                [i for i in x if self.calcs_objects[n].entry_objects[0][i].value()
-                                             < self.calcs_objects[n].entry_objects[1][i].value()]):
-            return self.error_message(self, 0)
+        if (self.entry_objects[0].text() == "" or [i for i, j in enumerate(self.entry_objects[3:6]) if j.text() == ""]
+                or [i for i, j in enumerate(self.entry_objects[6:]) if j.currentIndex() == 0] or not self.calcs_objects[n].validate_values()):
+            return self.error_message(0)
         else:
             if self.record_main_data():
                 self.record_factors_data()
+                self.factors_tables[n].update_data()
             else:
-                return self.error_message(self, 1)
+                return self.error_message(1)
 
     @QtCore.pyqtSlot()
     def clear_fields(self):
@@ -197,10 +201,6 @@ class RegistersController(BaseAbstractController):
     @QtCore.pyqtSlot()
     def clear_number_to_move(self):
         return self.entry_objects[0].clear()
-
-    @staticmethod
-    def error_message(parent, x):
-        return QtWidgets.QMessageBox.critical(parent, " ", ct.data_library["Журналы"]["Критические сообщения"][x])
 
 
 class CalculatorsController(BaseAbstractController):
@@ -306,22 +306,22 @@ class ApplicationType(QtWidgets.QWidget):
                         "Calculators__2.1.0__Beta", self)
         self.data_dict_names = list(ct.data_library.keys())
 
-        self.move(self.width() * -2, 0)
+        '''self.move(self.width() * -2, 0)
         screen_size = self.screen().availableSize()
         x = (screen_size.width() - self.frameSize().width()) // 2
         y = (screen_size.height() - self.frameSize().height()) // 2
-        self.move(x, y)
+        self.move(x, y)'''
+
         self.setWindowTitle("Калькуляторы")
         self.resize(ct.data_library["Размер главного окна"])
 
         self.box = QtWidgets.QGridLayout(self)
         self.box.setContentsMargins(0, 0, 0, 8)
-        self.box.setColumnMinimumWidth(0, 1)
+        self.box.setRowStretch(1, 1)
+        self.box.setColumnStretch(1, 1)
+        #self.box.setColumnStretch(2, 50)
 
         self.main_menu = QtWidgets.QMenuBar(self)
-        self.main_menu.setFixedHeight(25)
-        #self.main_menu.adjustSize()
-
         self.main_menu.submenu_file = QtWidgets.QMenu(ct.data_library["Главное меню"][0], self.main_menu)
         self.main_menu.submenu_help = QtWidgets.QMenu(ct.data_library["Главное меню"][2], self.main_menu)
         self.main_menu.change_style = QtGui.QAction(ct.data_library["Главное меню"][3], self.main_menu)
@@ -333,11 +333,11 @@ class ApplicationType(QtWidgets.QWidget):
         self.set_style_act = self.main_menu.change_style
         self.main_menu.change_style.toggled.connect(self.change_app_style)
 
-        self.main_menu.set_calculators_act = QtGui.QAction(self.data_dict_names[24], self.main_menu.submenu_file)
+        self.main_menu.set_calculators_act = QtGui.QAction(self.data_dict_names[28], self.main_menu.submenu_file)
         self.main_menu.set_calculators_act.triggered.connect(partial(self.set_selector_index, 0))
         self.main_menu.set_calculators_act.triggered.connect(self.select_calcs_type)
 
-        self.main_menu.set_registers_act = QtGui.QAction(self.data_dict_names[25], self.main_menu.submenu_file)
+        self.main_menu.set_registers_act = QtGui.QAction(self.data_dict_names[29], self.main_menu.submenu_file)
         self.main_menu.set_registers_act.triggered.connect(partial(self.set_selector_index, 1))
         self.main_menu.set_registers_act.triggered.connect(self.select_calcs_type)
 
@@ -362,10 +362,9 @@ class ApplicationType(QtWidgets.QWidget):
 
         self.selector_panel = QtWidgets.QListView(self)
         self.selector_panel.setSpacing(10)
-        self.selector_panel.setFixedHeight(725)
-        #self.selector_panel.adjustSize()
+        self.selector_panel.setFixedSize(150, 675)
 
-        self.selector_panel.model_type = QtCore.QStringListModel((self.data_dict_names[24], self.data_dict_names[25]))
+        self.selector_panel.model_type = QtCore.QStringListModel((self.data_dict_names[28], self.data_dict_names[29]))
         self.selector_panel.setModel(self.selector_panel.model_type)
 
         self.selector_panel.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
@@ -411,54 +410,56 @@ class ApplicationType(QtWidgets.QWidget):
 
     def set_style(self, colors):
         self.setStyleSheet("* {outline: none; border-style: none; background: "+colors[0]+" font: 13px arial, sans-serif;} "                                                  
+            
+            "QLabel {color: "+colors[6]+"} "
+            "QToolTip {color: "+colors[2]+"} "
+                                          
+            "QMenuBar, QMenu {background: "+colors[0]+" color: "+colors[2]+"} "   
+            "QMenuBar::item:selected {transform: translate(0px, 0px); border-radius: 5px; background: "+colors[3]+"} "
+            "QMenu::separator {border-bottom: 1px solid "+colors[2]+"} "                                      
+            "QMenu::item:selected {background: "+colors[3]+"} "
+            "QMenuBar::item:pressed {color: "+colors[4]+"} "
+            "QMenuBar::item {margin: 2px 2px 2px 2px; padding: 7px 7px 7px 7px;} "
+                                                                    
+            "QMessageBox QLabel {color: "+colors[2]+"} "
+            "QMessageBox .QPushButton {border-radius: 5px; padding: 6px 16px 6px 16px; background: "+colors[3]+" color: "+colors[2]+"} "                             
+            "QMessageBox .QPushButton:pressed {background: "+colors[4]+"}"    
              
-             "QMenuBar, QMenu {background: "+colors[0]+" color: "+colors[2]+"} QLabel {color: "+colors[6]+"} "   
-             "QMenuBar {border-bottom: 1px solid "+colors[2]+"} "
-             "QMenuBar::item:selected {background: "+colors[3]+"} "
-             "QMenu::separator {border-bottom: 1px solid "+colors[2]+"} "                                      
-             "QMenu::item:selected {background: "+colors[3]+"} "
-             "QMenuBar::item:pressed {color: "+colors[4]+"} "
-                          
-             "QToolTip {color: "+colors[2]+"} "
-                                                        
-             "QMessageBox QLabel {color: "+colors[2]+"} "
-             "QMessageBox .QPushButton {border-radius: 5px; padding: 6px 16px 6px 16px; background: "+colors[3]+" color: "+colors[2]+"} "                             
-             "QMessageBox .QPushButton:pressed {background: "+colors[4]+"}"    
-             
-             "QPushButton {border-radius: 9px; padding: 3px;} "
-             "QPushButton:hover {background: "+colors[3]+"} "
-             "QPushButton:pressed {background: "+colors[4]+"} "
+            "QPushButton {border-radius: 9px; padding: 3px;} "
+            "QPushButton:hover {background: "+colors[3]+"} "
+            "QPushButton:pressed {background: "+colors[4]+"} "
 
-             "QListView {border-radius: 9px; background: "+colors[5]+"} "       
-             "QListView::item {border-radius: 5px; padding: 2px; color: "+colors[2]+"} "
-             "QListView::item:hover {background: "+colors[3]+"} "
-             "QListView::item:selected {background: " + colors[3] + " color: " + colors[4] + "}"
+            "QListView {border-radius: 9px; background: "+colors[5]+"} "       
+            "QListView::item {border-radius: 5px; padding: 2px; color: "+colors[2]+"} "
+            "QListView::item:hover {background: "+colors[3]+"} "
+            "QListView::item:selected {background: " + colors[3] + " color: " + colors[4] + "}"
 
-             "QTabWidget:pane {border-style: none;} "
-             "QTabBar:tab {border-radius: 5px; padding: 5px; background: "+colors[5]+" color: "+colors[2]+"} "     
-             "QTabBar:tab::hover {background: "+colors[3]+"} "
-             "QTabBar:tab::selected {background: "+colors[3]+" color: "+colors[4]+"} "   
+            "QTabWidget:pane {border-style: none;} "
+            "QTabBar:tab {border-radius: 5px; margin-left: 7px; margin-right: 7px; padding: 5px; background: "+colors[5]+" color: "+colors[2]+"} "     
+            "QTabBar:tab::hover {background: "+colors[3]+"} "
+            "QTabBar:tab::selected {background: "+colors[3]+" color: "+colors[4]+"} "   
                                                                                                            
-             "QLineEdit, QDateEdit, QSpinBox, QComboBox {border-radius: 5px; background: "+colors[7]+" color: "+colors[8]+"} "                                                           
+            "QLineEdit, QDateEdit, QSpinBox, QComboBox {border-radius: 5px; background: "+colors[7]+" color: "+colors[8]+"} "                                                           
              
-             "QLineEdit:focus {background: "+colors[1]+"} "
-             "QDateEdit:focus {background: "+colors[1]+"} "
-             "QComboBox:selected {background: "+colors[1]+"} "
-             "QSpinBox:focus {background: "+colors[1]+"} "          
-                                                                                                                                                                               
-             "QLabel#result_field {border-radius: 9px; background: "+colors[9]+" color: "+colors[10]+"} "
-             "QLabel#result_field_noise {border-radius: 5px; background: "+colors[9]+" color: "+colors[10]+"}")
+            "QLineEdit:focus {background: "+colors[1]+"} "
+            "QDateEdit:focus {background: "+colors[1]+"} "
+            "QComboBox:selected {background: "+colors[1]+"} "
+            "QComboBox::drop-down {background: transparent;} "                           
+            "QSpinBox:focus {background: "+colors[1]+"} "
+                                                                                                                                                                                           
+            "QLabel#result_field {border-radius: 9px; background: "+colors[9]+" color: "+colors[10]+"} "
+            "QLabel#result_field_noise {border-radius: 5px; background: "+colors[9]+" color: "+colors[10]+"}")
 
         [_.setStyleSheet("QTableView {outline: none; font: 10px verdana, sans-serif; "
                          "gridline-color: "+colors[8]+" background: "+colors[5]+" color: "+colors[2]+"} "
-             "QTableView::item:selected {background: "+colors[3]+" color: "+colors[4]+"} "
-             "QHeaderView::section {border: 0px; font: 10px verdana, sans-serif; background: "+colors[0]+" color: "+colors[6]+"} "
-             "QTableCornerButton::section {border: 0px; background: "+colors[0]+"} "
-             "QScrollBar {background: transparent;} "                            
-             "QScrollBar::add-page {border: 0px; background: "+colors[7]+"} "
-             "QScrollBar::sub-page {border: 0px; background: "+colors[7]+"} "
-             "QScrollBar::handle {border: 0px; background: "+colors[9]+"} "
-             "QScrollBar::handle:hover {background: "+colors[3]+"}") for _ in self.controllers[1].factors_tables]
+            "QTableView::item:selected {background: "+colors[3]+" color: "+colors[4]+"} "
+            "QHeaderView::section {border: 0px; font: 10px verdana, sans-serif; background: "+colors[0]+" color: "+colors[6]+"} "
+            "QTableCornerButton::section {border: 0px; background: "+colors[0]+"} "
+            "QScrollBar {background: transparent;} "                            
+            "QScrollBar::add-page {border: 0px; background: "+colors[7]+"} "
+            "QScrollBar::sub-page {border: 0px; background: "+colors[7]+"} "
+            "QScrollBar::handle {border: 0px; border-radius: 5px; background: "+colors[9]+"} "
+            "QScrollBar::handle:hover {background: "+colors[3]+"}") for _ in self.controllers[1].factors_tables]
 
     @QtCore.pyqtSlot()
     def change_app_style(self):

@@ -8,9 +8,9 @@ locale.setlocale(locale.LC_ALL, "ru")
 
 
 class InputValue(QtWidgets.QLineEdit):
-    def __init__(self, value=None):
-        super().__init__()
-        self.value = value
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.value = None
         self.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
 
@@ -64,7 +64,7 @@ class AbstractBaseCalc(QtWidgets.QWidget):
         self.result_area.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByKeyboard |
                                      QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
 
-        self.box.setRowMinimumHeight(self.box.rowCount(), 30)
+        self.box.setRowMinimumHeight(self.box.rowCount(), 50)
         self.box.addWidget(self.result_area, self.box.rowCount(), 0, 1, 3, ct.data_library["Позиция левый-верхний"])
 
     @staticmethod
@@ -235,3 +235,10 @@ class Factors(QtWidgets.QWidget):
             [_.setRange(0, 9999) for _ in j]
             [self.box.addWidget(j[_], _ + 1, i + 1, ct.data_library["Позиция левый-центр"]) for _ in self.r]
             self.entry_objects.append(j)
+
+    def validate_values(self):
+        if (not [i for i, j in enumerate(self.entry_objects[0]) if j.value()] or
+            [i for i, j in enumerate(self.entry_objects[0]) if j.value() < self.entry_objects[1][i].value()]):
+            return False
+        else:
+            return True
