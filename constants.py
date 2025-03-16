@@ -22,13 +22,9 @@ data_library = {
                    "(C) Иван Богданов, 2025. Все права защищены\n"
                    "Контакты: fluenoriph@gmail.com, fluenoriph@yandex.ru",
 
-    "Отчет": ("\\air_calc_result_log.txt", "\\work_zone_calc_result_log.txt", "\\ventilation_calc_result_log.txt",
-              "\\noise_calc_result_log.txt", "Данные рассчета будут сохранены\nна рабочий стол в файл ",
-              f"\n{'-' * 101}\n"),
-
     "Настройки": "Style",
 
-    "Цвета": (("#fff5ee;", "#a3c6c0;", "#1b1116;", "#08e8de;", "#d95030;", "#d0f0c0;", "#151719;",
+    "Цвета": (("#fff5ee;", "#a3c6c0;", "#1b1116;", "#08e8de;", "#991199;", "#d0f0c0;", "#151719;",
                            "#ffcc99;", "#4d4234;", "#6699cc;", "#641c34;"),
 
                ("#26252d;", "#230d21;", "#c9c0bb;", "#002137;", "#03c03c;", "#151719;", "#008080;",

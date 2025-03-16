@@ -4,7 +4,7 @@ from winpath import get_desktop
 from functools import partial
 import constants as ct
 from calculators_objects import (AtmosphericAirDust, VentilationEfficiency, NoiseLevelsWithBackground,
-                                 AbstractBaseCalc as calc_base, Factors)
+                                 AbstractBaseCalc as cb, Factors)
 
 
 class ProtocolView(QtWidgets.QTableView):
@@ -64,26 +64,20 @@ class BaseAbstractController(QtWidgets.QWidget):
         self.box = QtWidgets.QGridLayout(self)
         self.box.setContentsMargins(ct.data_library["Отступы контроллеров"])
 
-        self.calcs_area = self.create_options()
-        self.buttons = self.create_control_buttons()
-
-    def create_options(self):
-        area = QtWidgets.QTabWidget(self)
-        area.setCurrentIndex(0)
-        area.setUsesScrollButtons(False)
+        self.calcs_area = QtWidgets.QTabWidget(self)
+        self.calcs_area.setCurrentIndex(0)
+        self.calcs_area.setUsesScrollButtons(False)
 
         x = len(self.calcs_names)
         if x == 2:
-            y = 2
+            y = x
         else:
             y = 0
 
-        [area.addTab(self.calcs_objects[_], self.calcs_names[_]) for _ in range(x)]
-        self.box.addWidget(area, 0, y, 8, 1, alignment=ct.data_library["Позиция левый-верхний"])
-        return area
+        [self.calcs_area.addTab(self.calcs_objects[_], self.calcs_names[_]) for _ in range(x)]
+        self.box.addWidget(self.calcs_area, 0, y, 8, 1, alignment=ct.data_library["Позиция левый-верхний"])
 
-    def create_control_buttons(self):
-        buttons = []
+        self.buttons = []
         frame = QtWidgets.QWidget(self)
         frame.setFixedSize(ct.data_library["Размер виджета кнопок"])
         box = QtWidgets.QVBoxLayout(frame)
@@ -96,11 +90,11 @@ class BaseAbstractController(QtWidgets.QWidget):
             button.setToolTipDuration(3000)
             button.setIconSize(ct.data_library["Размеры кнопок"])
             button.setAutoDefault(True)
-            buttons.append(button)
+            self.buttons.append(button)
             box.addWidget(button, alignment=ct.data_library["Позиция центр"])
 
         self.box.addWidget(frame, 1, x, 8, 1, ct.data_library["Позиция левый-верхний"])
-        return buttons
+
 
 class RegistersController(BaseAbstractController):
     def __init__(self):
@@ -112,8 +106,6 @@ class RegistersController(BaseAbstractController):
         self.connect.setDatabaseName('registers_data.db')
         if not self.connect.open():
             self.error_message(2)
-
-        self.factors_tables = (ProtocolView(self.calcs_names[0], self), ProtocolView(self.calcs_names[1], self))
 
         [self.box.addWidget(QtWidgets.QLabel(ct.data_library["Журналы"]["Основной регистратор"]["Параметры"][_], self),
                             _, 0, ct.data_library["Позиция левый-центр"]) for _ in range(8)]
@@ -140,6 +132,10 @@ class RegistersController(BaseAbstractController):
         [self.entry_objects[7].addItem(ct.data_library["Журналы"]["Основной регистратор"]["Сотрудники"][_], _) for _
          in range(5)]
 
+        self.factors_tables = (ProtocolView(self.calcs_names[0], self), ProtocolView(self.calcs_names[1], self))
+
+        self.error_message = lambda x: QtWidgets.QMessageBox.critical(self, " ", ct.data_library["Журналы"]["Критические сообщения"][x])
+
         self.calcs_area.currentChanged.connect(self.clear_number_to_move)
 
         self.buttons[0].clicked.connect(self.save_protocol)
@@ -148,12 +144,12 @@ class RegistersController(BaseAbstractController):
 
     def record_main_data(self):
         x = QtSql.QSqlQuery()
-        y = self.calcs_area.currentIndex()
+        n = self.calcs_area.currentIndex()
 
         protocol_data = [_.text() for _ in self.entry_objects[:6]]
         [protocol_data.append(_.itemData(_.currentIndex())) for _ in self.entry_objects[6:]]
 
-        x.prepare(f"INSERT INTO {ct.data_library["Журналы"]["Основной регистратор"]["Тип журнала"][y]} "
+        x.prepare(f"INSERT INTO {ct.data_library["Журналы"]["Основной регистратор"]["Тип журнала"][n]} "
                   f"VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?)")
         [x.addBindValue(_) for _ in protocol_data]
         return x.exec()
@@ -167,9 +163,6 @@ class RegistersController(BaseAbstractController):
             [x.addBindValue(self.calcs_objects[n].entry_objects[_][i].value()) for _ in range(2)]
             if not x.exec():
                 return self.error_message(1)
-
-    def error_message(self, x):
-        return QtWidgets.QMessageBox.critical(self, " ", ct.data_library["Журналы"]["Критические сообщения"][x])
 
     @QtCore.pyqtSlot()
     def save_protocol(self):
@@ -211,34 +204,37 @@ class CalculatorsController(BaseAbstractController):
          NoiseLevelsWithBackground()), ct.data_library["Элементы управления"]["Иконки калькулятора"],
                          ct.data_library["Элементы управления"]["Подсказки калькулятора"])
 
+        self.log_file = lambda: f"\\{self.calcs_names[self.calcs_area.currentIndex()]}_отчет.txt"
+        self.separator = f"\n{'-' * 101}\n"
+        self.message = lambda: QtWidgets.QMessageBox.information(self, " ",
+            f"Данные рассчета будут сохранены\nна рабочий стол в файл \'{self.log_file[1:]}\'")
+
         self.buttons[0].clicked.connect(self.calculating)
         self.buttons[1].clicked.connect(self.clearing)
         self.buttons[2].clicked.connect(self.saving)
 
-        self.message = lambda: QtWidgets.QMessageBox.information(self, " ",
-                                                                 f"{ct.data_library["Отчет"][4]}\'{ct.data_library["Отчет"][self.calcs_area.currentIndex()][1:]}\'")
-
     def ready_to_calculate_airs(self):
-        calc = self.calcs_objects[self.calcs_area.currentIndex()]
+        n = self.calcs_area.currentIndex()
 
-        if [i for i, x in enumerate(calc.entry_objects) if x.text() == ""]:
+        if [i for i, j in enumerate(self.calcs_objects[n].entry_objects) if j.text() == ""]:
             return
         else:
-            calc.calculate()
+            self.calcs_objects[n].calculate()
 
     def clear_basic_calc(self):
-        calc = self.calcs_objects[self.calcs_area.currentIndex()]
+        n = self.calcs_area.currentIndex()
 
-        [_.clear() for _ in calc.entry_objects]
-        [calc_base.reset_value(_) for _ in calc.entry_objects]
-        calc.result_area.clear()
+        [_.clear() for _ in self.calcs_objects[n].entry_objects]
+        [cb.reset_value(_) for _ in self.calcs_objects[n].entry_objects]
+        self.calcs_objects[n].result_area.clear()
 
     def save_basic_calc(self):
-        calc = self.calcs_objects[self.calcs_area.currentIndex()]
+        n = self.calcs_area.currentIndex()
 
-        if calc.result_area.text() != "":
-            data = [calc.parameters[_] + ': ' + calc.entry_objects[_].text() + '\n' for _ in range(len(calc.parameters))]
-            data.append('\n' + calc.result_area.text() + ct.data_library["Отчет"][5])
+        if self.calcs_objects[n].result_area.text() != "":
+            data = [self.calcs_objects[n].parameters[_] + ': ' + self.calcs_objects[n].entry_objects[_].text() +
+                    '\n' for _ in range(len(self.calcs_objects[n].parameters))]
+            data.append('\n' + self.calcs_objects[n].result_area.text() + self.separator)
 
             self.message()
             self.write_to_file(data)
@@ -251,14 +247,14 @@ class CalculatorsController(BaseAbstractController):
             [data.append(_.ljust(8)) for _ in ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Октавные полосы"]]
             data.append('\n')
             data.append("".ljust(23))
-            [data.append("----".ljust(8)) for _ in range(10)]
+            [data.append("----".ljust(8)) for _ in self.calcs_objects[3].sum]
             data.append('\n')
 
             for n, i in enumerate(self.calcs_objects[3].octave_table):
                 data.append(ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Результаты"][n].ljust(23))
                 [data.append(j.text().ljust(8)) for j in i]
                 data.append('\n')
-            data.append(ct.data_library["Отчет"][5])
+            data.append(self.separator)
 
             self.message()
             self.write_to_file(data)
@@ -266,15 +262,15 @@ class CalculatorsController(BaseAbstractController):
             return
 
     def write_to_file(self, data):
-        with open(get_desktop() + ct.data_library["Отчет"][self.calcs_area.currentIndex()], "a", encoding="utf-8") as txt:
+        with open(get_desktop() + self.log_file, "a", encoding="utf-8") as txt:
             txt.writelines(data)
 
     @QtCore.pyqtSlot()
     def calculating(self):
         match self.calcs_area.currentIndex():
             case 2:
-                if ([i for i, x in enumerate(self.calcs_objects[2].entry_objects[0:3]) if x.text() == ""] or
-                        not self.calcs_objects[2].set_hole_checks()):
+                if ([i for i, j in enumerate(self.calcs_objects[2].entry_objects[0:3]) if j.text() == ""] or
+                        not self.calcs_objects[2].check_hole_data()):
                     return
                 else:
                     self.calcs_objects[2].calculate()
@@ -287,7 +283,7 @@ class CalculatorsController(BaseAbstractController):
     def clearing(self):
         if self.calcs_area.currentIndex() == 3:
             [j.clear() for i in self.calcs_objects[3].octave_table for j in i]
-            [calc_base.reset_value(j) for i in self.calcs_objects[3].octave_table for j in i]
+            [cb.reset_value(j) for i in self.calcs_objects[3].octave_table for j in i]
         else:
             self.clear_basic_calc()
 
@@ -319,7 +315,6 @@ class ApplicationType(QtWidgets.QWidget):
         self.box.setContentsMargins(0, 0, 0, 8)
         self.box.setRowStretch(1, 1)
         self.box.setColumnStretch(1, 1)
-        #self.box.setColumnStretch(2, 50)
 
         self.main_menu = QtWidgets.QMenuBar(self)
         self.main_menu.submenu_file = QtWidgets.QMenu(ct.data_library["Главное меню"][0], self.main_menu)
@@ -333,11 +328,11 @@ class ApplicationType(QtWidgets.QWidget):
         self.set_style_act = self.main_menu.change_style
         self.main_menu.change_style.toggled.connect(self.change_app_style)
 
-        self.main_menu.set_calculators_act = QtGui.QAction(self.data_dict_names[28], self.main_menu.submenu_file)
+        self.main_menu.set_calculators_act = QtGui.QAction(self.data_dict_names[27], self.main_menu.submenu_file)
         self.main_menu.set_calculators_act.triggered.connect(partial(self.set_selector_index, 0))
         self.main_menu.set_calculators_act.triggered.connect(self.select_calcs_type)
 
-        self.main_menu.set_registers_act = QtGui.QAction(self.data_dict_names[29], self.main_menu.submenu_file)
+        self.main_menu.set_registers_act = QtGui.QAction(self.data_dict_names[28], self.main_menu.submenu_file)
         self.main_menu.set_registers_act.triggered.connect(partial(self.set_selector_index, 1))
         self.main_menu.set_registers_act.triggered.connect(self.select_calcs_type)
 
@@ -364,7 +359,7 @@ class ApplicationType(QtWidgets.QWidget):
         self.selector_panel.setSpacing(10)
         self.selector_panel.setFixedSize(150, 675)
 
-        self.selector_panel.model_type = QtCore.QStringListModel((self.data_dict_names[28], self.data_dict_names[29]))
+        self.selector_panel.model_type = QtCore.QStringListModel((self.data_dict_names[27], self.data_dict_names[28]))
         self.selector_panel.setModel(self.selector_panel.model_type)
 
         self.selector_panel.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
@@ -414,10 +409,11 @@ class ApplicationType(QtWidgets.QWidget):
             "QLabel {color: "+colors[6]+"} "
             "QToolTip {color: "+colors[2]+"} "
                                           
-            "QMenuBar, QMenu {background: "+colors[0]+" color: "+colors[2]+"} "   
-            "QMenuBar::item:selected {transform: translate(0px, 0px); border-radius: 5px; background: "+colors[3]+"} "
-            "QMenu::separator {border-bottom: 1px solid "+colors[2]+"} "                                      
-            "QMenu::item:selected {background: "+colors[3]+"} "
+            "QMenuBar {background: "+colors[0]+" color: "+colors[2]+"} "   
+            "QMenuBar::item:selected {border-radius: 5px; background: "+colors[3]+"} "
+            "QMenu {border-radius: 5px; background: "+colors[7]+" color: "+colors[2]+"} "
+            "QMenu::separator {border-bottom: 1px solid "+colors[5]+"} "                                      
+            "QMenu::item:selected {background: transparent; color: "+colors[4]+"} "                     
             "QMenuBar::item:pressed {color: "+colors[4]+"} "
             "QMenuBar::item {margin: 2px 2px 2px 2px; padding: 7px 7px 7px 7px;} "
                                                                     
@@ -432,7 +428,7 @@ class ApplicationType(QtWidgets.QWidget):
             "QListView {border-radius: 9px; background: "+colors[5]+"} "       
             "QListView::item {border-radius: 5px; padding: 2px; color: "+colors[2]+"} "
             "QListView::item:hover {background: "+colors[3]+"} "
-            "QListView::item:selected {background: " + colors[3] + " color: " + colors[4] + "}"
+            "QListView::item:selected {background: "+colors[3]+" color: "+colors[4]+"}"
 
             "QTabWidget:pane {border-style: none;} "
             "QTabBar:tab {border-radius: 5px; margin-left: 7px; margin-right: 7px; padding: 5px; background: "+colors[5]+" color: "+colors[2]+"} "     
@@ -485,11 +481,11 @@ class ApplicationType(QtWidgets.QWidget):
 
     @QtCore.pyqtSlot()
     def open_about_app_message(self):
-        QtWidgets.QMessageBox.about(self, self.data_dict_names[2], ct.data_library["О программе"])
+        return QtWidgets.QMessageBox.about(self, self.data_dict_names[2], ct.data_library["О программе"])
 
     @QtCore.pyqtSlot()
     def open_help_message(self):
-        QtWidgets.QMessageBox.information(self, self.data_dict_names[1], ct.data_library["Справка"])
+        return QtWidgets.QMessageBox.information(self, self.data_dict_names[1], ct.data_library["Справка"])
 
 
 if __name__ == "__main__":

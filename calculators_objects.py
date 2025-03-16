@@ -77,7 +77,6 @@ class AtmosphericAirDust(AbstractBaseCalc):
                  results = ct.data_library["Калькуляторы"]["Пыль в атмосферном воздухе"]["Результаты"]):
 
         super().__init__(parameters = parameters, results = results)
-
         [_.setFixedSize(ct.data_library["Размеры поля ввода"]) for _ in self.entry_objects]
         [_.setMaxLength(10) for _ in self.entry_objects]
         [_.check_value() for _ in self.entry_objects if self.entry_objects.index(_) != 1]
@@ -104,14 +103,13 @@ class AtmosphericAirDust(AbstractBaseCalc):
             result_string = (f"{self.results[0]} {locale.format_string("%0.2f", Decimal(self.calculate_concentrate()).quantize(Decimal(".01"), rounding=ROUND_HALF_UP))} ± "
                              f"{locale.format_string("%0.2f", Decimal(self.results[6] * self.calculate_concentrate()).quantize(Decimal(".01"), rounding=ROUND_HALF_UP))} мг/м³")
 
-        self.result_area.setText(result_string)
+        return self.result_area.setText(result_string)
 
 
 class VentilationEfficiency(AbstractBaseCalc):
     def __init__(self):
         super().__init__(ct.data_library["Калькуляторы"]["Эффективность вентиляции"]["Параметры"],
                          ct.data_library["Калькуляторы"]["Эффективность вентиляции"]["Результаты"])
-
         [_.setFixedSize(ct.data_library["Размеры поля ввода"]) for _ in self.entry_objects[:3]]
         [_.setFixedSize(ct.data_library["Размеры поля ввода вент. отвер."]) for _ in self.entry_objects[3:]]
         [_.setMaxLength(7) for _ in self.entry_objects]
@@ -121,7 +119,7 @@ class VentilationEfficiency(AbstractBaseCalc):
         self.entry_objects[4].textEdited.connect(self.lock_circle_entry_object)
         self.entry_objects[5].textEdited.connect(self.lock_circle_entry_object)
 
-    def set_hole_checks(self):
+    def check_hole_data(self):
         if self.entry_objects[3].text() != "" and self.entry_objects[4].text() == "" and self.entry_objects[5].text() == "":
             return True
         elif self.entry_objects[3].text() == "" and self.entry_objects[4].text() != "" and self.entry_objects[5].text() != "":
@@ -139,7 +137,7 @@ class VentilationEfficiency(AbstractBaseCalc):
         perfomance = self.entry_objects[2].get_entry_value() * self.calculate_hole_square() * 3600
         per_in_hour = perfomance / (self.entry_objects[0].get_entry_value() * self.entry_objects[1].get_entry_value())
 
-        self.result_area.setText(f"{self.results[0]} "
+        return self.result_area.setText(f"{self.results[0]} "
                               f"{locale.format_string("%0.1f", Decimal(perfomance).quantize(Decimal(".01"), rounding=ROUND_HALF_UP))} "
                        f"м³/ч\n\n{self.results[1]} "
                        f"{locale.format_string("%0.1f", Decimal(per_in_hour).quantize(Decimal(".01"), rounding=ROUND_HALF_UP))} раз/ч")
@@ -190,7 +188,7 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
             self.octave_table.append(j)
 
     def calculate(self):
-        for _ in range(10):
+        for _ in self.sum:
             if self.entry_objects_source[_].text() != "" and self.entry_objects_background[_].text() != "":
                 result = self.correcting_with_background(self.entry_objects_source[_].get_entry_value(),
                                                          self.entry_objects_background[_].get_entry_value())
@@ -217,12 +215,11 @@ class Factors(QtWidgets.QWidget):
         super().__init__()
         self.parameters = parameters
         self.r = range(len(self.parameters))
-
-        self.box = QtWidgets.QGridLayout(self)
-
         self.entry_objects = []
         self.ok_standart_entries = []
         self.no_standart_entries = []
+
+        self.box = QtWidgets.QGridLayout(self)
 
         for i, j in enumerate(("соотв.", "не соотв.")):
             self.box.addWidget(QtWidgets.QLabel(j, self), 0, i + 1, ct.data_library["Позиция левый-центр"])
