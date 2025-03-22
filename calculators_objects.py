@@ -110,6 +110,7 @@ class VentilationEfficiency(AbstractBaseCalc):
     def __init__(self):
         super().__init__(ct.data_library["Калькуляторы"]["Эффективность вентиляции"]["Параметры"],
                          ct.data_library["Калькуляторы"]["Эффективность вентиляции"]["Результаты"])
+
         [_.setFixedSize(ct.data_library["Размеры поля ввода"]) for _ in self.entry_objects[:3]]
         [_.setFixedSize(ct.data_library["Размеры поля ввода вент. отвер."]) for _ in self.entry_objects[3:]]
         [_.setMaxLength(7) for _ in self.entry_objects]

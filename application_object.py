@@ -315,6 +315,7 @@ class ApplicationType(QtWidgets.QWidget):
         self.box.setContentsMargins(0, 0, 0, 8)
         self.box.setRowStretch(1, 1)
         self.box.setColumnStretch(1, 1)
+        self.box.setColumnStretch(2, 40)
 
         self.main_menu = QtWidgets.QMenuBar(self)
         self.main_menu.submenu_file = QtWidgets.QMenu(ct.data_library["Главное меню"][0], self.main_menu)
@@ -490,6 +491,6 @@ class ApplicationType(QtWidgets.QWidget):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    app.setWindowIcon(QtGui.QIcon("images/calc_logo.ico"))
+    app.setWindowIcon(QtGui.QIcon("icons/calc_logo.ico"))
     app_calcs = ApplicationType()
     sys.exit(app.exec())

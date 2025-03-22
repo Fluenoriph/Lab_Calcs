@@ -31,10 +31,10 @@ data_library = {
                           "#343e40;", "#4169e1;", "#0e1824;", "#baacc7;")),
 
     "Элементы управления": {
-        "Иконки калькулятора": ("images/ok.ico", "images/clear.ico", "images/save.ico"),
+        "Иконки калькулятора": ("icons/ok.ico", "icons/clear.ico", "icons/save.ico"),
         "Подсказки калькулятора": ("Вычислить", "Очистить всё", "Сохранить в файл"),
 
-        "Иконки журнала": ("images/save.ico", "images/clear.ico", "images/view.ico"),
+        "Иконки журнала": ("icons/save.ico", "icons/clear.ico", "icons/view.ico"),
         "Подсказки журнала": ("Сохранить протокол", "Очистить все журналы", "Просмотр")
     },
 
