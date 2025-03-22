@@ -302,12 +302,6 @@ class ApplicationType(QtWidgets.QWidget):
                         "Calculators__2.1.0__Beta", self)
         self.data_dict_names = list(ct.data_library.keys())
 
-        '''self.move(self.width() * -2, 0)
-        screen_size = self.screen().availableSize()
-        x = (screen_size.width() - self.frameSize().width()) // 2
-        y = (screen_size.height() - self.frameSize().height()) // 2
-        self.move(x, y)'''
-
         self.setWindowTitle("Калькуляторы")
         self.resize(ct.data_library["Размер главного окна"])
 
@@ -315,7 +309,7 @@ class ApplicationType(QtWidgets.QWidget):
         self.box.setContentsMargins(0, 0, 0, 8)
         self.box.setRowStretch(1, 1)
         self.box.setColumnStretch(1, 1)
-        self.box.setColumnStretch(2, 40)
+        self.box.setColumnStretch(2, 15)
 
         self.main_menu = QtWidgets.QMenuBar(self)
         self.main_menu.submenu_file = QtWidgets.QMenu(ct.data_library["Главное меню"][0], self.main_menu)
