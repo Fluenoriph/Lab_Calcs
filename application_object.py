@@ -204,10 +204,9 @@ class CalculatorsController(BaseAbstractController):
          NoiseLevelsWithBackground()), ct.data_library["Элементы управления"]["Иконки калькулятора"],
                          ct.data_library["Элементы управления"]["Подсказки калькулятора"])
 
-        self.log_file = lambda: f"\\{self.calcs_names[self.calcs_area.currentIndex()]}_отчет.txt"
         self.separator = f"\n{'-' * 101}\n"
         self.message = lambda: QtWidgets.QMessageBox.information(self, " ",
-            f"Данные рассчета будут сохранены\nна рабочий стол в файл \'{self.log_file[1:]}\'")
+            f"Данные рассчета будут сохранены на рабочий стол\nв файл \'{self.create_log_file()[1:]}\'")
 
         self.buttons[0].clicked.connect(self.calculating)
         self.buttons[1].clicked.connect(self.clearing)
@@ -262,8 +261,11 @@ class CalculatorsController(BaseAbstractController):
             return
 
     def write_to_file(self, data):
-        with open(get_desktop() + self.log_file, "a", encoding="utf-8") as txt:
+        with open(get_desktop() + self.create_log_file(), "a", encoding="utf-8") as txt:
             txt.writelines(data)
+
+    def create_log_file(self):
+        return f"\\{self.calcs_names[self.calcs_area.currentIndex()]}_отчет.txt"
 
     @QtCore.pyqtSlot()
     def calculating(self):
