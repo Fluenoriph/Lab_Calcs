@@ -1,5 +1,6 @@
 from PyQt6 import QtWidgets, QtCore, QtGui, QtSql
 import sys
+import time
 from winpath import get_desktop
 from functools import partial
 import constants as ct
@@ -115,6 +116,7 @@ class RegistersController(BaseAbstractController):
         [self.entry_objects.append(QtWidgets.QDateEdit(self)) for _ in range(2)]
         [self.entry_objects.append(QtWidgets.QLineEdit(self)) for _ in range(3)]
         [self.entry_objects.append(QtWidgets.QComboBox(self)) for _ in range(2)]
+        self.current_date = time.gmtime()
 
         [_.setFixedSize(ct.data_library["Размеры поля ввода инфо. протокола"]) for _ in self.entry_objects[:3]]
         [_.setFixedSize(ct.data_library["Размеры поля ввода инфо. объекта"]) for _ in self.entry_objects[3:6]]
@@ -124,7 +126,7 @@ class RegistersController(BaseAbstractController):
         [self.box.addWidget(self.entry_objects[_], _, 1, ct.data_library["Позиция левый-центр"]) for _ in range(8)]
 
         for _ in self.entry_objects[1:3]:
-            _.setDate(ct.data_library["Текущий период"])
+            _.setDate(QtCore.QDate(self.current_date.tm_year, self.current_date.tm_mon, 1))
             _.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.NoButtons)
 
         [self.entry_objects[6].addItem(ct.data_library["Журналы"]["Основной регистратор"]["Тип выполнения"][_], _) for _
@@ -325,11 +327,11 @@ class ApplicationType(QtWidgets.QWidget):
         self.set_style_act = self.main_menu.change_style
         self.main_menu.change_style.toggled.connect(self.change_app_style)
 
-        self.main_menu.set_calculators_act = QtGui.QAction(self.data_dict_names[27], self.main_menu.submenu_file)
+        self.main_menu.set_calculators_act = QtGui.QAction(self.data_dict_names[26], self.main_menu.submenu_file)
         self.main_menu.set_calculators_act.triggered.connect(partial(self.set_selector_index, 0))
         self.main_menu.set_calculators_act.triggered.connect(self.select_calcs_type)
 
-        self.main_menu.set_registers_act = QtGui.QAction(self.data_dict_names[28], self.main_menu.submenu_file)
+        self.main_menu.set_registers_act = QtGui.QAction(self.data_dict_names[27], self.main_menu.submenu_file)
         self.main_menu.set_registers_act.triggered.connect(partial(self.set_selector_index, 1))
         self.main_menu.set_registers_act.triggered.connect(self.select_calcs_type)
 
@@ -356,7 +358,7 @@ class ApplicationType(QtWidgets.QWidget):
         self.selector_panel.setSpacing(10)
         self.selector_panel.setFixedSize(150, 675)
 
-        self.selector_panel.model_type = QtCore.QStringListModel((self.data_dict_names[27], self.data_dict_names[28]))
+        self.selector_panel.model_type = QtCore.QStringListModel((self.data_dict_names[26], self.data_dict_names[27]))
         self.selector_panel.setModel(self.selector_panel.model_type)
 
         self.selector_panel.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
