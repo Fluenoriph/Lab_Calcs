@@ -7,6 +7,13 @@ import constants as ct
 from calculators_objects import (AtmosphericAirDust, VentilationEfficiency, NoiseLevelsWithBackground,
                                  AbstractBaseCalc as cb, Factors)
 
+try:
+    from ctypes import windll
+    myappid = 'Ivan Bogdanov.Calculators Lab.2_1_0 Beta'
+    windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+except ImportError:
+    pass
+
 
 class ProtocolView(QtWidgets.QTableView):
     def __init__(self, name, parent):

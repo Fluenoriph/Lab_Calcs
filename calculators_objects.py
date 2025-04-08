@@ -189,9 +189,20 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
             self.octave_table.append(j)
 
     def calculate(self):
+        def correcting_with_background(source, back):
+            delta = source - back
+            if delta < 3.0:
+                return delta, source
+            elif delta > 10.0:
+                return delta, source * 0
+            else:
+                for _ in ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Поправки"]:
+                    if _[0] <= delta <= _[1]:
+                        return delta, source - _[2]
+
         for _ in self.sum:
             if self.entry_objects_source[_].text() != "" and self.entry_objects_background[_].text() != "":
-                result = self.correcting_with_background(self.entry_objects_source[_].get_entry_value(),
+                result = correcting_with_background(self.entry_objects_source[_].get_entry_value(),
                                                          self.entry_objects_background[_].get_entry_value())
 
                 self.delta_result_area[_].setText(locale.format_string("%0.1f", result[0]))
@@ -199,17 +210,6 @@ class NoiseLevelsWithBackground(QtWidgets.QWidget):
             else:
                 return
 
-    @staticmethod
-    def correcting_with_background(source, back):
-        delta = source - back
-        if delta < 3.0:
-            return delta, source
-        elif delta > 10.0:
-            return delta, source * 0
-        else:
-            for _ in ct.data_library["Калькуляторы"]["Учет влияния фонового шума"]["Поправки"]:
-                if _[0] <= delta <= _[1]:
-                    return delta, source - _[2]
 
 class Factors(QtWidgets.QWidget):
     def __init__(self, parameters):
